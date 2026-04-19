@@ -68,6 +68,20 @@ Todo esto ya esta decidido y no debe reabrirse salvo necesidad real:
 - no sobredimensionar V1
 - V1 centrada en sustituir el Excel de forma operativa
 
+## Estado actual implementado
+
+La base tecnica del proyecto ya no esta vacia. A dia de hoy ya existe:
+
+- proyecto `Next.js` inicializado en la raiz
+- estructura base bajo `src/`
+- `Prisma` conectado a `Neon`
+- migracion inicial aplicada
+- seed de desarrollo disponible
+- `Auth.js` con `email + password`
+- `/login` publica y `/` protegida
+
+La referencia operativa para este estado es `docs/09-current-status.md`.
+
 ## Modelo mental del dominio
 
 El dominio distingue entre tres piezas principales que no deben confundirse:
@@ -248,6 +262,13 @@ La primera iteracion tecnica debe incluir solo:
 3. listado de servicios
 4. detalle de servicio
 
+### Estado de esa primera iteracion
+
+- `login`: ya implementado
+- `creacion de servicio reembolsable`: pendiente
+- `listado de servicios`: pendiente
+- `detalle de servicio`: pendiente
+
 Esto se eligio para validar de forma controlada:
 
 - autenticacion
@@ -266,6 +287,11 @@ Esto se eligio para validar de forma controlada:
 7. implementar primer caso de uso: creacion de servicio
 8. implementar listado y detalle
 9. continuar con facturas, solicitudes y resolucion
+
+### Estado del orden de implementacion
+
+- pasos `1` a `6`: ya completados
+- siguiente paso real: `7. implementar primer caso de uso: creacion de servicio`
 
 ## Testing aprobado
 
@@ -310,14 +336,18 @@ Los tiers gratuitos pueden cambiar.
 Leer estos documentos en este orden:
 
 1. `README.md`
-2. `07-mvp-scope.md`
-3. `06-technical-decisions.md`
-4. `05-system-architecture.md`
-5. `04-data-model.md`
-6. `03-user-flows.md`
-7. `02-business-rules.md`
-8. `01-product-vision.md`
-9. `00-overview.md`
+2. `09-current-status.md`
+3. `sessions/README.md`
+4. ultimo archivo de `sessions/`
+5. `07-mvp-scope.md`
+6. `06-technical-decisions.md`
+7. `05-system-architecture.md`
+8. `08-engineering-guidelines.md`
+9. `04-data-model.md`
+10. `03-user-flows.md`
+11. `02-business-rules.md`
+12. `01-product-vision.md`
+13. `00-overview.md`
 
 ## Instrucciones para un nuevo hilo
 
@@ -328,6 +358,8 @@ Proyecto: `reimbursement-tracker`
 
 Lee primero:
 - `docs/START-HERE.md`
+- `docs/09-current-status.md`
+- ultimo archivo de `docs/sessions/`
 - `docs/07-mvp-scope.md`
 - `docs/06-technical-decisions.md`
 - `docs/05-system-architecture.md`
@@ -339,11 +371,11 @@ Contexto obligatorio:
 - Mantener la arquitectura limpia ligera ya aprobada.
 - No reabrir decisiones ya cerradas salvo necesidad real.
 
-Empieza la implementacion siguiendo el alcance minimo definido y propon el primer paso tecnico concreto.
+Continua la implementacion siguiendo el alcance minimo definido y propon el siguiente paso tecnico concreto a partir del estado actual del repositorio.
 ```
 
 ## Decision final
 
 El proyecto ya tiene requisitos, arquitectura, stack y alcance cerrados.
 
-La siguiente fase ya no es de definicion, sino de implementacion controlada sobre la V1 minima aprobada.
+La base tecnica minima ya esta montada. La siguiente fase es implementar los casos de uso de servicios reembolsables sobre ese arranque ya validado.

@@ -11,14 +11,18 @@ La documentacion refleja dos niveles distintos:
 
 ## Lectura recomendada
 
-1. `00-overview.md`
-2. `01-product-vision.md`
-3. `07-mvp-scope.md`
-4. `02-business-rules.md`
-5. `04-data-model.md`
-6. `05-system-architecture.md`
-7. `06-technical-decisions.md`
-8. `03-user-flows.md`
+1. `START-HERE.md`
+2. `09-current-status.md`
+3. `sessions/README.md`
+4. `00-overview.md`
+5. `01-product-vision.md`
+6. `07-mvp-scope.md`
+7. `02-business-rules.md`
+8. `04-data-model.md`
+9. `05-system-architecture.md`
+10. `06-technical-decisions.md`
+11. `08-engineering-guidelines.md`
+12. `03-user-flows.md`
 
 ## Estado actual del proyecto
 
@@ -29,6 +33,17 @@ La direccion del proyecto ya esta cerrada:
 - `PostgreSQL` en `Neon`
 - despliegue previsto en `Vercel`
 - objetivo de coste cero inicial usando free tiers
+
+Ademas, a dia de hoy ya existe una base tecnica implementada. La referencia rapida del estado real esta en:
+
+- `09-current-status.md`
+
+## Continuidad entre sesiones
+
+La carpeta `sessions/` se usa para dejar una bitacora corta de cada sesion relevante.
+
+- `sessions/README.md` explica como mantenerla
+- `sessions/TEMPLATE.md` sirve como plantilla base
 
 ## Decision importante de alcance
 
