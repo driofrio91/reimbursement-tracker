@@ -175,6 +175,16 @@ Todo esto queda explicitamente para despues:
 - recuperacion de contrasena
 - permisos mas finos
 
+### Importante
+
+La V2 sigue respetando estas reglas ya cerradas:
+
+- una factura solo puede estar en una unica solicitud
+- una factura rechazada no se reutiliza
+- si un servicio sigue necesitando cubrir importe, se crea una factura nueva
+
+La V2 anade capacidad y comodidad, pero no reintroduce el modelo descartado de reutilizacion de facturas.
+
 ## Arquitectura aprobada
 
 La arquitectura elegida es limpia ligera por modulos.

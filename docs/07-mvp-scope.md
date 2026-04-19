@@ -103,12 +103,24 @@ Estos conceptos siguen existiendo, pero no requieren persistencia especifica en 
 
 Mejorar trazabilidad, comodidad operativa, migracion historica y capacidades de gestion.
 
+La V2 no cambia la regla ya aprobada de negocio:
+
+- una factura solo puede pertenecer a una solicitud
+- una factura rechazada no se reutiliza
+- si falta importe por cubrir, se crea una factura nueva
+
 ### Entidades y modulos que pasan a V2
 
 - `Attachment`
 - `Note`
 - `PolicyHolder` separado si aporta valor real
 - `StatusHistory` completo
+
+### Ampliaciones del modelo que pueden entrar en V2
+
+- separar `policyHolderName` en una entidad `PolicyHolder` real
+- enriquecer `Invoice` con mas metadatos fiscales o contables si hace falta
+- anadir tablas auxiliares para reporting o read models si el dashboard lo requiere
 
 ### Funcionalidad que pasa a V2
 
@@ -123,6 +135,14 @@ Mejorar trazabilidad, comodidad operativa, migracion historica y capacidades de 
 - gestion de usuarios desde la aplicacion
 - recuperacion de contrasena
 - permisos mas finos si hacen falta
+
+### Funcionalidad que expresamente no pasa a V2
+
+Estas ideas quedan descartadas tambien para V2 salvo cambio real del negocio:
+
+- reutilizar una factura rechazada en otra solicitud
+- reenvios de la misma factura como si fuera el mismo documento
+- volver al modelo `InvoiceDocument + ServiceInvoiceRecord + ReimbursementRequestItem` sin necesidad demostrada
 
 ### Estados y trazabilidad que pasan a V2
 
@@ -161,4 +181,4 @@ Si una pieza no ayuda de forma directa a sustituir el Excel en la operativa diar
 
 La V1 queda oficialmente recortada a un nucleo operativo minimo.
 
-La V2 agrupa todas las mejoras de trazabilidad avanzada, importacion historica, adjuntos y capacidades analiticas.
+La V2 agrupa todas las mejoras de trazabilidad avanzada, importacion historica, adjuntos y capacidades analiticas, pero mantiene el mismo nucleo de negocio simplificado de `Service + Invoice + Request`.

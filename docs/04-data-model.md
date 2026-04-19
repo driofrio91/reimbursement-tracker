@@ -169,3 +169,13 @@ Estas piezas siguen formando parte de la vision general, pero no del modelo mini
 - `PolicyHolder` como entidad separada
 - `StatusHistory` completo
 - estados persistidos mas ricos como `partially_invoiced`, `over_invoiced`, `partially_reimbursed` o `closed`
+
+## Posibles ampliaciones de V2
+
+Si en la V2 se necesita enriquecer el sistema, el crecimiento recomendado del modelo seria:
+
+1. mantener el nucleo `ReimbursableService + Invoice + ReimbursementRequest`
+2. anadir entidades auxiliares como `Attachment`, `Note`, `PolicyHolder` o `StatusHistory`
+3. anadir read models o tablas auxiliares para reporting si el dashboard lo requiere
+
+No se considera necesario volver al modelo previo de factura reutilizable salvo que cambie el negocio real.
