@@ -131,7 +131,7 @@ Motivo:
 - deteccion de sobrefacturacion
 - creacion de solicitud con varias facturas
 - resolucion de solicitud y actualizacion de estados
-- reutilizacion de factura rechazada en un nuevo intento
+- creacion de una factura nueva cuando una anterior fue rechazada y sigue faltando importe por cubrir
 
 ## Decision sobre adjuntos
 
@@ -221,6 +221,8 @@ Se considera aprobado un recorte explicito del MVP para evitar sobredimensionar 
 La V1 se centra solo en sustituir el Excel a nivel operativo.
 
 El detalle completo del recorte entre V1 y V2 queda definido en `docs/07-mvp-scope.md`.
+
+La V1 queda ademas simplificada al modelo `Service + Invoice + Request`, eliminando toda la logica de reutilizacion de facturas rechazadas.
 
 ## Stack final aprobado
 

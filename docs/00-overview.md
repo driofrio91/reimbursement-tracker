@@ -17,7 +17,7 @@ Ademas, no siempre existe una relacion 1:1 entre servicio y factura:
 - un servicio puede corresponder a una sola factura
 - un servicio puede requerir varias facturas para cubrir el importe total
 - varias facturas pueden cargarse dentro de una misma solicitud de reembolso
-- una misma factura real puede reutilizarse operativamente en nuevos intentos, siempre referenciando al documento original
+- una factura rechazada obliga a emitir una factura nueva si aun falta importe por cubrir
 
 Esto dificulta:
 
@@ -45,15 +45,15 @@ El MVP debe permitir operar de forma fiable el flujo principal de reembolsos:
 El sistema debe diferenciar entre:
 
 - el servicio o gasto real
-- la factura original, que solo existe una vez
-- el registro operativo de uso de esa factura dentro de un servicio
+- la factura individual asociada al servicio
 - la solicitud real presentada en el portal
 
 Esto permite cubrir tanto casos 1:1 como casos 1:N y N:1:
 
 - un servicio puede tener varias facturas
 - una solicitud puede incluir varias facturas
-- una factura rechazada puede volver a utilizarse en otra solicitud, manteniendo la referencia al documento original
+- una factura solo puede estar en una solicitud
+- una factura rechazada no se reutiliza; se crea otra nueva si aun falta importe por cubrir
 
 ## Alcance inicial
 

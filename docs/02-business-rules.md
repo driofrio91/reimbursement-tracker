@@ -18,7 +18,7 @@ Se registra el gasto real con sus datos principales:
 - concepto
 - importe real
 - persona vinculada
-- titular del seguro
+- titular usado para tramitar
 - aseguradora
 
 En esta fase todavia puede no existir ninguna factura.
@@ -37,19 +37,18 @@ Se registra el resultado de la solicitud o de cada factura incluida:
 
 - abonada
 - rechazada
-- parcialmente abonada a nivel de solicitud
 
-Si una factura fue rechazada, puede volver a utilizarse en una nueva solicitud, siempre manteniendo la referencia al documento original.
+Si una factura es rechazada, esa factura no se reutiliza. Si el servicio sigue necesitando cubrir importe, se emite una factura nueva.
 
 ## Reglas estructurales
 
 1. Un servicio reembolsable representa el gasto real original.
-2. Una factura real se guarda una sola vez como documento original.
-3. Un servicio puede tener una o varias facturas asociadas.
-4. Una solicitud puede incluir una o varias facturas.
-5. Una factura rechazada puede volver a utilizarse en una nueva solicitud.
-6. Cuando una factura vuelve a usarse, no se duplica el documento original, sino que se crea un nuevo registro operativo referenciando a la factura original.
-7. Cada registro operativo pertenece a un unico servicio.
+2. Un servicio puede tener una o varias facturas.
+3. Una solicitud puede incluir una o varias facturas.
+4. Una factura pertenece a un unico servicio.
+5. Una factura puede pertenecer como maximo a una unica solicitud.
+6. Una factura rechazada permanece rechazada y no se reenvia.
+7. Si el servicio sigue necesitando cubrir importe tras un rechazo, se crea una factura nueva.
 8. La referencia externa del portal pertenece a la solicitud, no al servicio.
 
 ## Reglas de facturacion por servicio
@@ -57,98 +56,69 @@ Si una factura fue rechazada, puede volver a utilizarse en una nueva solicitud, 
 1. El sistema debe calcular el total facturado por servicio.
 2. El sistema debe calcular el importe pendiente por facturar.
 3. Si el total facturado es menor que el importe real, el servicio sigue incompleto.
-4. Si el total facturado coincide con el importe real, el servicio queda completamente facturado.
+4. Si el total facturado coincide con el importe real, el servicio queda completamente cubierto por facturas.
 5. Si el total facturado supera el importe real, se permite continuar, pero debe mostrarse un aviso de sobrefacturacion.
 
 ## Reglas de agrupacion en solicitudes
 
 1. Una solicitud no puede enviarse vacia.
-2. Una solicitud puede agrupar facturas de un mismo servicio o de varios servicios si el negocio lo permite a futuro.
-3. Cada factura incluida en la solicitud debe mantener su trazabilidad individual.
-4. El resultado de una solicitud puede ser mixto: algunas facturas reembolsadas y otras rechazadas.
+2. Una solicitud puede agrupar varias facturas.
+3. Cada factura incluida mantiene su trazabilidad individual.
+4. El resultado de una solicitud puede ser mixto: unas facturas pueden quedar reembolsadas y otras rechazadas.
 
-## Reglas de reutilizacion y reenvio
+## Reglas tras un rechazo
 
-1. Si una factura ya fue utilizada anteriormente, el sistema debe mostrar un aviso antes de crear un nuevo registro operativo.
-2. Si una factura fue rechazada anteriormente, el sistema debe mostrar un aviso reforzado indicando que ya existe un rechazo previo.
-3. El nuevo uso de una factura debe enlazarse con el registro operativo anterior mediante referencia al registro original.
-4. El sistema debe conservar historial de intentos previos para esa factura.
+1. Una factura rechazada no puede reutilizarse en otra solicitud.
+2. El servicio puede seguir abierto aunque alguna factura haya sido rechazada.
+3. Si el servicio sigue necesitando cubrir importe, se debe crear una factura nueva.
+4. La nueva factura es un documento distinto y sigue su propio ciclo de vida.
 
 ## Reglas de cierre
 
-1. El estado global del servicio se considera resuelto cuando todas sus facturas han sido reembolsadas.
-2. Una solicitud puede cerrarse aunque alguna factura deba reaparecer despues en otra solicitud nueva.
-3. El cierre de una solicitud no implica necesariamente el cierre del servicio.
+1. El estado global del servicio se considera resuelto cuando todas las facturas necesarias han sido reembolsadas.
+2. Una solicitud puede quedar reembolsada aunque el servicio aun no este completamente resuelto.
+3. Un servicio puede seguir abierto aunque una solicitud concreta haya terminado en rechazo.
 
-## Estados finales aprobados
+## Estados aprobados de V1
 
-### ReimbursableService.status
+### `ReimbursableService.status`
 
 - `registered`
-- `partially_invoiced`
-- `fully_invoiced`
-- `over_invoiced`
 - `submitted`
-- `partially_reimbursed`
 - `reimbursed`
-- `cancelled`
 
-### ServiceInvoiceRecord.status
+### `Invoice.status`
 
-- `draft`
 - `received`
 - `submitted`
 - `rejected`
 - `reimbursed`
-- `cancelled`
 
-### ReimbursementRequest.status
-
-- `draft`
-- `submitted`
-- `partially_reimbursed`
-- `reimbursed`
-- `partially_rejected`
-- `rejected`
-- `closed`
-- `cancelled`
-
-### ReimbursementRequestItem.itemStatus
+### `ReimbursementRequest.status`
 
 - `submitted`
 - `reimbursed`
 - `rejected`
-- `cancelled`
-
-## Fases finales aprobadas
-
-### ReimbursableService.phase
-
-- `service_registered`
-- `invoicing_and_submission`
-- `reimbursement_resolution`
-- `completed`
 
 ## Reglas de calculo automatico
 
 ### Sobre el servicio
 
-- `totalInvoicedAmount`: suma de todos los importes operativos activos asociados al servicio.
+- `totalInvoicedAmount`: suma de los importes de todas las facturas del servicio.
 - `pendingToInvoiceAmount`: importe real menos importe total facturado.
-- `totalReimbursedAmount`: suma de importes abonados asociados al servicio.
+- `totalReimbursedAmount`: suma de los importes abonados de las facturas reembolsadas.
 - `isOverInvoiced`: indica si el total facturado supera el importe real.
 
 ### Sobre avisos
 
-- Aviso de sobrefacturacion cuando el total facturado supera el importe real.
-- Aviso de factura previamente usada cuando el documento ya tiene historial.
-- Aviso de factura previamente rechazada cuando existio rechazo en un intento anterior.
-- Aviso de servicio incompleto cuando todavia falta importe por cubrir.
+- aviso de sobrefacturacion cuando el total facturado supera el importe real
+- aviso de servicio incompleto cuando todavia falta importe por cubrir
+- aviso de servicio con facturas rechazadas cuando exista rechazo y siga habiendo importe pendiente
 
 ## Reglas de importacion desde Excel
 
 1. Las filas con primeras columnas vacias pueden representar la continuacion del mismo servicio.
 2. Un mismo bloque de filas puede corresponder a un solo servicio con varias facturas.
 3. La ultima columna puede compartir la misma referencia externa en varias filas, lo que indica una solicitud con varias facturas.
-4. Los comentarios libres deben migrarse como notas, pero separando los datos estructurados siempre que sea posible.
+4. Si existe rechazo y luego aparecen nuevas facturas para el mismo servicio, esas facturas deben interpretarse como documentos nuevos, no como reenvios del mismo documento.
 5. Las fechas, importes y estados inconsistentes deben revisarse durante la importacion inicial.

@@ -64,8 +64,7 @@ Contiene el nucleo del negocio:
 Ejemplos:
 
 - `ReimbursableService`
-- `InvoiceDocument`
-- `ServiceInvoiceRecord`
+- `Invoice`
 - `ReimbursementRequest`
 
 ### Application
@@ -81,10 +80,9 @@ Contiene los casos de uso del sistema y la orquestacion del flujo:
 Ejemplos:
 
 - `CreateReimbursableServiceUseCase`
-- `AttachInvoiceToServiceUseCase`
+- `CreateInvoiceForServiceUseCase`
 - `CreateReimbursementRequestUseCase`
 - `RegisterRequestResolutionUseCase`
-- `ResubmitRejectedInvoiceUseCase`
 
 ### Infrastructure
 
@@ -194,9 +192,8 @@ Dentro de ese modulo conviviran:
 
 - servicios reembolsables
 - facturas
-- registros operativos
 - solicitudes de reembolso
-- historial y notas
+- reglas de calculo y avisos
 
 Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
 
@@ -211,16 +208,14 @@ Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
 
 ### Facturas
 
-- `CreateInvoiceDocumentUseCase`
-- `AttachInvoiceToServiceUseCase`
-- `ReuseInvoiceInNewServiceRecordUseCase`
+- `CreateInvoiceForServiceUseCase`
+- `ListInvoicesByServiceUseCase`
 
 ### Solicitudes
 
 - `CreateReimbursementRequestUseCase`
-- `AddInvoiceRecordToRequestUseCase`
 - `SubmitReimbursementRequestUseCase`
-- `RegisterRequestItemResolutionUseCase`
+- `RegisterRequestResolutionUseCase`
 - `CloseReimbursementRequestUseCase`
 
 ### Importacion
@@ -233,12 +228,8 @@ Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
 Estos contratos deberian definirse cerca del dominio o de aplicacion, segun el nivel de abstraccion final.
 
 - `ReimbursableServiceRepository`
-- `InvoiceDocumentRepository`
-- `ServiceInvoiceRecordRepository`
+- `InvoiceRepository`
 - `ReimbursementRequestRepository`
-- `StatusHistoryRepository`
-- `NoteRepository`
-- `AttachmentRepository`
 
 ## Prisma como infraestructura
 

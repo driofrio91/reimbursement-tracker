@@ -30,10 +30,8 @@ Sustituir operativamente el Excel para el seguimiento diario.
 - `Insurer`
 - `Person`
 - `ReimbursableService`
-- `InvoiceDocument`
-- `ServiceInvoiceRecord`
+- `Invoice`
 - `ReimbursementRequest`
-- `ReimbursementRequestItem`
 
 ### Entidades excluidas de V1
 
@@ -50,7 +48,7 @@ Sustituir operativamente el Excel para el seguimiento diario.
 - `submitted`
 - `reimbursed`
 
-#### `ServiceInvoiceRecord`
+#### `Invoice`
 
 - `received`
 - `submitted`
@@ -82,8 +80,8 @@ Estos conceptos siguen existiendo, pero no requieren persistencia especifica en 
 - mostrar aviso de sobrefacturacion
 - crear solicitud con una o varias facturas
 - registrar referencia externa
-- marcar facturas o items como reembolsados o rechazados
-- reutilizar factura rechazada creando un nuevo registro operativo
+- marcar facturas como reembolsadas o rechazadas
+- crear una nueva factura para cubrir importe pendiente tras rechazo
 - filtros basicos por estado, persona y fecha
 
 ### Testing incluido

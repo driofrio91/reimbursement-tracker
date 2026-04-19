@@ -49,33 +49,30 @@ Dar de alta el gasto real antes de disponer necesariamente de las facturas.
 
 ### Objetivo
 
-Vincular una factura real al servicio mediante un registro operativo.
+Vincular una factura real al servicio.
 
 ### Paso a paso
 
 1. El usuario entra en un servicio existente.
-2. Crea una nueva factura o selecciona una factura ya existente.
-3. El sistema crea un `InvoiceDocument` si el documento no existia.
-4. El sistema crea un `ServiceInvoiceRecord` enlazado al servicio y a la factura.
-5. El sistema recalcula importes y estado del servicio.
+2. Crea una nueva factura.
+3. El sistema vincula la factura al servicio.
+4. El sistema recalcula importes y estado del servicio.
 
 ### Validaciones
 
 - la factura debe tener fecha e importe
-- el documento de factura debe poder identificarse de forma univoca
-- el importe operativo debe ser mayor que cero
+- la factura debe poder identificarse de forma univoca
+- el importe debe ser mayor que cero
 
 ### Avisos
 
-- si la factura ya tiene usos anteriores, se muestra aviso
-- si la factura fue rechazada anteriormente, se muestra aviso reforzado
 - si el total facturado supera el importe real del servicio, se muestra aviso de sobrefacturacion
 - si el total aun no cubre el servicio, se informa del importe pendiente
 
 ### Resultado esperado
 
-- el servicio puede quedar en `partially_invoiced`, `fully_invoiced` o `over_invoiced`
-- el registro operativo queda inicialmente en `received`
+- el servicio puede seguir registrado o quedar marcado como enviado segun el progreso posterior
+- la factura queda inicialmente en `received`
 
 ## Flujo 3. Crear una solicitud de reembolso
 
@@ -85,7 +82,7 @@ Agrupar una o varias facturas y registrar su presentacion en el portal.
 
 ### Paso a paso
 
-1. El usuario selecciona uno o varios registros operativos de factura.
+1. El usuario selecciona una o varias facturas.
 2. Crea una nueva solicitud de reembolso.
 3. Introduce la fecha de presentacion.
 4. Introduce la referencia externa del portal cuando este disponible.
@@ -94,14 +91,13 @@ Agrupar una o varias facturas y registrar su presentacion en el portal.
 ### Validaciones
 
 - la solicitud no puede enviarse vacia
-- todos los registros incluidos deben pertenecer a la misma aseguradora y titular en la primera version
-- solo pueden incluirse registros operativos en estado `received`
+- todas las facturas incluidas deben pertenecer a la misma aseguradora y titular en la primera version
+- solo pueden incluirse facturas en estado `received`
 
 ### Resultado esperado
 
 - se crea un `ReimbursementRequest`
-- se crean sus `ReimbursementRequestItem`
-- los registros operativos incluidos pasan a `submitted`
+- las facturas incluidas pasan a `submitted`
 - el servicio asociado puede pasar a `submitted` si todas sus facturas ya fueron presentadas
 
 ## Flujo 4. Registrar resolucion de una solicitud
@@ -113,47 +109,45 @@ Actualizar el resultado de una solicitud cuando se conoce el abono o rechazo.
 ### Paso a paso
 
 1. El usuario abre una solicitud enviada.
-2. Marca para cada item si fue reembolsado o rechazado.
+2. Marca para cada factura incluida si fue reembolsada o rechazada.
 3. Introduce el importe abonado y fecha de abono cuando aplique.
 4. Guarda los cambios.
 
 ### Validaciones
 
-- un item reembolsado debe tener importe abonado
-- un item rechazado deberia poder guardar un motivo de rechazo
+- una factura reembolsada debe tener importe abonado
+- una factura rechazada deberia poder guardar un motivo de rechazo
 
 ### Resultado esperado
 
-- cada `ReimbursementRequestItem` actualiza su estado
-- cada `ServiceInvoiceRecord` actualiza su estado derivado a `reimbursed` o `rejected`
-- la solicitud pasa a `partially_reimbursed`, `partially_rejected`, `reimbursed` o `rejected`
-- el servicio asociado puede pasar a `partially_reimbursed` o `reimbursed`
+- cada `Invoice` actualiza su estado a `reimbursed` o `rejected`
+- la solicitud pasa a `reimbursed` o `rejected` segun el resultado agregado
+- el servicio asociado puede seguir abierto o pasar a `reimbursed`
 
-## Flujo 5. Reenviar una factura rechazada
+## Flujo 5. Crear una nueva factura tras un rechazo
 
 ### Objetivo
 
-Volver a utilizar una factura original ya rechazada, creando un nuevo intento operativo sin duplicar el documento.
+Cubrir el importe pendiente de un servicio cuando una factura previa fue rechazada.
 
 ### Paso a paso
 
-1. El usuario localiza un registro operativo rechazado.
-2. Elige la opcion de volver a tramitar la factura.
-3. El sistema crea un nuevo `ServiceInvoiceRecord` referenciando el mismo `InvoiceDocument`.
-4. El nuevo registro queda enlazado al anterior mediante `originalRecordId`.
-5. El usuario incluye el nuevo registro en una nueva solicitud.
+1. El usuario localiza un servicio con una factura rechazada.
+2. El sistema informa de que sigue habiendo importe pendiente por cubrir.
+3. El usuario crea una nueva factura.
+4. El usuario incluye esa nueva factura en una nueva solicitud cuando corresponda.
 
 ### Avisos
 
-- la interfaz debe informar de que la factura ya fue utilizada antes
-- la interfaz debe mostrar que el intento previo fue rechazado
-- la interfaz debe mostrar acceso al historial de intentos anteriores
+- la interfaz debe informar de que el servicio tiene facturas rechazadas
+- la interfaz debe mostrar el importe que todavia falta por cubrir
+- la interfaz debe dejar claro que la nueva factura es un documento distinto
 
 ### Resultado esperado
 
-- el documento original sigue siendo unico
-- existe un nuevo registro operativo para el nuevo intento
-- se conserva la trazabilidad completa de reenvios
+- la factura rechazada mantiene su estado historico
+- la nueva factura sigue su propio ciclo de vida
+- el servicio puede continuar hasta quedar completamente cubierto y reembolsado
 
 ## Flujo 6. Consultar un servicio y su trazabilidad
 
@@ -168,11 +162,10 @@ Ver en una sola pantalla el estado global del caso y su detalle historico.
 - total facturado
 - importe pendiente por facturar
 - total reembolsado
-- lista de registros operativos asociados
+- lista de facturas asociadas
 - solicitudes en las que participo cada factura
 - avisos activos
-- historial de cambios de estado
-- notas y adjuntos
+- estado actual del caso
 
 ## Flujo 7. Importar datos historicos desde Excel
 
@@ -203,5 +196,5 @@ Este flujo queda explicitamente fuera de la primera iteracion tecnica.
 
 ### Resultado esperado
 
-- se crean servicios, facturas, registros operativos y solicitudes
+- se crean servicios, facturas y solicitudes
 - las incidencias quedan registradas para revision manual

@@ -76,9 +76,9 @@ El usuario crea o vincula una o varias facturas para cubrir el importe del servi
 
 El usuario agrupa una o varias facturas dentro de una solicitud y registra la referencia externa devuelta por el portal.
 
-### Caso 4. Reenviar una factura rechazada
+### Caso 4. Crear una nueva factura tras un rechazo
 
-El usuario crea un nuevo registro operativo referenciando la misma factura original y el sistema avisa de su historial previo.
+El usuario crea una factura nueva cuando una factura anterior fue rechazada y el servicio sigue necesitando cubrir importe.
 
 ### Caso 5. Consultar pendientes
 
