@@ -82,6 +82,8 @@ La base tecnica del proyecto ya no esta vacia. A dia de hoy ya existe:
 
 La referencia operativa para este estado es `docs/09-current-status.md`.
 
+El orden detallado de casos de uso a implementar a partir de aqui vive en `docs/10-use-cases-roadmap.md`.
+
 ## Modelo mental del dominio
 
 El dominio distingue entre tres piezas principales que no deben confundirse:
@@ -337,17 +339,18 @@ Leer estos documentos en este orden:
 
 1. `README.md`
 2. `09-current-status.md`
-3. `sessions/README.md`
-4. ultimo archivo de `sessions/`
-5. `07-mvp-scope.md`
-6. `06-technical-decisions.md`
-7. `05-system-architecture.md`
-8. `08-engineering-guidelines.md`
-9. `04-data-model.md`
-10. `03-user-flows.md`
-11. `02-business-rules.md`
-12. `01-product-vision.md`
-13. `00-overview.md`
+3. `10-use-cases-roadmap.md`
+4. `sessions/README.md`
+5. ultimo archivo de `sessions/`
+6. `07-mvp-scope.md`
+7. `06-technical-decisions.md`
+8. `05-system-architecture.md`
+9. `08-engineering-guidelines.md`
+10. `04-data-model.md`
+11. `03-user-flows.md`
+12. `02-business-rules.md`
+13. `01-product-vision.md`
+14. `00-overview.md`
 
 ## Instrucciones para un nuevo hilo
 
@@ -359,6 +362,7 @@ Proyecto: `reimbursement-tracker`
 Lee primero:
 - `docs/START-HERE.md`
 - `docs/09-current-status.md`
+- `docs/10-use-cases-roadmap.md`
 - ultimo archivo de `docs/sessions/`
 - `docs/07-mvp-scope.md`
 - `docs/06-technical-decisions.md`

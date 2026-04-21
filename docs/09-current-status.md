@@ -70,9 +70,11 @@ src/
 - `npm run lint`
 - `npm run typecheck`
 - `npm run build`
+- `npm run dev`
 - login manual verificado con usuario seed
 - `/login` carga correctamente
 - la ruta `/` exige sesion
+- la ruta `/` carga correctamente tras autenticacion
 
 ## Decisiones tecnicas cerradas durante la implementacion
 
@@ -86,6 +88,7 @@ src/
 - `.env` es local y esta ignorado por git
 - la cadena de conexion de `Neon` no debe copiarse a markdown del repositorio
 - como la credencial de base de datos fue compartida durante una sesion interactiva, conviene rotarla cuando esta fase inicial termine
+- el aviso de hidratacion visto en desarrollo no se reprodujo como error real de la app; la causa mas probable es una extension del navegador sobre el formulario de login
 
 ## Siguiente paso recomendado
 
@@ -95,9 +98,20 @@ Implementar la primera funcionalidad de negocio real de la V1:
 2. listar servicios
 3. ver detalle de servicio
 
+## Propuesta concreta para la siguiente sesion
+
+1. crear `CreateReimbursableServiceUseCase`
+2. crear el contrato de repositorio de servicios
+3. implementar el repositorio Prisma para servicios
+4. crear formulario de alta de servicio en la UI
+5. conectar alta, listado y detalle basicos
+
+La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10-use-cases-roadmap.md`.
+
 ## Lectura minima para retomar el proyecto
 
 1. `docs/START-HERE.md`
 2. `docs/09-current-status.md`
-3. ultimo archivo de `docs/sessions/`
-4. `AGENTS.md`
+3. `docs/10-use-cases-roadmap.md`
+4. `docs/sessions/2026-04-20-session-02-handoff-for-use-cases.md`
+5. `AGENTS.md`

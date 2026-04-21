@@ -25,6 +25,7 @@ npm run db:seed
 
 - `docs/START-HERE.md`
 - `docs/09-current-status.md`
+- `docs/10-use-cases-roadmap.md`
 - `docs/sessions/README.md`
 - `docs/07-mvp-scope.md`
 - `docs/06-technical-decisions.md`

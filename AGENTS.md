@@ -7,6 +7,7 @@
 ## Source of truth
 - Start with `docs/START-HERE.md`. It is the explicit handoff document for new sessions.
 - Read `docs/09-current-status.md` for the current executable state before assuming what is already implemented.
+- Read `docs/10-use-cases-roadmap.md` before choosing the next feature to implement.
 - Read the latest file in `docs/sessions/` for the most recent verified work log.
 - Treat `docs/07-mvp-scope.md` as the authoritative scope cut for V1.
 - Use `docs/06-technical-decisions.md` for approved stack decisions.

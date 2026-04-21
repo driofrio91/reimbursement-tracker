@@ -24,3 +24,7 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 1. `docs/START-HERE.md`
 2. `docs/09-current-status.md`
 3. el archivo mas reciente de esta carpeta
+
+## Ultimo relevo recomendado hoy
+
+- `2026-04-20-session-02-handoff-for-use-cases.md`
