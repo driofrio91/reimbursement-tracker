@@ -63,3 +63,11 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - En la primera iteracion priorizar tests unitarios de casos de uso y de validacion de entrada.
 - Dejar fuera por ahora los tests de `ui`, `app`, `Server Actions`, `Prisma` real y `e2e`.
 - Mantener helpers compartidos de testing en `test/<modulo>/support/`.
+
+## Navegacion privada y UX
+
+- Tratar `src/app/(private)/layout.tsx` como shell compartida para navegacion global del area autenticada.
+- Mantener la navegacion global en sidebar y la navegacion contextual dentro de cada pantalla.
+- En menus jerarquicos, diferenciar visualmente el estado de pagina activa (`aria-current="page"`) del estado de seccion activa.
+- En movil, evitar sidebar expandida permanente; usar menu colapsable para no tapar el contenido principal.
+- Cualquier mejora de navegacion debe priorizar claridad en pantallas pequenas sin duplicar todas las acciones globales en cada vista.

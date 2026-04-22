@@ -16,6 +16,8 @@ Este documento resume el estado tecnico real del repositorio para poder continua
 - ruta protegida `/` mediante `src/app/(private)/layout.tsx`
 - primer flujo de negocio de servicios implementado: crear, listar y ver detalle
 - base de testing inicial montada con `vitest` y primeros tests unitarios del modulo `reimbursement`
+- shell privada con sidebar compartida y navegacion contextual por pantalla
+- navegacion responsive en movil con menu hamburguesa y panel lateral colapsable
 
 ## Stack real del repositorio
 
@@ -92,6 +94,8 @@ src/
 - se mantiene `src/app` en lugar de `app` en raiz para agrupar todo el codigo fuente bajo `src/`
 - el primer bloque de tests vive en `test/` y usa `vitest` con `vi` para mockear contratos en `application`
 - los tests de esta fase cubren `CreateServiceUseCase` y `CreateServiceFormSchema`; no cubren todavia `ui`, `app`, `actions` ni Prisma real
+- en la UI privada, `Nuevo servicio` pasa a subitem de `Servicios` y se diferencia el estado de pagina activa frente a seccion activa
+- se aplican correcciones de UX en sidebar movil: animacion de apertura/cierre, cierre con `Escape` y bloqueo de scroll del fondo
 
 ## Riesgos o notas operativas
 
@@ -105,13 +109,14 @@ src/
 Expandir la base de testing y seguir con el roadmap de negocio:
 
 1. anadir tests para `GetServiceDetailUseCase` y `ListServicesUseCase`
-2. seguir con facturas, solicitudes y resolucion
+2. continuar con facturas, solicitudes y resolucion
 
 ## Propuesta concreta para la siguiente sesion
 
 1. anadir tests para `GetServiceDetailUseCase` y `ListServicesUseCase`
 2. decidir si se documenta una convencion de tests para futuros repositorios de `Invoice` y `Request`
 3. continuar con el siguiente bloque funcional del roadmap: facturas
+4. cuando existan nuevas secciones privadas, extender el menu lateral manteniendo la jerarquia principal/subitem
 
 La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10-use-cases-roadmap.md`.
 
@@ -120,5 +125,5 @@ La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10
 1. `docs/START-HERE.md`
 2. `docs/09-current-status.md`
 3. `docs/10-use-cases-roadmap.md`
-4. `docs/sessions/2026-04-22-session-01-services-and-testing.md`
+4. `docs/sessions/2026-04-22-session-03-private-navigation-polish.md`
 5. `AGENTS.md`
