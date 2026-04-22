@@ -35,6 +35,15 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - Preferir funciones pequenas con tipos de entrada y salida claros.
 - Mantener alias y utilidades tipadas solo cuando reduzcan complejidad real.
 
+## Convencion de nombres
+
+- Usar `PascalCase` en los ficheros propios del modulo de negocio bajo `src/modules/`.
+- Nombrar componentes React con el mismo nombre principal que exportan, por ejemplo `CreateServiceForm.tsx` o `ServiceDetailView.tsx`.
+- Nombrar casos de uso con verbo + entidad + intencion, por ejemplo `CreateServiceUseCase.ts`, `GetServiceDetailUseCase.ts` o `ListServicesUseCase.ts`.
+- Evitar nombres genericos como `ServiceUseCase.ts` o ambiguos como `CreateReimbursableUseCase.ts`.
+- Dentro del modulo `reimbursement`, usar `Service`, `Invoice` y `Request` como nombres cortos cuando el contexto ya deja claro el dominio.
+- Mantener los archivos reservados por `Next.js` con su convencion propia (`page.tsx`, `layout.tsx`, `actions.ts`).
+
 ## Validacion y datos
 
 - Usar `zod` para validar entradas externas como formularios, acciones y handlers.
@@ -44,3 +53,13 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 ## Regla general de implementacion
 
 - Si una solucion parece util pero no ayuda directamente a la V1 definida en `docs/07-mvp-scope.md`, no entra todavia.
+
+## Testing
+
+- La carpeta oficial de tests es `test/` en la raiz del repositorio.
+- Organizar los tests por modulo y por capa, por ejemplo `test/reimbursement/application/` o `test/reimbursement/entrypoints/`.
+- Usar `vitest` como runner y `vi` para mocks, stubs y spies.
+- En `application`, mockear contratos como `ServiceRepository` y no `Prisma` directamente.
+- En la primera iteracion priorizar tests unitarios de casos de uso y de validacion de entrada.
+- Dejar fuera por ahora los tests de `ui`, `app`, `Server Actions`, `Prisma` real y `e2e`.
+- Mantener helpers compartidos de testing en `test/<modulo>/support/`.

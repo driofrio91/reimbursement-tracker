@@ -28,6 +28,8 @@
 - Preserve the approved structure under `src/`: `app/`, `modules/reimbursement/`, and `lib/`.
 - Prefer defining the V1 data model in Prisma once, but only implement the first-iteration flows at the UI/use-case level.
 - Keep the initial UI in Spanish, as approved in `docs/START-HERE.md`.
+- In `src/modules/`, use `PascalCase` filenames for business-module files and keep `Next.js` reserved files in framework naming (`page.tsx`, `layout.tsx`, `actions.ts`).
+- Inside `src/modules/reimbursement/`, prefer short entity names like `Service`, `Invoice`, and `Request` when the module context already provides the reimbursement scope.
 
 ## Verified setup details
 - Auth uses `Auth.js` credentials with seeded development users.
