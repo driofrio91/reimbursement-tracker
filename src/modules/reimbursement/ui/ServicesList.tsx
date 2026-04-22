@@ -26,20 +26,6 @@ export function ServicesList({ services }: ServicesListProps) {
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Servicios</h1>
-          <p className="mt-1 text-sm text-slate-500">Vista operativa inicial de servicios reembolsables registrados.</p>
-        </div>
-
-        <Link
-          className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
-          href="/services/new"
-        >
-          Nuevo servicio
-        </Link>
-      </div>
-
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50 text-left text-slate-500">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import { getServiceDetailUseCase } from "@/modules/reimbursement/application/GetServiceDetailUseCase";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
@@ -20,9 +21,13 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-16 sm:px-10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-slate-500">Detalle del servicio</p>
-            <p className="mt-1 text-sm text-slate-500">Aqui ira creciendo despues la trazabilidad completa del caso.</p>
+          <div className="flex items-start gap-3">
+            <HomeIconLink />
+
+            <div>
+              <p className="text-sm text-slate-500">Detalle del servicio</p>
+              <p className="mt-1 text-sm text-slate-500">Aqui ira creciendo despues la trazabilidad completa del caso.</p>
+            </div>
           </div>
 
           <div className="flex gap-3">
