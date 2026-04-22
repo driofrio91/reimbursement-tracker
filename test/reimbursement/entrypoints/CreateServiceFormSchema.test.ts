@@ -95,4 +95,21 @@ describe("CreateServiceFormSchema", () => {
 
     expect(checkedValues.attended).toBe(true);
   });
+
+  it("maps missing form fields to empty strings", () => {
+    const formData = new FormData();
+
+    const values = getCreateServiceFormValues(formData);
+
+    expect(values).toEqual({
+      serviceDate: "",
+      description: "",
+      actualAmount: "",
+      personId: "",
+      insurerId: "",
+      policyHolderName: "",
+      attended: false,
+      notes: "",
+    });
+  });
 });
