@@ -96,6 +96,7 @@ src/
 - los tests de esta fase cubren `CreateServiceUseCase` y `CreateServiceFormSchema`; no cubren todavia `ui`, `app`, `actions` ni Prisma real
 - en la UI privada, `Nuevo servicio` pasa a subitem de `Servicios` y se diferencia el estado de pagina activa frente a seccion activa
 - se aplican correcciones de UX en sidebar movil: animacion de apertura/cierre, cierre con `Escape` y bloqueo de scroll del fondo
+- se declara mobile-first como regla de implementacion obligatoria para toda UI nueva o refactor
 
 ## Riesgos o notas operativas
 
@@ -117,6 +118,7 @@ Expandir la base de testing y seguir con el roadmap de negocio:
 2. decidir si se documenta una convencion de tests para futuros repositorios de `Invoice` y `Request`
 3. continuar con el siguiente bloque funcional del roadmap: facturas
 4. cuando existan nuevas secciones privadas, extender el menu lateral manteniendo la jerarquia principal/subitem
+5. aplicar la checklist mobile-first en cualquier cambio visual futuro
 
 La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10-use-cases-roadmap.md`.
 
@@ -125,5 +127,5 @@ La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10
 1. `docs/START-HERE.md`
 2. `docs/09-current-status.md`
 3. `docs/10-use-cases-roadmap.md`
-4. `docs/sessions/2026-04-22-session-03-private-navigation-polish.md`
+4. `docs/sessions/2026-04-22-session-04-mobile-first-policy.md`
 5. `AGENTS.md`

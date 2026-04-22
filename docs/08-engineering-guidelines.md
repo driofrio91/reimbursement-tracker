@@ -26,6 +26,15 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - Reservar hooks personalizados para logica reutilizable real, no para envolver una sola vez codigo trivial.
 - Mantener formularios y tablas simples en la primera iteracion; no introducir abstracciones prematuras.
 
+## Responsive y mobile-first
+
+- Toda UI nueva o refactor de UI debe implementarse en enfoque mobile-first.
+- Definir primero la experiencia base sin breakpoints (`sm:`, `md:`, `lg:`).
+- Usar breakpoints solo para mejoras progresivas en pantallas mayores.
+- No usar breakpoints para corregir una base pensada primero para desktop.
+- Validar navegacion y acciones principales en viewport movil antes de pulir desktop.
+- Evitar scroll horizontal accidental en movil; si aparece, corregir antes de cerrar la tarea.
+
 ## TypeScript
 
 - Activar y respetar el tipado estricto.

@@ -30,6 +30,9 @@
 - Keep the initial UI in Spanish, as approved in `docs/START-HERE.md`.
 - In `src/modules/`, use `PascalCase` filenames for business-module files and keep `Next.js` reserved files in framework naming (`page.tsx`, `layout.tsx`, `actions.ts`).
 - Inside `src/modules/reimbursement/`, prefer short entity names like `Service`, `Invoice`, and `Request` when the module context already provides the reimbursement scope.
+- All UI implementation must be mobile-first by default.
+- Define base styles without breakpoints and add `sm:`/`md:`/`lg:` only as progressive enhancements.
+- Validate mobile navigation and primary actions before desktop polish.
 
 ## Verified setup details
 - Auth uses `Auth.js` credentials with seeded development users.
