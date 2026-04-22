@@ -80,3 +80,4 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - En menus jerarquicos, diferenciar visualmente el estado de pagina activa (`aria-current="page"`) del estado de seccion activa.
 - En movil, evitar sidebar expandida permanente; usar menu colapsable para no tapar el contenido principal.
 - Cualquier mejora de navegacion debe priorizar claridad en pantallas pequenas sin duplicar todas las acciones globales en cada vista.
+- Si una US anade o cambia rutas privadas, la integracion de sidebar y estado activo forma parte de la Definition of Done de esa US.

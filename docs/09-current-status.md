@@ -97,6 +97,7 @@ src/
 - en la UI privada, `Nuevo servicio` pasa a subitem de `Servicios` y se diferencia el estado de pagina activa frente a seccion activa
 - se aplican correcciones de UX en sidebar movil: animacion de apertura/cierre, cierre con `Escape` y bloqueo de scroll del fondo
 - se declara mobile-first como regla de implementacion obligatoria para toda UI nueva o refactor
+- cada US con nuevas rutas privadas debe incluir como DoD su integracion en sidebar y estados activos
 
 ## Riesgos o notas operativas
 
@@ -110,13 +111,13 @@ src/
 Expandir la base de testing y seguir con el roadmap de negocio:
 
 1. anadir tests para `GetServiceDetailUseCase` y `ListServicesUseCase`
-2. continuar con facturas, solicitudes y resolucion
+2. arrancar el siguiente caso de uso de negocio: `CreateInvoiceForServiceUseCase`
 
 ## Propuesta concreta para la siguiente sesion
 
 1. anadir tests para `GetServiceDetailUseCase` y `ListServicesUseCase`
 2. decidir si se documenta una convencion de tests para futuros repositorios de `Invoice` y `Request`
-3. continuar con el siguiente bloque funcional del roadmap: facturas
+3. implementar `CreateInvoiceForServiceUseCase` como siguiente caso de uso operativo
 4. cuando existan nuevas secciones privadas, extender el menu lateral manteniendo la jerarquia principal/subitem
 5. aplicar la checklist mobile-first en cualquier cambio visual futuro
 
@@ -127,5 +128,5 @@ La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10
 1. `docs/START-HERE.md`
 2. `docs/09-current-status.md`
 3. `docs/10-use-cases-roadmap.md`
-4. `docs/sessions/2026-04-22-session-04-mobile-first-policy.md`
+4. `docs/sessions/2026-04-22-session-05-handoff-for-next-use-case.md`
 5. `AGENTS.md`

@@ -10,7 +10,7 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 
 - base tecnica: completada
 - autenticacion: completada
-- casos de uso de servicios: siguiente fase inmediata
+- casos de uso de servicios: completados
 - casos de uso de facturas: pendientes
 - casos de uso de solicitudes: pendientes
 - resolucion de solicitudes: pendiente
@@ -20,6 +20,9 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 ### Ya implementados
 
 - `LoginWithCredentials`
+- `CreateReimbursableServiceUseCase`
+- `ListReimbursableServicesUseCase`
+- `GetReimbursableServiceDetailUseCase`
 
 ### Servicios
 
@@ -79,7 +82,7 @@ Ya completada:
 
 ### Fase 1. Servicios reembolsables
 
-Esta es la siguiente fase obligatoria.
+Fase cerrada.
 
 1. crear entidad y contrato de repositorio de servicios
 2. implementar `CreateReimbursableServiceUseCase`
@@ -121,22 +124,28 @@ Solo despues de cerrar servicios.
 
 Si el trabajo se reparte entre varias sesiones, seguir este orden:
 
-1. `CreateReimbursableServiceUseCase`
-2. formulario de alta de servicio
-3. `ListReimbursableServicesUseCase`
-4. listado de servicios
-5. `GetReimbursableServiceDetailUseCase`
-6. detalle de servicio
-7. tests de casos de uso de servicios
-8. facturas
-9. solicitudes
-10. resolucion
+1. tests de `CreateServiceUseCase`, `GetServiceDetailUseCase` y `ListServicesUseCase`
+2. `CreateInvoiceForServiceUseCase`
+3. `ListInvoicesByServiceUseCase`
+4. visibilidad operativa de importes pendientes y sobrefacturacion
+5. solicitudes
+6. resolucion
+
+## Checklist obligatorio por cada US con rutas privadas
+
+Cuando una historia de usuario anada una pantalla o cambie el flujo de una ruta privada, debe cerrar este checklist antes de darse por terminada:
+
+1. la ruta queda integrada en la sidebar con jerarquia correcta (item principal o subitem)
+2. se resuelve el estado visual de pagina activa y de seccion activa
+3. la navegacion movil permite llegar a la ruta desde menu hamburguesa sin tapar el contenido por defecto
+4. se mantienen acciones contextuales en pantalla cuando aportan al flujo operativo
+5. no se redisenia la navegacion global salvo que exista una US tecnica separada para eso
 
 ## Regla para decidir el siguiente paso
 
 Si hay duda entre varias tareas, elegir siempre la que desbloquee antes este flujo:
 
-1. crear servicio
-2. ver servicio en listado
-3. abrir detalle
-4. despues continuar con facturas y solicitudes
+1. crear factura para un servicio existente
+2. ver facturas del servicio
+3. calcular importe pendiente y avisos de sobrefacturacion
+4. despues continuar con solicitudes y resolucion

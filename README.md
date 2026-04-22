@@ -15,6 +15,7 @@ Aplicacion interna para sustituir el Excel operativo de seguimiento de servicios
 ```bash
 npm run dev
 npm run lint
+npm run test
 npm run typecheck
 npm run build
 npm run prisma:migrate

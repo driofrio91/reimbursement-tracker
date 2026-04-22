@@ -267,9 +267,9 @@ La primera iteracion tecnica debe incluir solo:
 ### Estado de esa primera iteracion
 
 - `login`: ya implementado
-- `creacion de servicio reembolsable`: pendiente
-- `listado de servicios`: pendiente
-- `detalle de servicio`: pendiente
+- `creacion de servicio reembolsable`: ya implementado
+- `listado de servicios`: ya implementado
+- `detalle de servicio`: ya implementado
 
 Esto se eligio para validar de forma controlada:
 
@@ -292,8 +292,8 @@ Esto se eligio para validar de forma controlada:
 
 ### Estado del orden de implementacion
 
-- pasos `1` a `6`: ya completados
-- siguiente paso real: `7. implementar primer caso de uso: creacion de servicio`
+- pasos `1` a `8`: ya completados
+- siguiente paso real: `9. continuar con facturas, solicitudes y resolucion`
 
 ## Testing aprobado
 
@@ -382,4 +382,4 @@ Continua la implementacion siguiendo el alcance minimo definido y propon el sigu
 
 El proyecto ya tiene requisitos, arquitectura, stack y alcance cerrados.
 
-La base tecnica minima ya esta montada. La siguiente fase es implementar los casos de uso de servicios reembolsables sobre ese arranque ya validado.
+La primera iteracion funcional de servicios ya esta cerrada. La siguiente fase es continuar con facturas, empezando por `CreateInvoiceForServiceUseCase`, sin perder la disciplina de testing de casos de uso.
