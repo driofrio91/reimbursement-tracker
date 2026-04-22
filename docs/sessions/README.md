@@ -9,6 +9,7 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 - una sesion de trabajo relevante debe dejar un archivo nuevo en esta carpeta
 - registrar solo hechos verificados, no brainstorming largo
 - si una decision cambia el rumbo del proyecto, debe reflejarse tambien en la documentacion principal
+- cuando se cierre una US o caso de uso, actualizar tambien `docs/10-use-cases-roadmap.md` en la misma sesion
 
 ## Contenido minimo de cada sesion
 
@@ -27,4 +28,4 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 
 ## Ultimo relevo recomendado hoy
 
-- `2026-04-22-session-05-handoff-for-next-use-case.md`
+- `2026-04-22-session-06-invoice-create-use-case-and-toasts.md`

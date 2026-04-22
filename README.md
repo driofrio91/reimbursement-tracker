@@ -7,8 +7,10 @@ Aplicacion interna para sustituir el Excel operativo de seguimiento de servicios
 - Proyecto inicializado con `Next.js`, `TypeScript`, `App Router` y `Tailwind CSS`.
 - `Prisma` configurado y conectado a `PostgreSQL` en `Neon`.
 - `Auth.js` configurado con `Credentials` y login funcional.
+- Flujo inicial de facturas implementado: crear factura desde `/services/[id]`.
+- Feedback operativo con toast en el area privada usando `sonner`.
 - La documentacion funcional y tecnica vive en `docs/`.
-- La primera iteracion aprobada cubre solo `login`, `crear servicio`, `listar servicios` y `detalle de servicio`.
+- La primera iteracion de servicios ya esta cerrada y el roadmap de V1 avanza por facturas.
 
 ## Comandos
 

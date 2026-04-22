@@ -11,7 +11,7 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 - base tecnica: completada
 - autenticacion: completada
 - casos de uso de servicios: completados
-- casos de uso de facturas: pendientes
+- casos de uso de facturas: en curso (`CreateInvoiceForServiceUseCase` completado)
 - casos de uso de solicitudes: pendientes
 - resolucion de solicitudes: pendiente
 
@@ -23,6 +23,7 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 - `CreateReimbursableServiceUseCase`
 - `ListReimbursableServicesUseCase`
 - `GetReimbursableServiceDetailUseCase`
+- `CreateInvoiceForServiceUseCase`
 
 ### Servicios
 
@@ -51,7 +52,6 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 
 Aunque formen parte de la V1 funcional global, no son el siguiente paso inmediato y no deben adelantarse antes de cerrar servicios:
 
-- creacion de facturas
 - agrupacion en solicitudes
 - resolucion de solicitudes
 - calculo avanzado de avisos operativos en UI
@@ -98,11 +98,17 @@ Fase cerrada.
 
 Solo despues de cerrar servicios.
 
-1. modelar lectura operativa de importes facturados y pendientes
-2. implementar `CreateInvoiceForServiceUseCase`
-3. implementar `ListInvoicesByServiceUseCase`
+1. implementar `CreateInvoiceForServiceUseCase` (completado)
+2. implementar `ListInvoicesByServiceUseCase`
+3. modelar lectura operativa de importes facturados y pendientes
 4. mostrar aviso de sobrefacturacion
 5. mostrar importe pendiente por cubrir
+
+Estado actual de Fase 2:
+
+- alta de factura desde `/services/[id]` cerrada con validacion en `application` y `entrypoints`
+- se permite sobrefacturacion en esta fase; la visibilidad operativa queda para el siguiente paso
+- feedback de exito y error en UI mediante toast para mantener continuidad durante navegacion
 
 ### Fase 3. Solicitudes
 
@@ -124,12 +130,20 @@ Solo despues de cerrar servicios.
 
 Si el trabajo se reparte entre varias sesiones, seguir este orden:
 
-1. tests de `CreateServiceUseCase`, `GetServiceDetailUseCase` y `ListServicesUseCase`
-2. `CreateInvoiceForServiceUseCase`
-3. `ListInvoicesByServiceUseCase`
-4. visibilidad operativa de importes pendientes y sobrefacturacion
-5. solicitudes
-6. resolucion
+1. `ListInvoicesByServiceUseCase`
+2. visibilidad operativa de importes pendientes y sobrefacturacion
+3. `CreateReimbursementRequestUseCase`
+4. solicitudes (listado y detalle si hacen falta para operacion)
+5. `RegisterRequestResolutionUseCase`
+6. reglas de resolucion y nueva factura tras rechazo
+
+## Regla de mantenimiento del roadmap
+
+Cada vez que se cierre una US o caso de uso:
+
+1. marcar su estado como completado en este documento
+2. reordenar el siguiente paso recomendado
+3. dejar rastro del cambio en `docs/sessions/`
 
 ## Checklist obligatorio por cada US con rutas privadas
 

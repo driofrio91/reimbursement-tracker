@@ -79,6 +79,9 @@ La base tecnica del proyecto ya no esta vacia. A dia de hoy ya existe:
 - seed de desarrollo disponible
 - `Auth.js` con `email + password`
 - `/login` publica y `/` protegida
+- flujo de servicios cerrado (`crear`, `listar`, `detalle`)
+- primer flujo de facturas activo: alta de factura en `/services/[id]`
+- feedback de operaciones con toast en el area privada
 
 La referencia operativa para este estado es `docs/09-current-status.md`.
 
@@ -382,4 +385,6 @@ Continua la implementacion siguiendo el alcance minimo definido y propon el sigu
 
 El proyecto ya tiene requisitos, arquitectura, stack y alcance cerrados.
 
-La primera iteracion funcional de servicios ya esta cerrada. La siguiente fase es continuar con facturas, empezando por `CreateInvoiceForServiceUseCase`, sin perder la disciplina de testing de casos de uso.
+La primera iteracion funcional de servicios ya esta cerrada y el primer caso de uso de facturas (`CreateInvoiceForServiceUseCase`) tambien esta implementado.
+
+El siguiente foco es `ListInvoicesByServiceUseCase` y la visibilidad operativa de importes pendientes/sobrefacturacion, manteniendo la disciplina de testing por caso de uso.
