@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
+import { createInvoiceAction } from "@/app/(private)/services/[id]/actions";
 import { getServiceDetailUseCase } from "@/modules/reimbursement/application/GetServiceDetailUseCase";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
@@ -9,6 +10,7 @@ import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const createInvoiceForServiceAction = createInvoiceAction.bind(null, id);
   const service = await getServiceDetailUseCase(id, {
     serviceRepository: new PrismaServiceRepository(prisma),
   });
@@ -46,7 +48,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <ServiceDetailView service={service} />
+        <ServiceDetailView service={service} createInvoiceAction={createInvoiceForServiceAction} />
       </div>
     </main>
   );

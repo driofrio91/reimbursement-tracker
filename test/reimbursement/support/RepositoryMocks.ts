@@ -1,5 +1,7 @@
 import { Mock, vi } from "vitest";
 
+import { Invoice, NewInvoice } from "@/modules/reimbursement/domain/Invoice";
+import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
 import { NewService, Service } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
 
@@ -18,5 +20,15 @@ export function createServiceRepositoryMock(): ServiceRepositoryMock {
     list: vi.fn(),
     personExists: vi.fn(),
     insurerIsActive: vi.fn(),
+  };
+}
+
+export interface InvoiceRepositoryMock extends InvoiceRepository {
+  create: Mock<(invoice: NewInvoice) => Promise<Invoice>>;
+}
+
+export function createInvoiceRepositoryMock(): InvoiceRepositoryMock {
+  return {
+    create: vi.fn(),
   };
 }
