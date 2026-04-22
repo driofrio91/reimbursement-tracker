@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -11,7 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
