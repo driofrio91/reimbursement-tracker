@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { auth, signOut } from "@/lib/auth/auth";
 
 export default async function HomePage() {
@@ -13,7 +15,7 @@ export default async function HomePage() {
             </span>
             <h1 className="text-4xl font-semibold tracking-tight">Reimbursement Tracker</h1>
             <p className="max-w-2xl text-base leading-7 text-slate-600">
-              La base tecnica ya esta lista con `Next.js`, `Prisma`, `Auth.js` y acceso autenticado para empezar el primer flujo de servicios reembolsables.
+              La primera vertical del modulo de reembolsos ya permite crear servicios, ver su detalle y consultar un listado basico.
             </p>
             <p className="text-sm text-slate-500">
               Usuario actual: <span className="font-medium text-slate-900">{session?.user?.name}</span>
@@ -43,14 +45,27 @@ export default async function HomePage() {
               <li>Schema Prisma de la V1.</li>
               <li>Seed con usuarios, aseguradoras y personas.</li>
               <li>Login con `email + password` y rutas protegidas.</li>
+              <li>Alta de servicio reembolsable con validacion en servidor.</li>
+              <li>Listado y detalle inicial de servicios.</li>
             </ul>
           </article>
 
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Siguiente paso</h2>
-            <p className="mt-4 text-sm leading-6 text-slate-600">
-              Implementar el primer caso de uso real: crear un servicio reembolsable y mostrar su listado y detalle sin meter logica de negocio en la UI.
-            </p>
+            <h2 className="text-lg font-semibold">Accesos rapidos</h2>
+            <div className="mt-4 flex flex-col gap-3 text-sm">
+              <Link
+                className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-medium text-white transition hover:bg-slate-800"
+                href="/services/new"
+              >
+                Crear servicio
+              </Link>
+              <Link
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+                href="/services"
+              >
+                Ver listado de servicios
+              </Link>
+            </div>
           </article>
         </section>
       </div>
