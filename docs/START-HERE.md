@@ -60,6 +60,7 @@ Todo esto ya esta decidido y no debe reabrirse salvo necesidad real:
 - auditoria basica
 - coste minimo usando free tiers
 - interfaz inicial en espanol
+- credenciales de desarrollo visibles solo en local y bloqueadas fuera de local desde backend
 
 ### Decisiones de alcance aprobadas
 
@@ -67,6 +68,25 @@ Todo esto ya esta decidido y no debe reabrirse salvo necesidad real:
 - importacion historica fuera de la primera iteracion
 - no sobredimensionar V1
 - V1 centrada en sustituir el Excel de forma operativa
+
+## Estado actual implementado
+
+La base tecnica del proyecto ya no esta vacia. A dia de hoy ya existe:
+
+- proyecto `Next.js` inicializado en la raiz
+- estructura base bajo `src/`
+- `Prisma` conectado a `Neon`
+- migracion inicial aplicada
+- seed de desarrollo disponible
+- `Auth.js` con `email + password`
+- `/login` publica y `/` protegida
+- flujo de servicios cerrado (`crear`, `listar`, `detalle`)
+- primer flujo de facturas activo: alta de factura en `/services/[id]`
+- feedback de operaciones con toast en el area privada
+
+La referencia operativa para este estado es `docs/09-current-status.md`.
+
+El orden detallado de casos de uso a implementar a partir de aqui vive en `docs/10-use-cases-roadmap.md`.
 
 ## Modelo mental del dominio
 
@@ -248,6 +268,13 @@ La primera iteracion tecnica debe incluir solo:
 3. listado de servicios
 4. detalle de servicio
 
+### Estado de esa primera iteracion
+
+- `login`: ya implementado
+- `creacion de servicio reembolsable`: ya implementado
+- `listado de servicios`: ya implementado
+- `detalle de servicio`: ya implementado
+
 Esto se eligio para validar de forma controlada:
 
 - autenticacion
@@ -266,6 +293,11 @@ Esto se eligio para validar de forma controlada:
 7. implementar primer caso de uso: creacion de servicio
 8. implementar listado y detalle
 9. continuar con facturas, solicitudes y resolucion
+
+### Estado del orden de implementacion
+
+- pasos `1` a `8`: ya completados
+- siguiente paso real: `9. continuar con facturas, solicitudes y resolucion`
 
 ## Testing aprobado
 
@@ -310,14 +342,19 @@ Los tiers gratuitos pueden cambiar.
 Leer estos documentos en este orden:
 
 1. `README.md`
-2. `07-mvp-scope.md`
-3. `06-technical-decisions.md`
-4. `05-system-architecture.md`
-5. `04-data-model.md`
-6. `03-user-flows.md`
-7. `02-business-rules.md`
-8. `01-product-vision.md`
-9. `00-overview.md`
+2. `09-current-status.md`
+3. `10-use-cases-roadmap.md`
+4. `sessions/README.md`
+5. ultimo archivo de `sessions/`
+6. `07-mvp-scope.md`
+7. `06-technical-decisions.md`
+8. `05-system-architecture.md`
+9. `08-engineering-guidelines.md`
+10. `04-data-model.md`
+11. `03-user-flows.md`
+12. `02-business-rules.md`
+13. `01-product-vision.md`
+14. `00-overview.md`
 
 ## Instrucciones para un nuevo hilo
 
@@ -328,6 +365,9 @@ Proyecto: `reimbursement-tracker`
 
 Lee primero:
 - `docs/START-HERE.md`
+- `docs/09-current-status.md`
+- `docs/10-use-cases-roadmap.md`
+- ultimo archivo de `docs/sessions/`
 - `docs/07-mvp-scope.md`
 - `docs/06-technical-decisions.md`
 - `docs/05-system-architecture.md`
@@ -339,11 +379,13 @@ Contexto obligatorio:
 - Mantener la arquitectura limpia ligera ya aprobada.
 - No reabrir decisiones ya cerradas salvo necesidad real.
 
-Empieza la implementacion siguiendo el alcance minimo definido y propon el primer paso tecnico concreto.
+Continua la implementacion siguiendo el alcance minimo definido y propon el siguiente paso tecnico concreto a partir del estado actual del repositorio.
 ```
 
 ## Decision final
 
 El proyecto ya tiene requisitos, arquitectura, stack y alcance cerrados.
 
-La siguiente fase ya no es de definicion, sino de implementacion controlada sobre la V1 minima aprobada.
+La primera iteracion funcional de servicios ya esta cerrada y el primer caso de uso de facturas (`CreateInvoiceForServiceUseCase`) tambien esta implementado.
+
+El siguiente foco es `ListInvoicesByServiceUseCase` y la visibilidad operativa de importes pendientes/sobrefacturacion, manteniendo la disciplina de testing por caso de uso.
