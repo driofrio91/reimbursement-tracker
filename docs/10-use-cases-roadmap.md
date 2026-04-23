@@ -11,7 +11,7 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 - base tecnica: completada
 - autenticacion: completada
 - casos de uso de servicios: completados
-- casos de uso de facturas: en curso (`CreateInvoiceForServiceUseCase` completado)
+- casos de uso de facturas: base completada (`CreateInvoiceForServiceUseCase` y `ListInvoicesByServiceUseCase` completados)
 - casos de uso de solicitudes: pendientes
 - resolucion de solicitudes: pendiente
 
@@ -24,6 +24,7 @@ La regla sigue siendo la misma: si una pieza no ayuda de forma directa a sustitu
 - `ListReimbursableServicesUseCase`
 - `GetReimbursableServiceDetailUseCase`
 - `CreateInvoiceForServiceUseCase`
+- `ListInvoicesByServiceUseCase`
 
 ### Servicios
 
@@ -107,7 +108,8 @@ Solo despues de cerrar servicios.
 Estado actual de Fase 2:
 
 - alta de factura desde `/services/[id]` cerrada con validacion en `application` y `entrypoints`
-- se permite sobrefacturacion en esta fase; la visibilidad operativa queda para el siguiente paso
+- listado de facturas por servicio expuesto en `/services/[id]`
+- visibilidad operativa activa: total facturado, importe pendiente y aviso de sobrefacturacion sin bloqueo
 - feedback de exito y error en UI mediante toast para mantener continuidad durante navegacion
 
 ### Fase 3. Solicitudes
@@ -130,12 +132,10 @@ Estado actual de Fase 2:
 
 Si el trabajo se reparte entre varias sesiones, seguir este orden:
 
-1. `ListInvoicesByServiceUseCase`
-2. visibilidad operativa de importes pendientes y sobrefacturacion
-3. `CreateReimbursementRequestUseCase`
-4. solicitudes (listado y detalle si hacen falta para operacion)
-5. `RegisterRequestResolutionUseCase`
-6. reglas de resolucion y nueva factura tras rechazo
+1. `CreateReimbursementRequestUseCase`
+2. solicitudes (listado y detalle si hacen falta para operacion)
+3. `RegisterRequestResolutionUseCase`
+4. reglas de resolucion y nueva factura tras rechazo
 
 ## Regla de mantenimiento del roadmap
 
@@ -174,4 +174,4 @@ Si hay duda entre varias tareas, elegir siempre la que desbloquee antes este flu
 1. crear factura para un servicio existente
 2. ver facturas del servicio
 3. calcular importe pendiente y avisos de sobrefacturacion
-4. despues continuar con solicitudes y resolucion
+4. crear solicitudes y continuar con resolucion

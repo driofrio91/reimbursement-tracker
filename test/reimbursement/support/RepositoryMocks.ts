@@ -25,10 +25,12 @@ export function createServiceRepositoryMock(): ServiceRepositoryMock {
 
 export interface InvoiceRepositoryMock extends InvoiceRepository {
   create: Mock<(invoice: NewInvoice) => Promise<Invoice>>;
+  listByServiceId: Mock<(serviceId: string) => Promise<Invoice[]>>;
 }
 
 export function createInvoiceRepositoryMock(): InvoiceRepositoryMock {
   return {
     create: vi.fn(),
+    listByServiceId: vi.fn(),
   };
 }

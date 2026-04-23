@@ -19,6 +19,8 @@ Este documento resume el estado tecnico real del repositorio para poder continua
 - shell privada con sidebar compartida y navegacion contextual por pantalla
 - navegacion responsive en movil con menu hamburguesa y panel lateral colapsable
 - primer flujo de facturas implementado: crear factura desde el detalle de servicio
+- listado de facturas por servicio implementado en `/services/[id]`
+- visibilidad operativa en detalle de servicio: total facturado, importe pendiente y aviso de sobrefacturacion
 - feedback en UI privada con toast mediante `sonner`
 
 ## Stack real del repositorio
@@ -103,6 +105,7 @@ src/
 - se mantiene `src/app` en lugar de `app` en raiz para agrupar todo el codigo fuente bajo `src/`
 - el primer bloque de tests vive en `test/` y usa `vitest` con `vi` para mockear contratos en `application`
 - los tests cubren `CreateServiceUseCase`, `GetServiceDetailUseCase`, `ListServicesUseCase`, `CreateInvoiceForServiceUseCase`, `CreateServiceFormSchema` y `CreateInvoiceFormSchema`
+- los tests cubren tambien `ListInvoicesByServiceUseCase` y `GetServiceInvoiceSummaryUseCase`
 - los tests incluyen politica de credenciales dev en `test/auth/DevLoginPolicy.test.ts`
 - en la UI privada, `Nuevo servicio` pasa a subitem de `Servicios` y se diferencia el estado de pagina activa frente a seccion activa
 - se aplican correcciones de UX en sidebar movil: animacion de apertura/cierre, cierre con `Escape` y bloqueo de scroll del fondo
@@ -122,17 +125,17 @@ src/
 
 ## Siguiente paso recomendado
 
-Expandir la base de testing y seguir con el roadmap de negocio:
+Continuar con el roadmap de negocio:
 
-1. implementar `ListInvoicesByServiceUseCase`
-2. anadir visibilidad operativa de importe pendiente y sobrefacturacion en detalle de servicio
+1. implementar `CreateReimbursementRequestUseCase`
+2. habilitar agrupacion de una o varias facturas elegibles en solicitud
 
 ## Propuesta concreta para la siguiente sesion
 
-1. implementar `ListInvoicesByServiceUseCase` y exponerlo en `/services/[id]`
-2. mostrar lectura operativa de importe pendiente por cubrir
-3. mostrar aviso de sobrefacturacion sin bloquear el flujo
-4. mantener toasts para operaciones de factura en la shell privada
+1. implementar `CreateReimbursementRequestUseCase`
+2. definir criterio de facturas elegibles (`received`, sin solicitud previa)
+3. exponer primera accion de creacion de solicitud desde flujo privado
+4. mantener toasts para operaciones en la shell privada
 5. mantener la checklist mobile-first en cualquier cambio visual futuro
 
 La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10-use-cases-roadmap.md`.

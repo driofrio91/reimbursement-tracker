@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import { createInvoiceAction } from "@/app/(private)/services/[id]/actions";
-import { getServiceDetailUseCase } from "@/modules/reimbursement/application/GetServiceDetailUseCase";
+import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
+import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
 import { prisma } from "@/lib/db/prisma";
@@ -11,11 +12,12 @@ import { prisma } from "@/lib/db/prisma";
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const createInvoiceForServiceAction = createInvoiceAction.bind(null, id);
-  const service = await getServiceDetailUseCase(id, {
+  const summary = await getServiceInvoiceSummaryUseCase(id, {
     serviceRepository: new PrismaServiceRepository(prisma),
+    invoiceRepository: new PrismaInvoiceRepository(prisma),
   });
 
-  if (!service) {
+  if (!summary) {
     notFound();
   }
 
@@ -48,7 +50,15 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <ServiceDetailView service={service} createInvoiceAction={createInvoiceForServiceAction} />
+        <ServiceDetailView
+          service={summary.service}
+          invoices={summary.invoices}
+          totalInvoicedAmount={summary.totalInvoicedAmount}
+          pendingToInvoiceAmount={summary.pendingToInvoiceAmount}
+          overInvoicedAmount={summary.overInvoicedAmount}
+          isOverInvoiced={summary.isOverInvoiced}
+          createInvoiceAction={createInvoiceForServiceAction}
+        />
       </div>
     </main>
   );
