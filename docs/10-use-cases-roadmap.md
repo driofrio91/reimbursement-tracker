@@ -155,6 +155,18 @@ Cuando una historia de usuario anada una pantalla o cambie el flujo de una ruta 
 4. se mantienen acciones contextuales en pantalla cuando aportan al flujo operativo
 5. no se redisenia la navegacion global salvo que exista una US tecnica separada para eso
 
+## Checklist obligatorio de seguridad para credenciales dev
+
+Cuando una US toque login, auth, seed o configuracion de entornos, debe cerrar este checklist:
+
+1. no hay secretos reales en git ni en markdown
+2. las credenciales de desarrollo no se muestran fuera de local
+3. las cuentas `@local.test` quedan bloqueadas en backend fuera de local
+4. las cuentas `@local.test` quedan bloqueadas siempre en `production`
+5. el seed de usuarios dev no se ejecuta fuera de local
+6. `.env.example` se actualiza sin valores reales
+7. `docs/09-current-status.md` y `docs/sessions/` se actualizan en la misma sesion
+
 ## Regla para decidir el siguiente paso
 
 Si hay duda entre varias tareas, elegir siempre la que desbloquee antes este flujo:

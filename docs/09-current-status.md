@@ -103,15 +103,19 @@ src/
 - se mantiene `src/app` en lugar de `app` en raiz para agrupar todo el codigo fuente bajo `src/`
 - el primer bloque de tests vive en `test/` y usa `vitest` con `vi` para mockear contratos en `application`
 - los tests cubren `CreateServiceUseCase`, `GetServiceDetailUseCase`, `ListServicesUseCase`, `CreateInvoiceForServiceUseCase`, `CreateServiceFormSchema` y `CreateInvoiceFormSchema`
+- los tests incluyen politica de credenciales dev en `test/auth/DevLoginPolicy.test.ts`
 - en la UI privada, `Nuevo servicio` pasa a subitem de `Servicios` y se diferencia el estado de pagina activa frente a seccion activa
 - se aplican correcciones de UX en sidebar movil: animacion de apertura/cierre, cierre con `Escape` y bloqueo de scroll del fondo
 - se declara mobile-first como regla de implementacion obligatoria para toda UI nueva o refactor
 - cada US con nuevas rutas privadas debe incluir como DoD su integracion en sidebar y estados activos
 - en facturas, se permite sobrefacturacion en esta fase y se pospone el aviso operativo para la siguiente iteracion
+- las credenciales `@local.test` solo se muestran en local y quedan bloqueadas en backend fuera de local
+- en `production`, el backend bloquea siempre `@local.test` aunque `AUTH_ALLOW_DEV_LOGIN=true`
 
 ## Riesgos o notas operativas
 
 - `.env` es local y esta ignorado por git
+- `.env.example` existe como plantilla sin secretos reales
 - la cadena de conexion de `Neon` no debe copiarse a markdown del repositorio
 - como la credencial de base de datos fue compartida durante una sesion interactiva, conviene rotarla cuando esta fase inicial termine
 - el aviso de hidratacion visto en desarrollo no se reprodujo como error real de la app; la causa mas probable es una extension del navegador sobre el formulario de login
@@ -138,5 +142,5 @@ La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10
 1. `docs/START-HERE.md`
 2. `docs/09-current-status.md`
 3. `docs/10-use-cases-roadmap.md`
-4. `docs/sessions/2026-04-22-session-06-invoice-create-use-case-and-toasts.md`
+4. `docs/sessions/2026-04-23-session-07-dev-login-security-policy.md`
 5. `AGENTS.md`

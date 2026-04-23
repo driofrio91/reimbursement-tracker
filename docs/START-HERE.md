@@ -60,6 +60,7 @@ Todo esto ya esta decidido y no debe reabrirse salvo necesidad real:
 - auditoria basica
 - coste minimo usando free tiers
 - interfaz inicial en espanol
+- credenciales de desarrollo visibles solo en local y bloqueadas fuera de local desde backend
 
 ### Decisiones de alcance aprobadas
 
