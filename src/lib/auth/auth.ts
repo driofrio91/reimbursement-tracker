@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
+import { canUseDevLogin } from "@/lib/auth/DevLoginPolicy";
 import { prisma } from "@/lib/db/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -22,6 +23,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = typeof credentials?.password === "string" ? credentials.password : "";
 
         if (!email || !password) {
+          return null;
+        }
+
+        if (
+          !canUseDevLogin(email, {
+            nodeEnv: process.env.NODE_ENV,
+            allowDevLogin: process.env.AUTH_ALLOW_DEV_LOGIN,
+          })
+        ) {
           return null;
         }
 

@@ -5,10 +5,12 @@ import type { SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
+const showDevCredentials = process.env.NODE_ENV === "development";
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@local.test");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState(showDevCredentials ? "admin@local.test" : "");
+  const [password, setPassword] = useState(showDevCredentials ? "admin123" : "");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,9 +43,13 @@ export default function LoginPage() {
             Acceso interno
           </span>
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Iniciar sesion</h1>
-          <p className="text-sm leading-6 text-slate-600">
-            Usa una de las cuentas de desarrollo sembradas en la base de datos para entrar en la aplicacion.
-          </p>
+          {showDevCredentials ? (
+            <p className="text-sm leading-6 text-slate-600">
+              Usa una de las cuentas de desarrollo sembradas en la base de datos para entrar en la aplicacion.
+            </p>
+          ) : (
+            <p className="text-sm leading-6 text-slate-600">Introduce tus credenciales para acceder al area privada.</p>
+          )}
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -82,11 +88,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-          <p className="font-medium text-slate-900">Credenciales de desarrollo</p>
-          <p className="mt-2"><code>admin@local.test</code> / <code>admin123</code></p>
-          <p><code>operator@local.test</code> / <code>operator123</code></p>
-        </div>
+        {showDevCredentials ? (
+          <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+            <p className="font-medium text-slate-900">Credenciales de desarrollo</p>
+            <p className="mt-2"><code>admin@local.test</code> / <code>admin123</code></p>
+            <p><code>operator@local.test</code> / <code>operator123</code></p>
+          </div>
+        ) : null}
       </div>
     </main>
   );
