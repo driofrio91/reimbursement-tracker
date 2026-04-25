@@ -11,6 +11,8 @@ function buildFormValues(overrides: Partial<typeof initialCreateServiceFormValue
     serviceDate: "2026-04-22",
     description: "Consulta de fisioterapia",
     actualAmount: "200,50",
+    invoiceBilledAmount: "55",
+    invoiceExpectedAmount: "49,5",
     personId: "person-1",
     insurerId: "insurer-1",
     policyHolderName: "Ana Perez",
@@ -27,6 +29,8 @@ describe("CreateServiceFormSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.actualAmount).toBe(200.5);
+      expect(result.data.invoiceBilledAmount).toBe(55);
+      expect(result.data.invoiceExpectedAmount).toBe(49.5);
       expect(result.data.attended).toBe(true);
     }
   });
@@ -45,6 +49,17 @@ describe("CreateServiceFormSchema", () => {
 
   it("requires amount", () => {
     const result = createServiceFormSchema.safeParse(buildFormValues({ actualAmount: "" }));
+
+    expect(result.success).toBe(false);
+  });
+
+  it("requires invoice configured amounts", () => {
+    const result = createServiceFormSchema.safeParse(
+      buildFormValues({
+        invoiceBilledAmount: "",
+        invoiceExpectedAmount: "",
+      }),
+    );
 
     expect(result.success).toBe(false);
   });
@@ -80,6 +95,8 @@ describe("CreateServiceFormSchema", () => {
     formData.set("serviceDate", "2026-04-22");
     formData.set("description", "Consulta de fisioterapia");
     formData.set("actualAmount", "200,50");
+    formData.set("invoiceBilledAmount", "55");
+    formData.set("invoiceExpectedAmount", "49,5");
     formData.set("personId", "person-1");
     formData.set("insurerId", "insurer-1");
     formData.set("policyHolderName", "Ana Perez");
@@ -105,6 +122,8 @@ describe("CreateServiceFormSchema", () => {
       serviceDate: "",
       description: "",
       actualAmount: "",
+      invoiceBilledAmount: "",
+      invoiceExpectedAmount: "",
       personId: "",
       insurerId: "",
       policyHolderName: "",

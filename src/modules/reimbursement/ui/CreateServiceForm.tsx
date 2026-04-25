@@ -48,6 +48,30 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
           />
         </Field>
 
+        <Field label="Importe facturado por factura" error={state.errors.invoiceBilledAmount}>
+          <input
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            type="text"
+            name="invoiceBilledAmount"
+            inputMode="decimal"
+            placeholder="55.00"
+            defaultValue={state.values.invoiceBilledAmount}
+            required
+          />
+        </Field>
+
+        <Field label="Importe esperado por factura" error={state.errors.invoiceExpectedAmount}>
+          <input
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            type="text"
+            name="invoiceExpectedAmount"
+            inputMode="decimal"
+            placeholder="49.50"
+            defaultValue={state.values.invoiceExpectedAmount}
+            required
+          />
+        </Field>
+
         <Field className="md:col-span-2" label="Concepto" error={state.errors.description}>
           <input
             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
@@ -122,7 +146,9 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
       {state.errors.form ? <p className="text-sm text-red-600">{state.errors.form}</p> : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-500">El servicio se creara con estado inicial `registered`.</p>
+        <p className="text-sm text-slate-500">
+          El servicio se creara con facturas autogeneradas para igualar o superar el importe real.
+        </p>
 
         <button
           className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"

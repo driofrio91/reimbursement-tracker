@@ -1,8 +1,10 @@
 import { CreateServiceInput, CreateServiceResult } from "@/modules/reimbursement/application/CreateServiceDto";
+import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
 
 export type CreateServiceUseCaseErrorCode =
   | "INVALID_AMOUNT"
+  | "INVALID_INVOICE_CONFIGURATION"
   | "PERSON_NOT_FOUND"
   | "INSURER_NOT_FOUND_OR_INACTIVE";
 
@@ -15,6 +17,7 @@ export class CreateServiceUseCaseError extends Error {
 
 interface CreateServiceUseCaseDependencies {
   serviceRepository: ServiceRepository;
+  invoiceRepository: Pick<InvoiceRepository, "createMany">;
 }
 
 export async function createServiceUseCase(
@@ -27,6 +30,13 @@ export async function createServiceUseCase(
 
   if (input.actualAmount <= 0) {
     throw new CreateServiceUseCaseError("INVALID_AMOUNT", "El importe debe ser mayor que cero.");
+  }
+
+  if (input.invoiceBilledAmount <= 0 || input.invoiceExpectedAmount <= 0) {
+    throw new CreateServiceUseCaseError(
+      "INVALID_INVOICE_CONFIGURATION",
+      "Los importes de configuracion de factura deben ser mayores que cero.",
+    );
   }
 
   const [personExists, insurerIsActive] = await Promise.all([
@@ -49,6 +59,8 @@ export async function createServiceUseCase(
     serviceDate: input.serviceDate,
     description,
     actualAmount: input.actualAmount,
+    invoiceBilledAmount: input.invoiceBilledAmount,
+    invoiceExpectedAmount: input.invoiceExpectedAmount,
     currency: "EUR",
     personId: input.personId,
     insurerId: input.insurerId,
@@ -57,6 +69,28 @@ export async function createServiceUseCase(
     status: "REGISTERED",
     notes,
   });
+
+  const invoiceCount = Math.ceil(input.actualAmount / input.invoiceExpectedAmount);
+
+  const generatedInvoices = Array.from({ length: invoiceCount }, () => ({
+    serviceId: service.id,
+    requestId: null,
+    invoiceNumber: null,
+    invoiceDate: null,
+    invoiceBilledAmount: input.invoiceBilledAmount,
+    invoiceExpectedAmount: input.invoiceExpectedAmount,
+    currency: "EUR",
+    issuerName: null,
+    issuerTaxId: null,
+    claimReference: null,
+    status: "CREATED" as const,
+    paidAmount: null,
+    paidAt: null,
+    rejectionReason: null,
+    notes: null,
+  }));
+
+  await dependencies.invoiceRepository.createMany(generatedInvoices);
 
   return { id: service.id };
 }

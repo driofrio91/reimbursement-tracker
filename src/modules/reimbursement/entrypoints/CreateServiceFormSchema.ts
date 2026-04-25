@@ -15,6 +15,8 @@ export const createServiceFormSchema = z.object({
   serviceDate: z.string().trim().regex(datePattern, "La fecha del servicio es obligatoria."),
   description: z.string().trim().min(1, "El concepto es obligatorio."),
   actualAmount: amountSchema,
+  invoiceBilledAmount: amountSchema,
+  invoiceExpectedAmount: amountSchema,
   personId: z.string().trim().min(1, "La persona es obligatoria."),
   insurerId: z.string().trim().min(1, "La aseguradora es obligatoria."),
   policyHolderName: z.string().trim().min(1, "El titular es obligatorio."),
@@ -28,6 +30,8 @@ export interface CreateServiceFormValues {
   serviceDate: string;
   description: string;
   actualAmount: string;
+  invoiceBilledAmount: string;
+  invoiceExpectedAmount: string;
   personId: string;
   insurerId: string;
   policyHolderName: string;
@@ -44,6 +48,8 @@ export const initialCreateServiceFormValues: CreateServiceFormValues = {
   serviceDate: "",
   description: "",
   actualAmount: "",
+  invoiceBilledAmount: "55",
+  invoiceExpectedAmount: "49.5",
   personId: "",
   insurerId: "",
   policyHolderName: "",
@@ -61,6 +67,8 @@ export function getCreateServiceFormValues(formData: FormData): CreateServiceFor
     serviceDate: getString(formData, "serviceDate"),
     description: getString(formData, "description"),
     actualAmount: getString(formData, "actualAmount"),
+    invoiceBilledAmount: getString(formData, "invoiceBilledAmount"),
+    invoiceExpectedAmount: getString(formData, "invoiceExpectedAmount"),
     personId: getString(formData, "personId"),
     insurerId: getString(formData, "insurerId"),
     policyHolderName: getString(formData, "policyHolderName"),

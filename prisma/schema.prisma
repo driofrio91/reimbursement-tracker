@@ -14,10 +14,11 @@ enum ReimbursableServiceStatus {
 }
 
 enum InvoiceStatus {
-  RECEIVED
-  SUBMITTED
+  CREATED
+  INFORMATION_COMPLETED
+  CLAIM_REFERENCE_COMPLETED
+  PAID
   REJECTED
-  REIMBURSED
 }
 
 enum ReimbursementRequestStatus {
@@ -65,6 +66,8 @@ model ReimbursableService {
   serviceDate      DateTime                  @db.Date
   description      String
   actualAmount     Decimal                   @db.Decimal(10, 2)
+  invoiceBilledAmount   Decimal              @default(55) @db.Decimal(10, 2)
+  invoiceExpectedAmount Decimal              @default(49.5) @db.Decimal(10, 2)
   currency         String                    @default("EUR")
   personId         String                    @db.Uuid
   insurerId        String                    @db.Uuid
@@ -106,15 +109,17 @@ model Invoice {
   id               String                @id @default(uuid()) @db.Uuid
   serviceId        String                @db.Uuid
   requestId        String?               @db.Uuid
-  invoiceNumber    String
-  invoiceDate      DateTime              @db.Date
-  amount           Decimal               @db.Decimal(10, 2)
+  invoiceNumber    String?
+  invoiceDate      DateTime?             @db.Date
+  invoiceBilledAmount   Decimal          @default(55) @db.Decimal(10, 2)
+  invoiceExpectedAmount Decimal          @default(49.5) @db.Decimal(10, 2)
   currency         String                @default("EUR")
-  issuerName       String
+  issuerName       String?
   issuerTaxId      String?
-  status           InvoiceStatus         @default(RECEIVED)
-  reimbursedAmount Decimal?              @db.Decimal(10, 2)
-  reimbursedAt     DateTime?             @db.Date
+  claimReference   String?
+  status           InvoiceStatus         @default(CREATED)
+  paidAmount       Decimal?              @db.Decimal(10, 2)
+  paidAt           DateTime?             @db.Date
   rejectionReason  String?
   notes            String?
   createdAt        DateTime              @default(now())

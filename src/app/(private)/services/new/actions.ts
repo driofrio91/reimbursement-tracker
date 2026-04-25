@@ -12,6 +12,7 @@ import {
   getCreateServiceFormValues,
 } from "@/modules/reimbursement/entrypoints/CreateServiceFormSchema";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
+import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { prisma } from "@/lib/db/prisma";
 
 export async function createServiceAction(
@@ -30,6 +31,8 @@ export async function createServiceAction(
         serviceDate: fieldErrors.serviceDate?.[0],
         description: fieldErrors.description?.[0],
         actualAmount: fieldErrors.actualAmount?.[0],
+        invoiceBilledAmount: fieldErrors.invoiceBilledAmount?.[0],
+        invoiceExpectedAmount: fieldErrors.invoiceExpectedAmount?.[0],
         personId: fieldErrors.personId?.[0],
         insurerId: fieldErrors.insurerId?.[0],
         policyHolderName: fieldErrors.policyHolderName?.[0],
@@ -45,13 +48,18 @@ export async function createServiceAction(
         serviceDate: new Date(`${parsedInput.data.serviceDate}T00:00:00`),
         description: parsedInput.data.description,
         actualAmount: parsedInput.data.actualAmount,
+        invoiceBilledAmount: parsedInput.data.invoiceBilledAmount,
+        invoiceExpectedAmount: parsedInput.data.invoiceExpectedAmount,
         personId: parsedInput.data.personId,
         insurerId: parsedInput.data.insurerId,
         policyHolderName: parsedInput.data.policyHolderName,
         attended: parsedInput.data.attended,
         notes: parsedInput.data.notes,
       },
-      { serviceRepository: repository },
+      {
+        serviceRepository: repository,
+        invoiceRepository: new PrismaInvoiceRepository(prisma),
+      },
     );
 
     redirect(`/services/${result.id}`);

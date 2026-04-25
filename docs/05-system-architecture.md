@@ -65,7 +65,7 @@ Ejemplos:
 
 - `ReimbursableService`
 - `Invoice`
-- `ReimbursementRequest`
+- `ServiceInvoiceSummary`
 
 ### Application
 
@@ -80,9 +80,10 @@ Contiene los casos de uso del sistema y la orquestacion del flujo:
 Ejemplos:
 
 - `CreateReimbursableServiceUseCase`
-- `CreateInvoiceForServiceUseCase`
-- `CreateReimbursementRequestUseCase`
-- `RegisterRequestResolutionUseCase`
+- `CompleteInvoiceInformationUseCase`
+- `RegisterInvoiceClaimReferenceUseCase`
+- `MarkInvoiceAsPaidUseCase`
+- `MarkInvoiceAsRejectedUseCase`
 
 ### Infrastructure
 
@@ -192,7 +193,7 @@ Dentro de ese modulo conviviran:
 
 - servicios reembolsables
 - facturas
-- solicitudes de reembolso
+- referencia de solicitud en factura
 - reglas de calculo y avisos
 
 Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
@@ -208,15 +209,11 @@ Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
 
 ### Facturas
 
-- `CreateInvoiceForServiceUseCase`
+- `CompleteInvoiceInformationUseCase`
+- `RegisterInvoiceClaimReferenceUseCase`
+- `MarkInvoiceAsPaidUseCase`
+- `MarkInvoiceAsRejectedUseCase`
 - `ListInvoicesByServiceUseCase`
-
-### Solicitudes
-
-- `CreateReimbursementRequestUseCase`
-- `SubmitReimbursementRequestUseCase`
-- `RegisterRequestResolutionUseCase`
-- `CloseReimbursementRequestUseCase`
 
 ### Importacion
 
@@ -229,7 +226,6 @@ Estos contratos deberian definirse cerca del dominio o de aplicacion, segun el n
 
 - `ReimbursableServiceRepository`
 - `InvoiceRepository`
-- `ReimbursementRequestRepository`
 
 ## Prisma como infraestructura
 

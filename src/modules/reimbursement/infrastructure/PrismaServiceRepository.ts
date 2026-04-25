@@ -12,6 +12,8 @@ export class PrismaServiceRepository implements ServiceRepository {
         serviceDate: service.serviceDate,
         description: service.description,
         actualAmount: service.actualAmount,
+        invoiceBilledAmount: service.invoiceBilledAmount,
+        invoiceExpectedAmount: service.invoiceExpectedAmount,
         currency: service.currency,
         personId: service.personId,
         insurerId: service.insurerId,
@@ -76,6 +78,8 @@ export class PrismaServiceRepository implements ServiceRepository {
     serviceDate: Date;
     description: string;
     actualAmount: { toNumber(): number };
+    invoiceBilledAmount: { toNumber(): number };
+    invoiceExpectedAmount: { toNumber(): number };
     currency: string;
     personId: string;
     insurerId: string;
@@ -93,6 +97,8 @@ export class PrismaServiceRepository implements ServiceRepository {
       serviceDate: service.serviceDate,
       description: service.description,
       actualAmount: service.actualAmount.toNumber(),
+      invoiceBilledAmount: service.invoiceBilledAmount.toNumber(),
+      invoiceExpectedAmount: service.invoiceExpectedAmount.toNumber(),
       currency: service.currency,
       personId: service.personId,
       personName: service.person.displayName,

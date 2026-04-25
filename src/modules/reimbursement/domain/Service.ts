@@ -5,6 +5,8 @@ export interface Service {
   serviceDate: Date;
   description: string;
   actualAmount: number;
+  invoiceBilledAmount: number;
+  invoiceExpectedAmount: number;
   currency: string;
   personId: string;
   personName: string;
@@ -22,6 +24,8 @@ export interface NewService {
   serviceDate: Date;
   description: string;
   actualAmount: number;
+  invoiceBilledAmount: number;
+  invoiceExpectedAmount: number;
   currency: string;
   personId: string;
   insurerId: string;

@@ -6,10 +6,14 @@ import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceReposit
 export interface ServiceInvoiceSummary {
   service: Service;
   invoices: Invoice[];
-  totalInvoicedAmount: number;
-  pendingToInvoiceAmount: number;
-  overInvoicedAmount: number;
-  isOverInvoiced: boolean;
+  totalBilledAmount: number;
+  totalExpectedAmount: number;
+  totalPaidAmount: number;
+  pendingExpectedAmount: number;
+  overBilledAmount: number;
+  overExpectedAmount: number;
+  paidInvoicesCount: number;
+  rejectedInvoicesCount: number;
 }
 
 interface GetServiceInvoiceSummaryUseCaseDependencies {
@@ -28,17 +32,28 @@ export async function getServiceInvoiceSummaryUseCase(
   }
 
   const invoices = await dependencies.invoiceRepository.listByServiceId(serviceId);
-  const totalInvoicedAmount = roundMoney(invoices.reduce((sum, invoice) => sum + invoice.amount, 0));
-  const pendingToInvoiceAmount = roundMoney(Math.max(service.actualAmount - totalInvoicedAmount, 0));
-  const overInvoicedAmount = roundMoney(Math.max(totalInvoicedAmount - service.actualAmount, 0));
+  const totalBilledAmount = roundMoney(invoices.reduce((sum, invoice) => sum + invoice.invoiceBilledAmount, 0));
+  const totalExpectedAmount = roundMoney(invoices.reduce((sum, invoice) => sum + invoice.invoiceExpectedAmount, 0));
+  const totalPaidAmount = roundMoney(
+    invoices.reduce((sum, invoice) => sum + (invoice.status === "PAID" ? (invoice.paidAmount ?? 0) : 0), 0),
+  );
+  const pendingExpectedAmount = roundMoney(Math.max(service.actualAmount - totalExpectedAmount, 0));
+  const overBilledAmount = roundMoney(Math.max(totalBilledAmount - service.actualAmount, 0));
+  const overExpectedAmount = roundMoney(Math.max(totalExpectedAmount - service.actualAmount, 0));
+  const paidInvoicesCount = invoices.filter((invoice) => invoice.status === "PAID").length;
+  const rejectedInvoicesCount = invoices.filter((invoice) => invoice.status === "REJECTED").length;
 
   return {
     service,
     invoices,
-    totalInvoicedAmount,
-    pendingToInvoiceAmount,
-    overInvoicedAmount,
-    isOverInvoiced: overInvoicedAmount > 0,
+    totalBilledAmount,
+    totalExpectedAmount,
+    totalPaidAmount,
+    pendingExpectedAmount,
+    overBilledAmount,
+    overExpectedAmount,
+    paidInvoicesCount,
+    rejectedInvoicesCount,
   };
 }
 

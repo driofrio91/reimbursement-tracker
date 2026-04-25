@@ -21,7 +21,7 @@ export default async function NewServicePage() {
               </span>
               <h1 className="text-4xl font-semibold tracking-tight">Crear servicio reembolsable</h1>
               <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                Registra el gasto real antes de asociar facturas o solicitudes de reembolso.
+                Registra el gasto real y configura los importes base para autogenerar facturas del servicio.
               </p>
             </div>
           </div>

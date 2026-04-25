@@ -26,7 +26,10 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
     const serviceRepository = createServiceRepositoryMock();
     const invoiceRepository = createInvoiceRepositoryMock();
     const service = buildService({ actualAmount: 200 });
-    const invoices = [buildInvoice({ amount: 50 }), buildInvoice({ amount: 80 })];
+    const invoices = [
+      buildInvoice({ invoiceBilledAmount: 55, invoiceExpectedAmount: 49.5 }),
+      buildInvoice({ invoiceBilledAmount: 55, invoiceExpectedAmount: 49.5 }),
+    ];
 
     serviceRepository.getById.mockResolvedValue(service);
     invoiceRepository.listByServiceId.mockResolvedValue(invoices);
@@ -39,10 +42,11 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
     expect(result).toMatchObject({
       service,
       invoices,
-      totalInvoicedAmount: 130,
-      pendingToInvoiceAmount: 70,
-      overInvoicedAmount: 0,
-      isOverInvoiced: false,
+      totalBilledAmount: 110,
+      totalExpectedAmount: 99,
+      pendingExpectedAmount: 101,
+      overBilledAmount: 0,
+      overExpectedAmount: 0,
     });
   });
 
@@ -50,7 +54,10 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
     const serviceRepository = createServiceRepositoryMock();
     const invoiceRepository = createInvoiceRepositoryMock();
     const service = buildService({ actualAmount: 200 });
-    const invoices = [buildInvoice({ amount: 120 }), buildInvoice({ amount: 100 })];
+    const invoices = [
+      buildInvoice({ invoiceBilledAmount: 110, invoiceExpectedAmount: 100 }),
+      buildInvoice({ invoiceBilledAmount: 110, invoiceExpectedAmount: 110 }),
+    ];
 
     serviceRepository.getById.mockResolvedValue(service);
     invoiceRepository.listByServiceId.mockResolvedValue(invoices);
@@ -61,10 +68,11 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
     });
 
     expect(result).toMatchObject({
-      totalInvoicedAmount: 220,
-      pendingToInvoiceAmount: 0,
-      overInvoicedAmount: 20,
-      isOverInvoiced: true,
+      totalBilledAmount: 220,
+      totalExpectedAmount: 210,
+      pendingExpectedAmount: 0,
+      overBilledAmount: 20,
+      overExpectedAmount: 10,
     });
   });
 

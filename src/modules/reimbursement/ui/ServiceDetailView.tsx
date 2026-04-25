@@ -1,30 +1,41 @@
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
-import { CreateInvoiceFormState } from "@/modules/reimbursement/entrypoints/CreateInvoiceFormSchema";
-import { CreateInvoiceForm } from "@/modules/reimbursement/ui/CreateInvoiceForm";
 
 interface ServiceDetailViewProps {
   service: Service;
   invoices: Invoice[];
-  totalInvoicedAmount: number;
-  pendingToInvoiceAmount: number;
-  overInvoicedAmount: number;
-  isOverInvoiced: boolean;
-  createInvoiceAction: (
-    state: CreateInvoiceFormState,
-    formData: FormData,
-  ) => Promise<CreateInvoiceFormState>;
+  totalBilledAmount: number;
+  totalExpectedAmount: number;
+  totalPaidAmount: number;
+  pendingExpectedAmount: number;
+  overBilledAmount: number;
+  overExpectedAmount: number;
+  paidInvoicesCount: number;
+  rejectedInvoicesCount: number;
+  completeInvoiceInformationAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
+  registerInvoiceClaimReferenceAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
+  markInvoiceAsPaidAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
+  markInvoiceAsRejectedAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
 }
 
 export function ServiceDetailView({
   service,
   invoices,
-  totalInvoicedAmount,
-  pendingToInvoiceAmount,
-  overInvoicedAmount,
-  isOverInvoiced,
-  createInvoiceAction,
+  totalBilledAmount,
+  totalExpectedAmount,
+  totalPaidAmount,
+  pendingExpectedAmount,
+  overBilledAmount,
+  overExpectedAmount,
+  paidInvoicesCount,
+  rejectedInvoicesCount,
+  completeInvoiceInformationAction,
+  registerInvoiceClaimReferenceAction,
+  markInvoiceAsPaidAction,
+  markInvoiceAsRejectedAction,
 }: ServiceDetailViewProps) {
+  const defaultPaidDate = new Date().toISOString().slice(0, 10);
+
   return (
     <div className="space-y-6">
       <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -34,11 +45,13 @@ export function ServiceDetailView({
               {toDisplayStatus(service.status)}
             </span>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{service.description}</h1>
-            <p className="text-sm text-slate-500">Creado para sustituir el seguimiento manual del Excel.</p>
+            <p className="text-sm text-slate-500">
+              Este servicio autogenera facturas para cubrir por reembolso esperado el importe real.
+            </p>
           </div>
 
           <div className="rounded-2xl bg-slate-50 px-5 py-4 text-right">
-            <p className="text-sm text-slate-500">Importe real</p>
+            <p className="text-sm text-slate-500">Importe real del servicio</p>
             <p className="text-2xl font-semibold text-slate-950">{formatCurrency(service.actualAmount, service.currency)}</p>
           </div>
         </div>
@@ -48,44 +61,39 @@ export function ServiceDetailView({
           <InfoCard label="Persona" value={service.personName} />
           <InfoCard label="Aseguradora" value={service.insurerName} />
           <InfoCard label="Titular" value={service.policyHolderName} />
-          <InfoCard label="Asistencia" value={service.attended ? "Si" : "No"} />
-          <InfoCard label="Moneda" value={service.currency} />
+          <InfoCard label="Facturado por factura" value={formatCurrency(service.invoiceBilledAmount, service.currency)} />
+          <InfoCard label="Esperado por factura" value={formatCurrency(service.invoiceExpectedAmount, service.currency)} />
         </dl>
 
-        <div className="rounded-2xl border border-slate-200 p-5">
-          <h2 className="text-sm font-medium text-slate-700">Notas</h2>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
-            {service.notes || "Sin notas registradas."}
-          </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricCard label="Total facturado" value={formatCurrency(totalBilledAmount, service.currency)} />
+          <MetricCard label="Total esperado" value={formatCurrency(totalExpectedAmount, service.currency)} />
+          <MetricCard label="Total pagado" value={formatCurrency(totalPaidAmount, service.currency)} />
+          <MetricCard label="Pendiente esperado" value={formatCurrency(pendingExpectedAmount, service.currency)} />
+          <MetricCard label="Facturas" value={String(invoices.length)} />
+          <MetricCard label="Pagadas" value={String(paidInvoicesCount)} />
+          <MetricCard label="Rechazadas" value={String(rejectedInvoicesCount)} />
+          <MetricCard label="Asistencia" value={service.attended ? "Si" : "No"} />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Total facturado" value={formatCurrency(totalInvoicedAmount, service.currency)} />
-          <MetricCard label="Pendiente por cubrir" value={formatCurrency(pendingToInvoiceAmount, service.currency)} />
-          <MetricCard label="Facturas registradas" value={String(invoices.length)} />
-        </div>
-
-        {isOverInvoiced ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            <p className="font-medium">Aviso de sobrefacturacion</p>
-            <p className="mt-1">
-              El total facturado supera el importe del servicio en {formatCurrency(overInvoicedAmount, service.currency)}.
-            </p>
-          </div>
+        {overBilledAmount > 0 ? (
+          <AlertBox title="Aviso de sobrefacturacion" text={`El total facturado supera el servicio en ${formatCurrency(overBilledAmount, service.currency)}.`} />
         ) : null}
 
-        {pendingToInvoiceAmount > 0 ? (
-          <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
-            <p className="font-medium">Servicio parcialmente facturado</p>
-            <p className="mt-1">Todavia faltan {formatCurrency(pendingToInvoiceAmount, service.currency)} por cubrir.</p>
-          </div>
+        {overExpectedAmount > 0 ? (
+          <AlertBox
+            title="Aviso de sobrecobertura esperada"
+            text={`El total esperado supera el servicio en ${formatCurrency(overExpectedAmount, service.currency)}.`}
+          />
         ) : null}
       </section>
 
       <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Facturas del servicio</h2>
-          <p className="text-sm text-slate-600">Visibilidad operativa del detalle de facturacion para este caso.</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Facturas autogeneradas</h2>
+          <p className="text-sm text-slate-600">
+            Completa cada factura por etapas: informacion, solicitud de reembolso y resolucion final.
+          </p>
         </div>
 
         {invoices.length === 0 ? (
@@ -93,54 +101,157 @@ export function ServiceDetailView({
             Aun no hay facturas registradas para este servicio.
           </div>
         ) : (
-          <div className="space-y-3">
-            {invoices.map((invoice) => (
-              <article key={invoice.id} className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-base font-semibold text-slate-950">{invoice.invoiceNumber}</p>
-                    <p className="text-sm text-slate-600">{invoice.issuerName}</p>
+          <div className="space-y-4">
+            {invoices.map((invoice, index) => {
+              const completeAction = completeInvoiceInformationAction.bind(null, service.id, invoice.id);
+              const claimAction = registerInvoiceClaimReferenceAction.bind(null, service.id, invoice.id);
+              const paidAction = markInvoiceAsPaidAction.bind(null, service.id, invoice.id);
+              const rejectedAction = markInvoiceAsRejectedAction.bind(null, service.id, invoice.id);
+
+              return (
+                <article key={invoice.id} className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-base font-semibold text-slate-950">Factura #{index + 1}</p>
+                      <p className="text-sm text-slate-600">{invoice.invoiceNumber ?? "Sin numero asignado"}</p>
+                    </div>
+
+                    <span className="inline-flex rounded-full border border-slate-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700">
+                      {toDisplayInvoiceStatus(invoice.status)}
+                    </span>
                   </div>
-                  <p className="text-lg font-semibold text-slate-950">{formatCurrency(invoice.amount, invoice.currency)}</p>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-                  <span className="rounded-full border border-slate-300 bg-white px-2.5 py-1 font-medium text-slate-700">
-                    {toDisplayInvoiceStatus(invoice.status)}
-                  </span>
-                  <span>Fecha: {formatDate(invoice.invoiceDate)}</span>
-                  {invoice.issuerTaxId ? <span>NIF/CIF: {invoice.issuerTaxId}</span> : null}
-                </div>
+                  <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
+                    <p>
+                      <span className="font-medium text-slate-900">Facturado:</span>{" "}
+                      {formatCurrency(invoice.invoiceBilledAmount, invoice.currency)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-slate-900">Esperado:</span>{" "}
+                      {formatCurrency(invoice.invoiceExpectedAmount, invoice.currency)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-slate-900">Solicitud:</span>{" "}
+                      {invoice.claimReference ?? "Sin referencia"}
+                    </p>
+                    <p>
+                      <span className="font-medium text-slate-900">Pagado:</span>{" "}
+                      {invoice.paidAmount ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
+                    </p>
+                  </div>
 
-                {invoice.notes ? <p className="text-sm text-slate-600">{invoice.notes}</p> : null}
-              </article>
-            ))}
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <form action={completeAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-sm font-medium text-slate-800">1) Completar informacion</p>
+                      <input
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        type="text"
+                        name="invoiceNumber"
+                        placeholder="F-2026-001"
+                        defaultValue={invoice.invoiceNumber ?? ""}
+                        required
+                      />
+                      <input
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        type="date"
+                        name="invoiceDate"
+                        defaultValue={invoice.invoiceDate ? toInputDate(invoice.invoiceDate) : ""}
+                        required
+                      />
+                      <input
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        type="text"
+                        name="issuerName"
+                        placeholder="Clinica Central"
+                        defaultValue={invoice.issuerName ?? ""}
+                        required
+                      />
+                      <input
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        type="text"
+                        name="issuerTaxId"
+                        placeholder="B12345678"
+                        defaultValue={invoice.issuerTaxId ?? ""}
+                      />
+                      <textarea
+                        className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        name="notes"
+                        defaultValue={invoice.notes ?? ""}
+                      />
+                      <button
+                        className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white"
+                        type="submit"
+                      >
+                        Guardar informacion
+                      </button>
+                    </form>
+
+                    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-sm font-medium text-slate-800">2) Registrar solicitud y 3) Resolver</p>
+
+                      <form action={claimAction} className="space-y-2">
+                        <input
+                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                          type="text"
+                          name="claimReference"
+                          placeholder="REF-PORTAL-2026-001"
+                          defaultValue={invoice.claimReference ?? ""}
+                          required
+                        />
+                        <button
+                          className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800"
+                          type="submit"
+                        >
+                          Guardar referencia
+                        </button>
+                      </form>
+
+                      <form action={paidAction} className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                        <input
+                          className="w-full rounded-lg border border-emerald-300 px-3 py-2 text-sm"
+                          type="text"
+                          inputMode="decimal"
+                          name="paidAmount"
+                          defaultValue={String(invoice.paidAmount ?? invoice.invoiceExpectedAmount)}
+                          required
+                        />
+                        <input
+                          className="w-full rounded-lg border border-emerald-300 px-3 py-2 text-sm"
+                          type="date"
+                          name="paidAt"
+                          defaultValue={invoice.paidAt ? toInputDate(invoice.paidAt) : defaultPaidDate}
+                          required
+                        />
+                        <button
+                          className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
+                          type="submit"
+                        >
+                          Marcar pagada
+                        </button>
+                      </form>
+
+                      <form action={rejectedAction} className="space-y-2 rounded-lg border border-rose-200 bg-rose-50 p-3">
+                        <input
+                          className="w-full rounded-lg border border-rose-300 px-3 py-2 text-sm"
+                          type="text"
+                          name="rejectionReason"
+                          placeholder="Motivo de rechazo"
+                          defaultValue={invoice.rejectionReason ?? ""}
+                        />
+                        <button
+                          className="inline-flex items-center justify-center rounded-lg bg-rose-700 px-3 py-2 text-sm font-medium text-white"
+                          type="submit"
+                        >
+                          Marcar rechazada
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
-      </section>
-
-      <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Registrar factura</h2>
-          <p className="text-sm text-slate-600">
-            La factura quedara vinculada a este servicio y se registrara inicialmente en estado recibido.
-          </p>
-        </div>
-
-        <div className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 sm:grid-cols-3">
-          <p>
-            <span className="font-medium text-slate-900">Persona:</span> {service.personName}
-          </p>
-          <p>
-            <span className="font-medium text-slate-900">Aseguradora:</span> {service.insurerName}
-          </p>
-          <p>
-            <span className="font-medium text-slate-900">Importe del servicio:</span>{" "}
-            {formatCurrency(service.actualAmount, service.currency)}
-          </p>
-        </div>
-
-        <CreateInvoiceForm action={createInvoiceAction} />
       </section>
     </div>
   );
@@ -164,6 +275,15 @@ function InfoCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+function AlertBox({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <p className="font-medium">{title}</p>
+      <p className="mt-1">{text}</p>
+    </div>
+  );
+}
+
 function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("es-ES", {
     style: "currency",
@@ -179,6 +299,10 @@ function formatDate(value: Date) {
   }).format(value);
 }
 
+function toInputDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
 function toDisplayStatus(status: Service["status"]) {
   switch (status) {
     case "REGISTERED":
@@ -192,13 +316,15 @@ function toDisplayStatus(status: Service["status"]) {
 
 function toDisplayInvoiceStatus(status: Invoice["status"]) {
   switch (status) {
-    case "RECEIVED":
-      return "Recibida";
-    case "SUBMITTED":
-      return "Enviada";
+    case "CREATED":
+      return "Creada";
+    case "INFORMATION_COMPLETED":
+      return "Informacion completada";
+    case "CLAIM_REFERENCE_COMPLETED":
+      return "Solicitud registrada";
+    case "PAID":
+      return "Pagada";
     case "REJECTED":
       return "Rechazada";
-    case "REIMBURSED":
-      return "Reembolsada";
   }
 }

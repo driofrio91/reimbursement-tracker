@@ -2,7 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
-import { createInvoiceAction } from "@/app/(private)/services/[id]/actions";
+import {
+  completeInvoiceInformationAction,
+  markInvoiceAsPaidAction,
+  markInvoiceAsRejectedAction,
+  registerInvoiceClaimReferenceAction,
+} from "@/app/(private)/services/[id]/actions";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
@@ -11,7 +16,6 @@ import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const createInvoiceForServiceAction = createInvoiceAction.bind(null, id);
   const summary = await getServiceInvoiceSummaryUseCase(id, {
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
@@ -53,11 +57,18 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         <ServiceDetailView
           service={summary.service}
           invoices={summary.invoices}
-          totalInvoicedAmount={summary.totalInvoicedAmount}
-          pendingToInvoiceAmount={summary.pendingToInvoiceAmount}
-          overInvoicedAmount={summary.overInvoicedAmount}
-          isOverInvoiced={summary.isOverInvoiced}
-          createInvoiceAction={createInvoiceForServiceAction}
+          totalBilledAmount={summary.totalBilledAmount}
+          totalExpectedAmount={summary.totalExpectedAmount}
+          totalPaidAmount={summary.totalPaidAmount}
+          pendingExpectedAmount={summary.pendingExpectedAmount}
+          overBilledAmount={summary.overBilledAmount}
+          overExpectedAmount={summary.overExpectedAmount}
+          paidInvoicesCount={summary.paidInvoicesCount}
+          rejectedInvoicesCount={summary.rejectedInvoicesCount}
+          completeInvoiceInformationAction={completeInvoiceInformationAction}
+          registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
+          markInvoiceAsPaidAction={markInvoiceAsPaidAction}
+          markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
         />
       </div>
     </main>
