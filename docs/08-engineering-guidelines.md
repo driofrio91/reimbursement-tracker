@@ -59,14 +59,6 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - Dejar las validaciones de formato en la entrada y las reglas de negocio en `domain` o `application`.
 - No usar modelos Prisma en bruto como si fueran el dominio.
 
-## Credenciales de desarrollo
-
-- Las credenciales y cuentas `@local.test` son solo para uso local.
-- No exponer credenciales de desarrollo en UI fuera de entorno local (`development`).
-- El bloqueo real debe vivir en backend (`auth`), no solo en frontend.
-- En `production`, las cuentas `@local.test` deben quedar siempre bloqueadas aunque una variable de entorno este mal configurada.
-- Las variables de control de login de desarrollo deben ser server-only (sin prefijo `NEXT_PUBLIC_`).
-
 ## Regla general de implementacion
 
 - Si una solucion parece util pero no ayuda directamente a la V1 definida en `docs/07-mvp-scope.md`, no entra todavia.
@@ -96,15 +88,3 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - Reflejar el nuevo estado operativo y el siguiente paso en `docs/09-current-status.md`.
 - Dejar un handoff corto en `docs/sessions/` con cambios, validaciones y siguiente paso.
 - Si el alcance activo cambia, alinear tambien `docs/START-HERE.md` para evitar ambiguedad en sesiones futuras.
-
-## Checklist de seguridad para credenciales dev
-
-Cuando una US toque login, auth, seed o variables de entorno, cerrar este checklist antes de darla por terminada:
-
-1. no hay secretos reales en git ni en docs
-2. las credenciales dev no se muestran fuera de local
-3. `@local.test` queda bloqueado en backend fuera de local
-4. `@local.test` queda bloqueado siempre en `production`
-5. el seed de usuarios dev no corre fuera de local
-6. `.env.example` queda actualizado sin secretos reales
-7. `docs/09-current-status.md` y `docs/sessions/` quedan actualizados

@@ -28,4 +28,4 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 
 ## Ultimo relevo recomendado hoy
 
-- `2026-04-23-session-07-dev-login-security-policy.md`
+- `2026-04-22-session-06-invoice-create-use-case-and-toasts.md`
