@@ -52,8 +52,9 @@ npm run db:seed
 
 ## Notas de transicion
 
-- `ReimbursementRequest` permanece en persistencia temporalmente para desacople gradual
-- la fuente de verdad operativa del flujo ya no depende de crear solicitudes como entidad principal
+- fase 1 completada: el codigo operativo (`src/` y `test/`) quedo desacoplado de `ReimbursementRequest`
+- fase 2 completada: se retira `ReimbursementRequest` de `prisma/schema.prisma` y de la base de datos
+- `Invoice` mantiene `claimReference` como referencia operativa unica del flujo
 
 ## Lectura minima para retomar
 

@@ -74,7 +74,6 @@ export async function createServiceUseCase(
 
   const generatedInvoices = Array.from({ length: invoiceCount }, () => ({
     serviceId: service.id,
-    requestId: null,
     invoiceNumber: null,
     invoiceDate: null,
     invoiceBilledAmount: input.invoiceBilledAmount,

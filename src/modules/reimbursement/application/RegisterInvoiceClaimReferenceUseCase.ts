@@ -31,14 +31,14 @@ export async function registerInvoiceClaimReferenceUseCase(
   if (invoice.status === "PAID" || invoice.status === "REJECTED") {
     throw new RegisterInvoiceClaimReferenceUseCaseError(
       "INVALID_STATUS",
-      "No se puede registrar solicitud sobre una factura finalizada.",
+      "No se puede registrar referencia sobre una factura finalizada.",
     );
   }
 
   if (!invoice.invoiceNumber || !invoice.invoiceDate || !invoice.issuerName) {
     throw new RegisterInvoiceClaimReferenceUseCaseError(
       "INCOMPLETE_INFORMATION",
-      "Completa primero la informacion de factura para registrar la solicitud.",
+      "Completa primero la informacion de factura para registrar la referencia.",
     );
   }
 

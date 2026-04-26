@@ -28,7 +28,7 @@ export async function markInvoiceAsRejectedUseCase(
   if (invoice.status !== "CLAIM_REFERENCE_COMPLETED" && invoice.status !== "REJECTED") {
     throw new MarkInvoiceAsRejectedUseCaseError(
       "INVALID_STATUS",
-      "La factura debe tener referencia de solicitud para poder marcarse como rechazada.",
+      "La factura debe tener referencia registrada para poder marcarse como rechazada.",
     );
   }
 

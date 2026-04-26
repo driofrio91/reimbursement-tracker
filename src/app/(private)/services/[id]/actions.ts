@@ -113,7 +113,7 @@ export async function registerInvoiceClaimReferenceAction(
   });
 
   if (!parsedInput.success) {
-    return buildActionResult("error", "La referencia de solicitud es obligatoria.");
+    return buildActionResult("error", "La referencia de reembolso es obligatoria.");
   }
 
   try {
@@ -125,12 +125,12 @@ export async function registerInvoiceClaimReferenceAction(
       return buildActionResult("error", error.message);
     }
 
-    return buildActionResult("error", "No se pudo registrar la referencia de solicitud.");
+    return buildActionResult("error", "No se pudo registrar la referencia de reembolso.");
   }
 
   await syncServiceStatusForInvoiceFlow(serviceId);
   revalidatePath(`/services/${serviceId}`);
-  return buildActionResult("success", "Referencia de solicitud guardada.");
+  return buildActionResult("success", "Referencia de reembolso guardada.");
 }
 
 export async function markInvoiceAsPaidAction(

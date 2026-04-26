@@ -30,8 +30,8 @@ El flujo operativo se centra en `Invoice`.
 - ahora: la referencia de solicitud se guarda en la factura con `claimReference`
 - varias facturas pueden compartir la misma `claimReference`
 
-`ReimbursementRequest` se mantiene temporalmente en persistencia para transicion,
-pero no es la pieza principal del flujo V1 actual.
+`ReimbursementRequest` ya fue retirado de persistencia en la fase 2.
+El flujo V1 no depende de legado de solicitud.
 
 ## Flujo V1 vigente
 

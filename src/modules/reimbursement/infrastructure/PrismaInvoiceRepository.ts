@@ -21,7 +21,6 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const createdInvoice = await this.prisma.invoice.create({
       data: {
         serviceId: invoice.serviceId,
-        requestId: invoice.requestId ?? null,
         invoiceNumber: invoice.invoiceNumber ?? null,
         invoiceDate: invoice.invoiceDate ?? null,
         invoiceBilledAmount: invoice.invoiceBilledAmount,
@@ -51,7 +50,6 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         this.prisma.invoice.create({
           data: {
             serviceId: invoice.serviceId,
-            requestId: invoice.requestId ?? null,
             invoiceNumber: invoice.invoiceNumber ?? null,
             invoiceDate: invoice.invoiceDate ?? null,
             invoiceBilledAmount: invoice.invoiceBilledAmount,
@@ -162,7 +160,6 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
   private mapInvoice(invoice: {
     id: string;
     serviceId: string;
-    requestId: string | null;
     invoiceNumber: string | null;
     invoiceDate: Date | null;
     invoiceBilledAmount: { toNumber(): number };
@@ -182,7 +179,6 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return {
       id: invoice.id,
       serviceId: invoice.serviceId,
-      requestId: invoice.requestId,
       invoiceNumber: invoice.invoiceNumber,
       invoiceDate: invoice.invoiceDate,
       invoiceBilledAmount: invoice.invoiceBilledAmount.toNumber(),

@@ -33,7 +33,7 @@ export async function markInvoiceAsPaidUseCase(
   if (invoice.status !== "CLAIM_REFERENCE_COMPLETED" && invoice.status !== "PAID") {
     throw new MarkInvoiceAsPaidUseCaseError(
       "INVALID_STATUS",
-      "La factura debe tener referencia de solicitud para poder marcarse como pagada.",
+      "La factura debe tener referencia registrada para poder marcarse como pagada.",
     );
   }
 
