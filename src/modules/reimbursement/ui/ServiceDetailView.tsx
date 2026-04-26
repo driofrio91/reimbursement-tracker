@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 
@@ -30,6 +31,7 @@ interface ServiceDetailViewProps {
   overExpectedAmount: number;
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
+  reimbursementOutcome: ReimbursementOutcome;
   completeInvoiceInformationAction: (
     serviceId: string,
     invoiceId: string,
@@ -67,6 +69,7 @@ export function ServiceDetailView({
   overExpectedAmount,
   paidInvoicesCount,
   rejectedInvoicesCount,
+  reimbursementOutcome,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
@@ -109,6 +112,7 @@ export function ServiceDetailView({
           <MetricCard label="Facturas" value={String(invoices.length)} />
           <MetricCard label="Pagadas" value={String(paidInvoicesCount)} />
           <MetricCard label="Rechazadas" value={String(rejectedInvoicesCount)} />
+          <MetricCard label="Resultado del reembolso" value={toDisplayReimbursementOutcome(reimbursementOutcome, service.status)} />
           <MetricCard label="Asistencia" value={service.attended ? "Si" : "No"} />
         </div>
 
@@ -451,5 +455,20 @@ function toNextActionLabel(status: Invoice["status"]) {
       return "sin acciones pendientes";
     case "REJECTED":
       return "sin acciones pendientes";
+  }
+}
+
+function toDisplayReimbursementOutcome(outcome: ReimbursementOutcome, serviceStatus: Service["status"]) {
+  if (serviceStatus !== "REIMBURSED") {
+    return "En seguimiento";
+  }
+
+  switch (outcome) {
+    case "FULL":
+      return "Reembolso completo";
+    case "PARTIAL":
+      return "Reembolso parcial";
+    case "NONE":
+      return "Sin reembolso";
   }
 }

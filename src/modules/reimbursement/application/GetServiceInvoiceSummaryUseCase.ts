@@ -3,6 +3,8 @@ import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceReposit
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
 
+export type ReimbursementOutcome = "FULL" | "PARTIAL" | "NONE";
+
 export interface ServiceInvoiceSummary {
   service: Service;
   invoices: Invoice[];
@@ -14,6 +16,7 @@ export interface ServiceInvoiceSummary {
   overExpectedAmount: number;
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
+  reimbursementOutcome: ReimbursementOutcome;
 }
 
 interface GetServiceInvoiceSummaryUseCaseDependencies {
@@ -42,6 +45,7 @@ export async function getServiceInvoiceSummaryUseCase(
   const overExpectedAmount = roundMoney(Math.max(totalExpectedAmount - service.actualAmount, 0));
   const paidInvoicesCount = invoices.filter((invoice) => invoice.status === "PAID").length;
   const rejectedInvoicesCount = invoices.filter((invoice) => invoice.status === "REJECTED").length;
+  const reimbursementOutcome = deriveReimbursementOutcome(invoices, totalExpectedAmount, totalPaidAmount);
 
   return {
     service,
@@ -54,7 +58,30 @@ export async function getServiceInvoiceSummaryUseCase(
     overExpectedAmount,
     paidInvoicesCount,
     rejectedInvoicesCount,
+    reimbursementOutcome,
   };
+}
+
+function deriveReimbursementOutcome(
+  invoices: Invoice[],
+  totalExpectedAmount: number,
+  totalPaidAmount: number,
+): ReimbursementOutcome {
+  if (totalPaidAmount >= totalExpectedAmount && totalExpectedAmount > 0) {
+    return "FULL";
+  }
+
+  if (totalPaidAmount > 0 && totalPaidAmount < totalExpectedAmount) {
+    return "PARTIAL";
+  }
+
+  const allInvoicesResolved = invoices.length > 0 && invoices.every((invoice) => invoice.status === "PAID" || invoice.status === "REJECTED");
+
+  if (totalPaidAmount === 0 && allInvoicesResolved) {
+    return "NONE";
+  }
+
+  return "PARTIAL";
 }
 
 function roundMoney(value: number): number {

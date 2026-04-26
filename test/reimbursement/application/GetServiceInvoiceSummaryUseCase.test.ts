@@ -47,6 +47,7 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
       pendingExpectedAmount: 101,
       overBilledAmount: 0,
       overExpectedAmount: 0,
+      reimbursementOutcome: "PARTIAL",
     });
   });
 
@@ -73,7 +74,48 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
       pendingExpectedAmount: 0,
       overBilledAmount: 20,
       overExpectedAmount: 10,
+      reimbursementOutcome: "PARTIAL",
     });
+  });
+
+  it("returns FULL reimbursement outcome when paid reaches expected total", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+    const service = buildService({ actualAmount: 100 });
+    const invoices = [
+      buildInvoice({ status: "PAID", invoiceExpectedAmount: 50, paidAmount: 50 }),
+      buildInvoice({ id: "invoice-2", status: "PAID", invoiceExpectedAmount: 50, paidAmount: 50 }),
+    ];
+
+    serviceRepository.getById.mockResolvedValue(service);
+    invoiceRepository.listByServiceId.mockResolvedValue(invoices);
+
+    const result = await getServiceInvoiceSummaryUseCase("service-1", {
+      serviceRepository,
+      invoiceRepository,
+    });
+
+    expect(result?.reimbursementOutcome).toBe("FULL");
+  });
+
+  it("returns NONE reimbursement outcome when all invoices are resolved with zero paid", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+    const service = buildService({ actualAmount: 100 });
+    const invoices = [
+      buildInvoice({ status: "REJECTED", invoiceExpectedAmount: 50, paidAmount: null }),
+      buildInvoice({ id: "invoice-2", status: "REJECTED", invoiceExpectedAmount: 50, paidAmount: null }),
+    ];
+
+    serviceRepository.getById.mockResolvedValue(service);
+    invoiceRepository.listByServiceId.mockResolvedValue(invoices);
+
+    const result = await getServiceInvoiceSummaryUseCase("service-1", {
+      serviceRepository,
+      invoiceRepository,
+    });
+
+    expect(result?.reimbursementOutcome).toBe("NONE");
   });
 
   it("calls repositories with service id", async () => {

@@ -16,7 +16,9 @@ import {
   RegisterInvoiceClaimReferenceUseCaseError,
   registerInvoiceClaimReferenceUseCase,
 } from "@/modules/reimbursement/application/RegisterInvoiceClaimReferenceUseCase";
+import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
+import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { prisma } from "@/lib/db/prisma";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -95,6 +97,7 @@ export async function completeInvoiceInformationAction(
     return buildActionResult("error", "No se pudo completar la informacion de la factura.");
   }
 
+  await syncServiceStatusForInvoiceFlow(serviceId);
   revalidatePath(`/services/${serviceId}`);
   return buildActionResult("success", "Informacion de factura guardada.");
 }
@@ -125,6 +128,7 @@ export async function registerInvoiceClaimReferenceAction(
     return buildActionResult("error", "No se pudo registrar la referencia de solicitud.");
   }
 
+  await syncServiceStatusForInvoiceFlow(serviceId);
   revalidatePath(`/services/${serviceId}`);
   return buildActionResult("success", "Referencia de solicitud guardada.");
 }
@@ -161,6 +165,7 @@ export async function markInvoiceAsPaidAction(
     return buildActionResult("error", "No se pudo marcar la factura como pagada.");
   }
 
+  await syncServiceStatusForInvoiceFlow(serviceId);
   revalidatePath(`/services/${serviceId}`);
   return buildActionResult("success", "Factura marcada como pagada.");
 }
@@ -191,8 +196,16 @@ export async function markInvoiceAsRejectedAction(
     return buildActionResult("error", "No se pudo marcar la factura como rechazada.");
   }
 
+  await syncServiceStatusForInvoiceFlow(serviceId);
   revalidatePath(`/services/${serviceId}`);
   return buildActionResult("success", "Factura marcada como rechazada.");
+}
+
+async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void> {
+  await syncServiceStatusFromInvoicesUseCase(serviceId, {
+    serviceRepository: new PrismaServiceRepository(prisma),
+    invoiceRepository: new PrismaInvoiceRepository(prisma),
+  });
 }
 
 function getString(formData: FormData, key: string): string {

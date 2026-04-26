@@ -55,6 +55,33 @@ export class PrismaServiceRepository implements ServiceRepository {
     return services.map((service) => this.mapService(service));
   }
 
+  async updateStatus(serviceId: string, status: ServiceStatus): Promise<Service | null> {
+    const existingService = await this.prisma.reimbursableService.findUnique({
+      where: { id: serviceId },
+      include: {
+        insurer: true,
+        person: true,
+      },
+    });
+
+    if (!existingService) {
+      return null;
+    }
+
+    const updatedService = await this.prisma.reimbursableService.update({
+      where: { id: serviceId },
+      data: {
+        status: this.toPrismaStatus(status),
+      },
+      include: {
+        insurer: true,
+        person: true,
+      },
+    });
+
+    return this.mapService(updatedService);
+  }
+
   async personExists(personId: string): Promise<boolean> {
     const person = await this.prisma.person.findUnique({
       where: { id: personId },
