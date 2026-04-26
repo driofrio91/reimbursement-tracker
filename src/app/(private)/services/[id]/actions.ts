@@ -1,12 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { completeInvoiceInformationUseCase } from "@/modules/reimbursement/application/CompleteInvoiceInformationUseCase";
-import { markInvoiceAsPaidUseCase } from "@/modules/reimbursement/application/MarkInvoiceAsPaidUseCase";
-import { markInvoiceAsRejectedUseCase } from "@/modules/reimbursement/application/MarkInvoiceAsRejectedUseCase";
-import { registerInvoiceClaimReferenceUseCase } from "@/modules/reimbursement/application/RegisterInvoiceClaimReferenceUseCase";
+import {
+  CompleteInvoiceInformationUseCaseError,
+  completeInvoiceInformationUseCase,
+} from "@/modules/reimbursement/application/CompleteInvoiceInformationUseCase";
+import { MarkInvoiceAsPaidUseCaseError, markInvoiceAsPaidUseCase } from "@/modules/reimbursement/application/MarkInvoiceAsPaidUseCase";
+import {
+  MarkInvoiceAsRejectedUseCaseError,
+  markInvoiceAsRejectedUseCase,
+} from "@/modules/reimbursement/application/MarkInvoiceAsRejectedUseCase";
+import {
+  RegisterInvoiceClaimReferenceUseCaseError,
+  registerInvoiceClaimReferenceUseCase,
+} from "@/modules/reimbursement/application/RegisterInvoiceClaimReferenceUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { prisma } from "@/lib/db/prisma";
 
@@ -54,24 +64,33 @@ export async function completeInvoiceInformationAction(
   });
 
   if (!parsedInput.success) {
-    return;
+    redirectWithFeedback(serviceId, "error", "Revisa los datos de factura antes de guardar.");
   }
 
-  await completeInvoiceInformationUseCase(
-    invoiceId,
-    {
-      invoiceNumber: parsedInput.data.invoiceNumber,
-      invoiceDate: new Date(`${parsedInput.data.invoiceDate}T00:00:00`),
-      issuerName: parsedInput.data.issuerName,
-      issuerTaxId: parsedInput.data.issuerTaxId || null,
-      notes: parsedInput.data.notes || null,
-    },
-    {
-      invoiceRepository: new PrismaInvoiceRepository(prisma),
-    },
-  );
+  try {
+    await completeInvoiceInformationUseCase(
+      invoiceId,
+      {
+        invoiceNumber: parsedInput.data.invoiceNumber,
+        invoiceDate: new Date(`${parsedInput.data.invoiceDate}T00:00:00`),
+        issuerName: parsedInput.data.issuerName,
+        issuerTaxId: parsedInput.data.issuerTaxId || null,
+        notes: parsedInput.data.notes || null,
+      },
+      {
+        invoiceRepository: new PrismaInvoiceRepository(prisma),
+      },
+    );
+  } catch (error) {
+    if (error instanceof CompleteInvoiceInformationUseCaseError) {
+      redirectWithFeedback(serviceId, "error", error.message);
+    }
+
+    redirectWithFeedback(serviceId, "error", "No se pudo completar la informacion de la factura.");
+  }
 
   revalidatePath(`/services/${serviceId}`);
+  redirectWithFeedback(serviceId, "success", "Informacion de factura guardada.");
 }
 
 export async function registerInvoiceClaimReferenceAction(
@@ -84,14 +103,23 @@ export async function registerInvoiceClaimReferenceAction(
   });
 
   if (!parsedInput.success) {
-    return;
+    redirectWithFeedback(serviceId, "error", "La referencia de solicitud es obligatoria.");
   }
 
-  await registerInvoiceClaimReferenceUseCase(invoiceId, parsedInput.data.claimReference, {
-    invoiceRepository: new PrismaInvoiceRepository(prisma),
-  });
+  try {
+    await registerInvoiceClaimReferenceUseCase(invoiceId, parsedInput.data.claimReference, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof RegisterInvoiceClaimReferenceUseCaseError) {
+      redirectWithFeedback(serviceId, "error", error.message);
+    }
+
+    redirectWithFeedback(serviceId, "error", "No se pudo registrar la referencia de solicitud.");
+  }
 
   revalidatePath(`/services/${serviceId}`);
+  redirectWithFeedback(serviceId, "success", "Referencia de solicitud guardada.");
 }
 
 export async function markInvoiceAsPaidAction(serviceId: string, invoiceId: string, formData: FormData): Promise<void> {
@@ -101,19 +129,28 @@ export async function markInvoiceAsPaidAction(serviceId: string, invoiceId: stri
   });
 
   if (!parsedInput.success) {
-    return;
+    redirectWithFeedback(serviceId, "error", "El importe pagado y la fecha de pago son obligatorios.");
   }
 
-  await markInvoiceAsPaidUseCase(
-    invoiceId,
-    parsedInput.data.paidAmount,
-    new Date(`${parsedInput.data.paidAt}T00:00:00`),
-    {
-      invoiceRepository: new PrismaInvoiceRepository(prisma),
-    },
-  );
+  try {
+    await markInvoiceAsPaidUseCase(
+      invoiceId,
+      parsedInput.data.paidAmount,
+      new Date(`${parsedInput.data.paidAt}T00:00:00`),
+      {
+        invoiceRepository: new PrismaInvoiceRepository(prisma),
+      },
+    );
+  } catch (error) {
+    if (error instanceof MarkInvoiceAsPaidUseCaseError) {
+      redirectWithFeedback(serviceId, "error", error.message);
+    }
+
+    redirectWithFeedback(serviceId, "error", "No se pudo marcar la factura como pagada.");
+  }
 
   revalidatePath(`/services/${serviceId}`);
+  redirectWithFeedback(serviceId, "success", "Factura marcada como pagada.");
 }
 
 export async function markInvoiceAsRejectedAction(
@@ -126,18 +163,36 @@ export async function markInvoiceAsRejectedAction(
   });
 
   if (!parsedInput.success) {
-    return;
+    redirectWithFeedback(serviceId, "error", "No se pudo validar el motivo de rechazo.");
   }
 
-  await markInvoiceAsRejectedUseCase(invoiceId, parsedInput.data.rejectionReason || undefined, {
-    invoiceRepository: new PrismaInvoiceRepository(prisma),
-  });
+  try {
+    await markInvoiceAsRejectedUseCase(invoiceId, parsedInput.data.rejectionReason || undefined, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof MarkInvoiceAsRejectedUseCaseError) {
+      redirectWithFeedback(serviceId, "error", error.message);
+    }
+
+    redirectWithFeedback(serviceId, "error", "No se pudo marcar la factura como rechazada.");
+  }
 
   revalidatePath(`/services/${serviceId}`);
+  redirectWithFeedback(serviceId, "success", "Factura marcada como rechazada.");
 }
 
 function getString(formData: FormData, key: string): string {
   const value = formData.get(key);
 
   return typeof value === "string" ? value : "";
+}
+
+function redirectWithFeedback(serviceId: string, feedback: "success" | "error", message: string): never {
+  const params = new URLSearchParams({
+    feedback,
+    message,
+  });
+
+  redirect(`/services/${serviceId}?${params.toString()}`);
 }
