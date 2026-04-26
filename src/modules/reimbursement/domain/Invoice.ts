@@ -8,7 +8,6 @@ export type InvoiceStatus =
 export interface Invoice {
   id: string;
   serviceId: string;
-  requestId: string | null;
   invoiceNumber: string | null;
   invoiceDate: Date | null;
   invoiceBilledAmount: number;
@@ -28,7 +27,6 @@ export interface Invoice {
 
 export interface NewInvoice {
   serviceId: string;
-  requestId?: string | null;
   invoiceNumber?: string | null;
   invoiceDate?: Date | null;
   invoiceBilledAmount: number;

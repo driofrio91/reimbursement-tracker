@@ -65,6 +65,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           overExpectedAmount={summary.overExpectedAmount}
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
+          reimbursementOutcome={summary.reimbursementOutcome}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}

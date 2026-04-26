@@ -8,9 +8,6 @@
 - `ReimbursableService`
 - `Invoice`
 
-`ReimbursementRequest` se mantiene temporalmente en persistencia por transicion,
-pero no es la entidad principal del flujo operativo actual.
-
 ## ReimbursableService
 
 Campos clave:

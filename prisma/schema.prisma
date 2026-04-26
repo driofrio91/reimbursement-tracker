@@ -21,12 +21,6 @@ enum InvoiceStatus {
   REJECTED
 }
 
-enum ReimbursementRequestStatus {
-  SUBMITTED
-  REIMBURSED
-  REJECTED
-}
-
 model User {
   id           String   @id @default(uuid()) @db.Uuid
   email        String   @unique
@@ -38,15 +32,14 @@ model User {
 }
 
 model Insurer {
-  id        String                 @id @default(uuid()) @db.Uuid
+  id        String               @id @default(uuid()) @db.Uuid
   name      String
-  code      String                 @unique
-  isActive  Boolean                @default(true)
+  code      String               @unique
+  isActive  Boolean              @default(true)
   notes     String?
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
   services  ReimbursableService[]
-  requests  ReimbursementRequest[]
 }
 
 model Person {
@@ -87,48 +80,27 @@ model ReimbursableService {
   @@index([serviceDate])
 }
 
-model ReimbursementRequest {
-  id                String                     @id @default(uuid()) @db.Uuid
-  insurerId         String                     @db.Uuid
-  policyHolderName  String
-  submittedAt       DateTime
-  externalReference String?
-  status            ReimbursementRequestStatus @default(SUBMITTED)
-  notes             String?
-  createdAt         DateTime                   @default(now())
-  updatedAt         DateTime                   @updatedAt
-  insurer           Insurer                    @relation(fields: [insurerId], references: [id])
-  invoices          Invoice[]
-
-  @@index([insurerId])
-  @@index([status])
-  @@index([submittedAt])
-}
-
 model Invoice {
-  id               String                @id @default(uuid()) @db.Uuid
-  serviceId        String                @db.Uuid
-  requestId        String?               @db.Uuid
-  invoiceNumber    String?
-  invoiceDate      DateTime?             @db.Date
-  invoiceBilledAmount   Decimal          @default(55) @db.Decimal(10, 2)
-  invoiceExpectedAmount Decimal          @default(49.5) @db.Decimal(10, 2)
-  currency         String                @default("EUR")
-  issuerName       String?
-  issuerTaxId      String?
-  claimReference   String?
-  status           InvoiceStatus         @default(CREATED)
-  paidAmount       Decimal?              @db.Decimal(10, 2)
-  paidAt           DateTime?             @db.Date
-  rejectionReason  String?
-  notes            String?
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
-  service          ReimbursableService   @relation(fields: [serviceId], references: [id])
-  request          ReimbursementRequest? @relation(fields: [requestId], references: [id])
+  id                    String              @id @default(uuid()) @db.Uuid
+  serviceId             String              @db.Uuid
+  invoiceNumber         String?
+  invoiceDate           DateTime?           @db.Date
+  invoiceBilledAmount   Decimal             @default(55) @db.Decimal(10, 2)
+  invoiceExpectedAmount Decimal             @default(49.5) @db.Decimal(10, 2)
+  currency              String              @default("EUR")
+  issuerName            String?
+  issuerTaxId           String?
+  claimReference        String?
+  status                InvoiceStatus       @default(CREATED)
+  paidAmount            Decimal?            @db.Decimal(10, 2)
+  paidAt                DateTime?           @db.Date
+  rejectionReason       String?
+  notes                 String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  service               ReimbursableService @relation(fields: [serviceId], references: [id])
 
   @@index([serviceId])
-  @@index([requestId])
   @@index([status])
   @@index([invoiceDate])
 }

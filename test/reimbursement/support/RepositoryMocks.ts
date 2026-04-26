@@ -13,6 +13,7 @@ export interface ServiceRepositoryMock extends ServiceRepository {
   create: Mock<(service: NewService) => Promise<Service>>;
   getById: Mock<(serviceId: string) => Promise<Service | null>>;
   list: Mock<() => Promise<Service[]>>;
+  updateStatus: Mock<(serviceId: string, status: Service["status"]) => Promise<Service | null>>;
   personExists: Mock<(personId: string) => Promise<boolean>>;
   insurerIsActive: Mock<(insurerId: string) => Promise<boolean>>;
 }
@@ -22,6 +23,7 @@ export function createServiceRepositoryMock(): ServiceRepositoryMock {
     create: vi.fn(),
     getById: vi.fn(),
     list: vi.fn(),
+    updateStatus: vi.fn(),
     personExists: vi.fn(),
     insurerIsActive: vi.fn(),
   };

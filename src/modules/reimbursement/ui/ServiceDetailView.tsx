@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 
@@ -30,6 +31,7 @@ interface ServiceDetailViewProps {
   overExpectedAmount: number;
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
+  reimbursementOutcome: ReimbursementOutcome;
   completeInvoiceInformationAction: (
     serviceId: string,
     invoiceId: string,
@@ -67,6 +69,7 @@ export function ServiceDetailView({
   overExpectedAmount,
   paidInvoicesCount,
   rejectedInvoicesCount,
+  reimbursementOutcome,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
@@ -109,6 +112,7 @@ export function ServiceDetailView({
           <MetricCard label="Facturas" value={String(invoices.length)} />
           <MetricCard label="Pagadas" value={String(paidInvoicesCount)} />
           <MetricCard label="Rechazadas" value={String(rejectedInvoicesCount)} />
+          <MetricCard label="Resultado del reembolso" value={toDisplayReimbursementOutcome(reimbursementOutcome, service.status)} />
           <MetricCard label="Asistencia" value={service.attended ? "Si" : "No"} />
         </div>
 
@@ -226,7 +230,7 @@ function InvoiceStageCard({
           <span className="font-medium text-slate-900">Esperado:</span> {formatCurrency(invoice.invoiceExpectedAmount, invoice.currency)}
         </p>
         <p>
-          <span className="font-medium text-slate-900">Solicitud:</span> {invoice.claimReference ?? "Sin referencia"}
+          <span className="font-medium text-slate-900">Referencia:</span> {invoice.claimReference ?? "Sin referencia"}
         </p>
         <p>
           <span className="font-medium text-slate-900">Pagado:</span>{" "}
@@ -279,7 +283,7 @@ function InvoiceStageCard({
 
         {invoice.status === "INFORMATION_COMPLETED" ? (
           <form action={claimFormAction} className="space-y-2 rounded-xl border border-slate-200 bg-white p-3">
-            <p className="text-sm font-medium text-slate-800">Registrar referencia de solicitud</p>
+            <p className="text-sm font-medium text-slate-800">Registrar referencia de reembolso</p>
             <input
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               type="text"
@@ -431,7 +435,7 @@ function toDisplayInvoiceStatus(status: Invoice["status"]) {
     case "INFORMATION_COMPLETED":
       return "Informacion completada";
     case "CLAIM_REFERENCE_COMPLETED":
-      return "Solicitud registrada";
+      return "Referencia registrada";
     case "PAID":
       return "Pagada";
     case "REJECTED":
@@ -444,12 +448,27 @@ function toNextActionLabel(status: Invoice["status"]) {
     case "CREATED":
       return "completar informacion de factura";
     case "INFORMATION_COMPLETED":
-      return "registrar referencia de solicitud";
+      return "registrar referencia de reembolso";
     case "CLAIM_REFERENCE_COMPLETED":
       return "resolver como pagada o rechazada";
     case "PAID":
       return "sin acciones pendientes";
     case "REJECTED":
       return "sin acciones pendientes";
+  }
+}
+
+function toDisplayReimbursementOutcome(outcome: ReimbursementOutcome, serviceStatus: Service["status"]) {
+  if (serviceStatus !== "REIMBURSED") {
+    return "En seguimiento";
+  }
+
+  switch (outcome) {
+    case "FULL":
+      return "Reembolso completo";
+    case "PARTIAL":
+      return "Reembolso parcial";
+    case "NONE":
+      return "Sin reembolso";
   }
 }

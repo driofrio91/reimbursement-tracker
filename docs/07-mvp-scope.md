@@ -14,8 +14,6 @@ Definir el recorte operativo de V1 para sustituir el Excel sin sobredimensionar.
 - `ReimbursableService`
 - `Invoice`
 
-`ReimbursementRequest` permanece solo como compatibilidad temporal de persistencia.
-
 ### Flujo funcional
 
 1. login
@@ -76,6 +74,5 @@ Definir el recorte operativo de V1 para sustituir el Excel sin sobredimensionar.
 
 ## V2 orientativa
 
-- desacoplar completamente y retirar `ReimbursementRequest` legado
 - ampliar trazabilidad avanzada
 - importacion y limpieza asistida de historico
