@@ -55,12 +55,6 @@ export interface InvoiceActionResult {
   token: number;
 }
 
-export const initialInvoiceActionResult: InvoiceActionResult = {
-  status: "idle",
-  message: "",
-  token: 0,
-};
-
 export async function completeInvoiceInformationAction(
   serviceId: string,
   invoiceId: string,

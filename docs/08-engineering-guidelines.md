@@ -13,6 +13,8 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - Mantener componentes de lectura como `Server Components` por defecto cuando no necesiten interactividad.
 - Usar `Client Components` solo cuando hagan falta eventos, estado local del navegador o APIs del cliente.
 - Usar `Server Actions` y `Route Handlers` solo como adaptadores de entrada; deben delegar rapido en casos de uso.
+- En archivos con `"use server"`, exportar solo funciones `async`; no exportar objetos, constantes ni valores en runtime.
+- Si una accion necesita tipos compartidos o estado inicial para `useActionState`, definirlos en el componente cliente o en un archivo separado sin `"use server"`.
 - No colocar reglas de negocio en `page.tsx`, `layout.tsx`, acciones de servidor ni handlers.
 - Mantener `src/app` enfocado en rutas, composicion de pantalla y wiring.
 
