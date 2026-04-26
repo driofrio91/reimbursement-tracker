@@ -14,13 +14,8 @@ import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
 import { prisma } from "@/lib/db/prisma";
 
-interface ServiceDetailPageProps {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ feedback?: string; message?: string }>;
-}
-
-export default async function ServiceDetailPage({ params, searchParams }: ServiceDetailPageProps) {
-  const [{ id }, rawSearchParams] = await Promise.all([params, searchParams]);
+export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const summary = await getServiceInvoiceSummaryUseCase(id, {
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
@@ -29,15 +24,6 @@ export default async function ServiceDetailPage({ params, searchParams }: Servic
   if (!summary) {
     notFound();
   }
-
-  const feedbackType = rawSearchParams.feedback;
-  const feedback: { type: "success" | "error"; message: string | null } | null =
-    feedbackType === "success" || feedbackType === "error"
-      ? {
-          type: feedbackType,
-          message: rawSearchParams.message ?? null,
-        }
-      : null;
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
@@ -79,7 +65,6 @@ export default async function ServiceDetailPage({ params, searchParams }: Servic
           overExpectedAmount={summary.overExpectedAmount}
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
-          feedback={feedback}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}

@@ -1,10 +1,23 @@
+"use client";
+
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 
-interface ServiceDetailFeedback {
-  type: "success" | "error";
-  message: string | null;
+interface InvoiceActionResult {
+  status: "idle" | "success" | "error";
+  message: string;
+  token: number;
 }
+
+const initialInvoiceActionResult: InvoiceActionResult = {
+  status: "idle",
+  message: "",
+  token: 0,
+};
 
 interface ServiceDetailViewProps {
   service: Service;
@@ -17,11 +30,30 @@ interface ServiceDetailViewProps {
   overExpectedAmount: number;
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
-  feedback: ServiceDetailFeedback | null;
-  completeInvoiceInformationAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
-  registerInvoiceClaimReferenceAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
-  markInvoiceAsPaidAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
-  markInvoiceAsRejectedAction: (serviceId: string, invoiceId: string, formData: FormData) => Promise<void>;
+  completeInvoiceInformationAction: (
+    serviceId: string,
+    invoiceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
+  registerInvoiceClaimReferenceAction: (
+    serviceId: string,
+    invoiceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
+  markInvoiceAsPaidAction: (
+    serviceId: string,
+    invoiceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
+  markInvoiceAsRejectedAction: (
+    serviceId: string,
+    invoiceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
 }
 
 export function ServiceDetailView({
@@ -35,14 +67,11 @@ export function ServiceDetailView({
   overExpectedAmount,
   paidInvoicesCount,
   rejectedInvoicesCount,
-  feedback,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
 }: ServiceDetailViewProps) {
-  const defaultPaidDate = new Date().toISOString().slice(0, 10);
-
   return (
     <div className="space-y-6">
       <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -103,177 +132,24 @@ export function ServiceDetailView({
           </p>
         </div>
 
-        {feedback ? <FeedbackBanner type={feedback.type} message={feedback.message} /> : null}
-
         {invoices.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
             Aun no hay facturas registradas para este servicio.
           </div>
         ) : (
           <div className="space-y-4">
-            {invoices.map((invoice, index) => {
-              const completeAction = completeInvoiceInformationAction.bind(null, service.id, invoice.id);
-              const claimAction = registerInvoiceClaimReferenceAction.bind(null, service.id, invoice.id);
-              const paidAction = markInvoiceAsPaidAction.bind(null, service.id, invoice.id);
-              const rejectedAction = markInvoiceAsRejectedAction.bind(null, service.id, invoice.id);
-
-              return (
-                <article key={invoice.id} className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-base font-semibold text-slate-950">Factura #{index + 1}</p>
-                      <p className="text-sm text-slate-600">{invoice.invoiceNumber ?? "Sin numero asignado"}</p>
-                    </div>
-
-                    <span className="inline-flex rounded-full border border-slate-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700">
-                      {toDisplayInvoiceStatus(invoice.status)}
-                    </span>
-                  </div>
-
-                  <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
-                    <p>
-                      <span className="font-medium text-slate-900">Facturado:</span>{" "}
-                      {formatCurrency(invoice.invoiceBilledAmount, invoice.currency)}
-                    </p>
-                    <p>
-                      <span className="font-medium text-slate-900">Esperado:</span>{" "}
-                      {formatCurrency(invoice.invoiceExpectedAmount, invoice.currency)}
-                    </p>
-                    <p>
-                      <span className="font-medium text-slate-900">Solicitud:</span>{" "}
-                      {invoice.claimReference ?? "Sin referencia"}
-                    </p>
-                    <p>
-                      <span className="font-medium text-slate-900">Pagado:</span>{" "}
-                      {invoice.paidAmount ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <StageHint status={invoice.status} />
-
-                    {invoice.status === "CREATED" ? (
-                      <form action={completeAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
-                        <p className="text-sm font-medium text-slate-800">Completar informacion de factura</p>
-                        <input
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          type="text"
-                          name="invoiceNumber"
-                          placeholder="F-2026-001"
-                          defaultValue={invoice.invoiceNumber ?? ""}
-                          required
-                        />
-                        <input
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          type="date"
-                          name="invoiceDate"
-                          defaultValue={invoice.invoiceDate ? toInputDate(invoice.invoiceDate) : ""}
-                          required
-                        />
-                        <input
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          type="text"
-                          name="issuerName"
-                          placeholder="Clinica Central"
-                          defaultValue={invoice.issuerName ?? ""}
-                          required
-                        />
-                        <input
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          type="text"
-                          name="issuerTaxId"
-                          placeholder="B12345678"
-                          defaultValue={invoice.issuerTaxId ?? ""}
-                        />
-                        <textarea
-                          className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          name="notes"
-                          defaultValue={invoice.notes ?? ""}
-                        />
-                        <button
-                          className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white"
-                          type="submit"
-                        >
-                          Guardar informacion
-                        </button>
-                      </form>
-                    ) : null}
-
-                    {invoice.status === "INFORMATION_COMPLETED" ? (
-                      <form action={claimAction} className="space-y-2 rounded-xl border border-slate-200 bg-white p-3">
-                        <p className="text-sm font-medium text-slate-800">Registrar referencia de solicitud</p>
-                        <input
-                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          type="text"
-                          name="claimReference"
-                          placeholder="REF-PORTAL-2026-001"
-                          defaultValue={invoice.claimReference ?? ""}
-                          required
-                        />
-                        <button
-                          className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800"
-                          type="submit"
-                        >
-                          Guardar referencia
-                        </button>
-                      </form>
-                    ) : null}
-
-                    {invoice.status === "CLAIM_REFERENCE_COMPLETED" ? (
-                      <div className="grid gap-3 lg:grid-cols-2">
-                        <form action={paidAction} className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                          <p className="text-sm font-medium text-emerald-900">Resolver como pagada</p>
-                          <input
-                            className="w-full rounded-lg border border-emerald-300 px-3 py-2 text-sm"
-                            type="text"
-                            inputMode="decimal"
-                            name="paidAmount"
-                            defaultValue={String(invoice.paidAmount ?? invoice.invoiceExpectedAmount)}
-                            required
-                          />
-                          <input
-                            className="w-full rounded-lg border border-emerald-300 px-3 py-2 text-sm"
-                            type="date"
-                            name="paidAt"
-                            defaultValue={invoice.paidAt ? toInputDate(invoice.paidAt) : defaultPaidDate}
-                            required
-                          />
-                          <button
-                            className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white"
-                            type="submit"
-                          >
-                            Marcar pagada
-                          </button>
-                        </form>
-
-                        <form action={rejectedAction} className="space-y-2 rounded-lg border border-rose-200 bg-rose-50 p-3">
-                          <p className="text-sm font-medium text-rose-900">Resolver como rechazada</p>
-                          <input
-                            className="w-full rounded-lg border border-rose-300 px-3 py-2 text-sm"
-                            type="text"
-                            name="rejectionReason"
-                            placeholder="Motivo de rechazo"
-                            defaultValue={invoice.rejectionReason ?? ""}
-                          />
-                          <button
-                            className="inline-flex items-center justify-center rounded-lg bg-rose-700 px-3 py-2 text-sm font-medium text-white"
-                            type="submit"
-                          >
-                            Marcar rechazada
-                          </button>
-                        </form>
-                      </div>
-                    ) : null}
-
-                    {invoice.status === "PAID" || invoice.status === "REJECTED" ? (
-                      <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                        Factura finalizada. Si necesitas cambios, crea una nueva factura de ajuste en una siguiente iteracion del flujo.
-                      </div>
-                    ) : null}
-                  </div>
-                </article>
-              );
-            })}
+            {invoices.map((invoice, index) => (
+              <InvoiceStageCard
+                key={invoice.id}
+                serviceId={service.id}
+                invoice={invoice}
+                index={index}
+                completeInvoiceInformationAction={completeInvoiceInformationAction}
+                registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
+                markInvoiceAsPaidAction={markInvoiceAsPaidAction}
+                markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
+              />
+            ))}
           </div>
         )}
       </section>
@@ -281,27 +157,213 @@ export function ServiceDetailView({
   );
 }
 
+interface InvoiceStageCardProps {
+  serviceId: string;
+  invoice: Invoice;
+  index: number;
+  completeInvoiceInformationAction: ServiceDetailViewProps["completeInvoiceInformationAction"];
+  registerInvoiceClaimReferenceAction: ServiceDetailViewProps["registerInvoiceClaimReferenceAction"];
+  markInvoiceAsPaidAction: ServiceDetailViewProps["markInvoiceAsPaidAction"];
+  markInvoiceAsRejectedAction: ServiceDetailViewProps["markInvoiceAsRejectedAction"];
+}
+
+function InvoiceStageCard({
+  serviceId,
+  invoice,
+  index,
+  completeInvoiceInformationAction,
+  registerInvoiceClaimReferenceAction,
+  markInvoiceAsPaidAction,
+  markInvoiceAsRejectedAction,
+}: InvoiceStageCardProps) {
+  const router = useRouter();
+  const defaultPaidDate = new Date().toISOString().slice(0, 10);
+
+  const completeAction = completeInvoiceInformationAction.bind(null, serviceId, invoice.id);
+  const claimAction = registerInvoiceClaimReferenceAction.bind(null, serviceId, invoice.id);
+  const paidAction = markInvoiceAsPaidAction.bind(null, serviceId, invoice.id);
+  const rejectedAction = markInvoiceAsRejectedAction.bind(null, serviceId, invoice.id);
+
+  const [completeState, completeFormAction] = useActionState(completeAction, initialInvoiceActionResult);
+  const [claimState, claimFormAction] = useActionState(claimAction, initialInvoiceActionResult);
+  const [paidState, paidFormAction] = useActionState(paidAction, initialInvoiceActionResult);
+  const [rejectedState, rejectedFormAction] = useActionState(rejectedAction, initialInvoiceActionResult);
+
+  useEffect(() => {
+    notifyActionResult(completeState, router);
+  }, [completeState, router]);
+
+  useEffect(() => {
+    notifyActionResult(claimState, router);
+  }, [claimState, router]);
+
+  useEffect(() => {
+    notifyActionResult(paidState, router);
+  }, [paidState, router]);
+
+  useEffect(() => {
+    notifyActionResult(rejectedState, router);
+  }, [rejectedState, router]);
+
+  return (
+    <article className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-base font-semibold text-slate-950">Factura #{index + 1}</p>
+          <p className="text-sm text-slate-600">{invoice.invoiceNumber ?? "Sin numero asignado"}</p>
+        </div>
+
+        <span className="inline-flex rounded-full border border-slate-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700">
+          {toDisplayInvoiceStatus(invoice.status)}
+        </span>
+      </div>
+
+      <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
+        <p>
+          <span className="font-medium text-slate-900">Facturado:</span> {formatCurrency(invoice.invoiceBilledAmount, invoice.currency)}
+        </p>
+        <p>
+          <span className="font-medium text-slate-900">Esperado:</span> {formatCurrency(invoice.invoiceExpectedAmount, invoice.currency)}
+        </p>
+        <p>
+          <span className="font-medium text-slate-900">Solicitud:</span> {invoice.claimReference ?? "Sin referencia"}
+        </p>
+        <p>
+          <span className="font-medium text-slate-900">Pagado:</span>{" "}
+          {invoice.paidAmount ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <StageHint status={invoice.status} />
+
+        {invoice.status === "CREATED" ? (
+          <form action={completeFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+            <p className="text-sm font-medium text-slate-800">Completar informacion de factura</p>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              type="text"
+              name="invoiceNumber"
+              placeholder="F-2026-001"
+              defaultValue={invoice.invoiceNumber ?? ""}
+              required
+            />
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              type="date"
+              name="invoiceDate"
+              defaultValue={invoice.invoiceDate ? toInputDate(invoice.invoiceDate) : ""}
+              required
+            />
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              type="text"
+              name="issuerName"
+              placeholder="Clinica Central"
+              defaultValue={invoice.issuerName ?? ""}
+              required
+            />
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              type="text"
+              name="issuerTaxId"
+              placeholder="B12345678"
+              defaultValue={invoice.issuerTaxId ?? ""}
+            />
+            <textarea className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" name="notes" defaultValue={invoice.notes ?? ""} />
+            <button className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white" type="submit">
+              Guardar informacion
+            </button>
+          </form>
+        ) : null}
+
+        {invoice.status === "INFORMATION_COMPLETED" ? (
+          <form action={claimFormAction} className="space-y-2 rounded-xl border border-slate-200 bg-white p-3">
+            <p className="text-sm font-medium text-slate-800">Registrar referencia de solicitud</p>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              type="text"
+              name="claimReference"
+              placeholder="REF-PORTAL-2026-001"
+              defaultValue={invoice.claimReference ?? ""}
+              required
+            />
+            <button className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800" type="submit">
+              Guardar referencia
+            </button>
+          </form>
+        ) : null}
+
+        {invoice.status === "CLAIM_REFERENCE_COMPLETED" ? (
+          <div className="grid gap-3 lg:grid-cols-2">
+            <form action={paidFormAction} className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+              <p className="text-sm font-medium text-emerald-900">Resolver como pagada</p>
+              <input
+                className="w-full rounded-lg border border-emerald-300 px-3 py-2 text-sm"
+                type="text"
+                inputMode="decimal"
+                name="paidAmount"
+                defaultValue={String(invoice.paidAmount ?? invoice.invoiceExpectedAmount)}
+                required
+              />
+              <input
+                className="w-full rounded-lg border border-emerald-300 px-3 py-2 text-sm"
+                type="date"
+                name="paidAt"
+                defaultValue={invoice.paidAt ? toInputDate(invoice.paidAt) : defaultPaidDate}
+                required
+              />
+              <button className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-sm font-medium text-white" type="submit">
+                Marcar pagada
+              </button>
+            </form>
+
+            <form action={rejectedFormAction} className="space-y-2 rounded-lg border border-rose-200 bg-rose-50 p-3">
+              <p className="text-sm font-medium text-rose-900">Resolver como rechazada</p>
+              <input
+                className="w-full rounded-lg border border-rose-300 px-3 py-2 text-sm"
+                type="text"
+                name="rejectionReason"
+                placeholder="Motivo de rechazo"
+                defaultValue={invoice.rejectionReason ?? ""}
+              />
+              <button className="inline-flex items-center justify-center rounded-lg bg-rose-700 px-3 py-2 text-sm font-medium text-white" type="submit">
+                Marcar rechazada
+              </button>
+            </form>
+          </div>
+        ) : null}
+
+        {invoice.status === "PAID" || invoice.status === "REJECTED" ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+            Factura finalizada. Si necesitas cambios, crea una nueva factura de ajuste en una siguiente iteracion del flujo.
+          </div>
+        ) : null}
+      </div>
+    </article>
+  );
+}
+
+function notifyActionResult(result: InvoiceActionResult, router: ReturnType<typeof useRouter>) {
+  if (result.status === "idle" || result.token === 0) {
+    return;
+  }
+
+  if (result.status === "success") {
+    toast.success(result.message);
+    router.refresh();
+
+    return;
+  }
+
+  toast.error(result.message);
+}
+
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-2 text-lg font-semibold text-slate-950">{value}</p>
-    </div>
-  );
-}
-
-function FeedbackBanner({ type, message }: { type: "success" | "error"; message: string | null }) {
-  const text = message ?? (type === "success" ? "Operacion completada." : "No se pudo completar la operacion.");
-
-  return (
-    <div
-      className={
-        type === "success"
-          ? "rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900"
-          : "rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900"
-      }
-    >
-      {text}
     </div>
   );
 }

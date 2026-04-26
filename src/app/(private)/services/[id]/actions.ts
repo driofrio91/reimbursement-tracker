@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
@@ -50,11 +49,24 @@ const rejectedSchema = z.object({
   rejectionReason: z.string().trim().optional(),
 });
 
+export interface InvoiceActionResult {
+  status: "idle" | "success" | "error";
+  message: string;
+  token: number;
+}
+
+export const initialInvoiceActionResult: InvoiceActionResult = {
+  status: "idle",
+  message: "",
+  token: 0,
+};
+
 export async function completeInvoiceInformationAction(
   serviceId: string,
   invoiceId: string,
+  _previousState: InvoiceActionResult,
   formData: FormData,
-): Promise<void> {
+): Promise<InvoiceActionResult> {
   const parsedInput = completeInvoiceInformationSchema.safeParse({
     invoiceNumber: getString(formData, "invoiceNumber"),
     invoiceDate: getString(formData, "invoiceDate"),
@@ -64,7 +76,7 @@ export async function completeInvoiceInformationAction(
   });
 
   if (!parsedInput.success) {
-    redirectWithFeedback(serviceId, "error", "Revisa los datos de factura antes de guardar.");
+    return buildActionResult("error", "Revisa los datos de factura antes de guardar.");
   }
 
   try {
@@ -83,27 +95,28 @@ export async function completeInvoiceInformationAction(
     );
   } catch (error) {
     if (error instanceof CompleteInvoiceInformationUseCaseError) {
-      redirectWithFeedback(serviceId, "error", error.message);
+      return buildActionResult("error", error.message);
     }
 
-    redirectWithFeedback(serviceId, "error", "No se pudo completar la informacion de la factura.");
+    return buildActionResult("error", "No se pudo completar la informacion de la factura.");
   }
 
   revalidatePath(`/services/${serviceId}`);
-  redirectWithFeedback(serviceId, "success", "Informacion de factura guardada.");
+  return buildActionResult("success", "Informacion de factura guardada.");
 }
 
 export async function registerInvoiceClaimReferenceAction(
   serviceId: string,
   invoiceId: string,
+  _previousState: InvoiceActionResult,
   formData: FormData,
-): Promise<void> {
+): Promise<InvoiceActionResult> {
   const parsedInput = claimReferenceSchema.safeParse({
     claimReference: getString(formData, "claimReference"),
   });
 
   if (!parsedInput.success) {
-    redirectWithFeedback(serviceId, "error", "La referencia de solicitud es obligatoria.");
+    return buildActionResult("error", "La referencia de solicitud es obligatoria.");
   }
 
   try {
@@ -112,24 +125,29 @@ export async function registerInvoiceClaimReferenceAction(
     });
   } catch (error) {
     if (error instanceof RegisterInvoiceClaimReferenceUseCaseError) {
-      redirectWithFeedback(serviceId, "error", error.message);
+      return buildActionResult("error", error.message);
     }
 
-    redirectWithFeedback(serviceId, "error", "No se pudo registrar la referencia de solicitud.");
+    return buildActionResult("error", "No se pudo registrar la referencia de solicitud.");
   }
 
   revalidatePath(`/services/${serviceId}`);
-  redirectWithFeedback(serviceId, "success", "Referencia de solicitud guardada.");
+  return buildActionResult("success", "Referencia de solicitud guardada.");
 }
 
-export async function markInvoiceAsPaidAction(serviceId: string, invoiceId: string, formData: FormData): Promise<void> {
+export async function markInvoiceAsPaidAction(
+  serviceId: string,
+  invoiceId: string,
+  _previousState: InvoiceActionResult,
+  formData: FormData,
+): Promise<InvoiceActionResult> {
   const parsedInput = paidSchema.safeParse({
     paidAmount: getString(formData, "paidAmount"),
     paidAt: getString(formData, "paidAt"),
   });
 
   if (!parsedInput.success) {
-    redirectWithFeedback(serviceId, "error", "El importe pagado y la fecha de pago son obligatorios.");
+    return buildActionResult("error", "El importe pagado y la fecha de pago son obligatorios.");
   }
 
   try {
@@ -143,27 +161,28 @@ export async function markInvoiceAsPaidAction(serviceId: string, invoiceId: stri
     );
   } catch (error) {
     if (error instanceof MarkInvoiceAsPaidUseCaseError) {
-      redirectWithFeedback(serviceId, "error", error.message);
+      return buildActionResult("error", error.message);
     }
 
-    redirectWithFeedback(serviceId, "error", "No se pudo marcar la factura como pagada.");
+    return buildActionResult("error", "No se pudo marcar la factura como pagada.");
   }
 
   revalidatePath(`/services/${serviceId}`);
-  redirectWithFeedback(serviceId, "success", "Factura marcada como pagada.");
+  return buildActionResult("success", "Factura marcada como pagada.");
 }
 
 export async function markInvoiceAsRejectedAction(
   serviceId: string,
   invoiceId: string,
+  _previousState: InvoiceActionResult,
   formData: FormData,
-): Promise<void> {
+): Promise<InvoiceActionResult> {
   const parsedInput = rejectedSchema.safeParse({
     rejectionReason: getString(formData, "rejectionReason"),
   });
 
   if (!parsedInput.success) {
-    redirectWithFeedback(serviceId, "error", "No se pudo validar el motivo de rechazo.");
+    return buildActionResult("error", "No se pudo validar el motivo de rechazo.");
   }
 
   try {
@@ -172,14 +191,14 @@ export async function markInvoiceAsRejectedAction(
     });
   } catch (error) {
     if (error instanceof MarkInvoiceAsRejectedUseCaseError) {
-      redirectWithFeedback(serviceId, "error", error.message);
+      return buildActionResult("error", error.message);
     }
 
-    redirectWithFeedback(serviceId, "error", "No se pudo marcar la factura como rechazada.");
+    return buildActionResult("error", "No se pudo marcar la factura como rechazada.");
   }
 
   revalidatePath(`/services/${serviceId}`);
-  redirectWithFeedback(serviceId, "success", "Factura marcada como rechazada.");
+  return buildActionResult("success", "Factura marcada como rechazada.");
 }
 
 function getString(formData: FormData, key: string): string {
@@ -188,11 +207,10 @@ function getString(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
-function redirectWithFeedback(serviceId: string, feedback: "success" | "error", message: string): never {
-  const params = new URLSearchParams({
-    feedback,
+function buildActionResult(status: "success" | "error", message: string): InvoiceActionResult {
+  return {
+    status,
     message,
-  });
-
-  redirect(`/services/${serviceId}?${params.toString()}`);
+    token: Date.now(),
+  };
 }
