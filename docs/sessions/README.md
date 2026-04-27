@@ -29,4 +29,4 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 
 ## Ultimo relevo recomendado hoy
 
-- `2026-04-27-session-17-docs-invoice-search-priority.md`
+- `2026-04-28-session-20-edge-case-matrix-tests-and-docs.md`

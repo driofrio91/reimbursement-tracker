@@ -70,9 +70,19 @@ Definicion funcional cerrada para esta US:
 
 Siguiente bloque priorizado para cerrar V1:
 
-1. reforzar validaciones de transicion de estado y mensajes de error
-2. ajustar estado global de servicio derivado de facturas
-3. cerrar QA funcional final en movil y desktop
+1. preparar entorno desplegado para QA funcional final en movil y desktop
+
+Cobertura de escenarios limite cerrada para estado global y resultado economico:
+
+- estado global de servicio sincronizado por reglas operativas ya validadas con tests
+- resultado economico (`FULL`, `PARTIAL`, `NONE`) cubierto con casos de borde en regresion
+- matrices cerradas y documentadas en `docs/07-mvp-scope.md` (casos `A1-A14` y `B1-B10`)
+
+Validacion de transiciones de factura cerrada en V1:
+
+- flujo estricto: `CREATED` -> `INFORMATION_COMPLETED` -> `CLAIM_REFERENCE_COMPLETED` -> `PAID`/`REJECTED`
+- sin saltos, sin retrocesos y sin re-confirmacion de estado final por acciones normales
+- `PAID` <-> `REJECTED` solo via correccion final con motivo obligatorio
 
 ## Regla de autogeneracion de facturas
 

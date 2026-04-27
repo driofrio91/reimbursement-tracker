@@ -12,6 +12,7 @@
   - registrar `claimReference`
   - marcar `PAID` o `REJECTED`
   - corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio en modal in-app
+  - validaciones estrictas de transicion activas en backend (sin saltos, sin retrocesos y sin re-confirmacion de estado final fuera de correccion)
 - resumen operativo por servicio con total facturado, esperado, pagado y pendientes
 - buscador global de facturas en `/invoices`
 - detalle dedicado de factura en `/invoices/[id]` en modo lectura con enlace a `/services/[id]`
@@ -24,9 +25,19 @@
 
 ## Siguiente foco propuesto
 
-- reforzar validaciones de transicion de estado y mensajes de error
-- ajustar estado global de servicio derivado de facturas
-- cerrar el ciclo por etapas con QA funcional final de V1
+- preparar despliegue del entorno para QA funcional final de V1
+
+## Cobertura de escenarios limite
+
+- sincronizacion de `Service.status` validada con tests de regresion para:
+  - combinaciones mixtas con etapas iniciales (`REGISTERED`)
+  - casos abiertos sin etapas iniciales (`SUBMITTED`)
+  - cierre total con resoluciones finales (`REIMBURSED`)
+- resultado economico (`FULL`, `PARTIAL`, `NONE`) validado con casos de borde:
+  - pago exacto o superior al esperado (`FULL`)
+  - pago parcial en caso resuelto o en seguimiento (`PARTIAL`)
+  - cero pagado con todas las facturas resueltas (`NONE`)
+- matriz completa de escenarios documentada en `docs/07-mvp-scope.md` (casos `A1-A14` y `B1-B10`)
 
 ## Modelo funcional vigente
 

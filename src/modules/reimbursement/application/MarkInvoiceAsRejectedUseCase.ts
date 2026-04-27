@@ -25,7 +25,7 @@ export async function markInvoiceAsRejectedUseCase(
     throw new MarkInvoiceAsRejectedUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
   }
 
-  if (invoice.status !== "CLAIM_REFERENCE_COMPLETED" && invoice.status !== "REJECTED") {
+  if (invoice.status !== "CLAIM_REFERENCE_COMPLETED") {
     throw new MarkInvoiceAsRejectedUseCaseError(
       "INVALID_STATUS",
       "La factura debe tener referencia registrada para poder marcarse como rechazada.",
@@ -35,7 +35,10 @@ export async function markInvoiceAsRejectedUseCase(
   const updatedInvoice = await dependencies.invoiceRepository.markAsRejected(invoiceId, rejectionReason);
 
   if (!updatedInvoice) {
-    throw new MarkInvoiceAsRejectedUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+    throw new MarkInvoiceAsRejectedUseCaseError(
+      "INVALID_STATUS",
+      "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
+    );
   }
 
   return updatedInvoice;
