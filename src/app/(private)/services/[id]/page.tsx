@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import {
   completeInvoiceInformationAction,
+  correctInvoiceResolutionAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
@@ -70,6 +71,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}
           markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
+          correctInvoiceResolutionAction={correctInvoiceResolutionAction}
         />
       </div>
     </main>

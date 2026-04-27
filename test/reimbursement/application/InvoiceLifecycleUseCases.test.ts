@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { completeInvoiceInformationUseCase } from "@/modules/reimbursement/application/CompleteInvoiceInformationUseCase";
+import {
+  CorrectInvoiceResolutionUseCaseError,
+  correctInvoiceResolutionUseCase,
+} from "@/modules/reimbursement/application/CorrectInvoiceResolutionUseCase";
 import { markInvoiceAsPaidUseCase } from "@/modules/reimbursement/application/MarkInvoiceAsPaidUseCase";
 import { markInvoiceAsRejectedUseCase } from "@/modules/reimbursement/application/MarkInvoiceAsRejectedUseCase";
 import { registerInvoiceClaimReferenceUseCase } from "@/modules/reimbursement/application/RegisterInvoiceClaimReferenceUseCase";
@@ -68,5 +72,114 @@ describe("Invoice lifecycle use cases", () => {
     await markInvoiceAsRejectedUseCase("invoice-1", "Falta documento", { invoiceRepository });
 
     expect(invoiceRepository.markAsRejected).toHaveBeenCalledWith("invoice-1", "Falta documento");
+  });
+
+  it("corrects final status from paid to rejected", async () => {
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "PAID", paidAmount: 49.5, paidAt: new Date("2026-04-25T00:00:00.000Z") }));
+    invoiceRepository.correctResolution.mockResolvedValue(buildInvoice({ status: "REJECTED", paidAmount: null, paidAt: null }));
+
+    await correctInvoiceResolutionUseCase(
+      "invoice-1",
+      {
+        toStatus: "REJECTED",
+        correctionReason: "El portal confirmo que estaba denegada.",
+        correctedByUserId: "user-1",
+        rejectionReason: "Solicitud denegada",
+      },
+      { invoiceRepository },
+    );
+
+    expect(invoiceRepository.correctResolution).toHaveBeenCalledWith(
+      "invoice-1",
+      expect.objectContaining({
+        toStatus: "REJECTED",
+        correctionReason: "El portal confirmo que estaba denegada.",
+      }),
+    );
+  });
+
+  it("corrects final status from rejected to paid", async () => {
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "REJECTED" }));
+    invoiceRepository.correctResolution.mockResolvedValue(buildInvoice({ status: "PAID", paidAmount: 49.5 }));
+
+    await correctInvoiceResolutionUseCase(
+      "invoice-1",
+      {
+        toStatus: "PAID",
+        correctionReason: "Se detecto abono efectivo en cuenta.",
+        correctedByUserId: "user-1",
+        paidAmount: 49.5,
+        paidAt: new Date("2026-04-27T00:00:00.000Z"),
+      },
+      { invoiceRepository },
+    );
+
+    expect(invoiceRepository.correctResolution).toHaveBeenCalledWith(
+      "invoice-1",
+      expect.objectContaining({
+        toStatus: "PAID",
+        paidAmount: 49.5,
+      }),
+    );
+  });
+
+  it("rejects correction when invoice is not in final status", async () => {
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED" }));
+
+    await expect(
+      correctInvoiceResolutionUseCase(
+        "invoice-1",
+        {
+          toStatus: "PAID",
+          correctionReason: "Intento invalido",
+          correctedByUserId: "user-1",
+          paidAmount: 49.5,
+          paidAt: new Date("2026-04-27T00:00:00.000Z"),
+        },
+        { invoiceRepository },
+      ),
+    ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
+  });
+
+  it("rejects correction without correction reason", async () => {
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    await expect(
+      correctInvoiceResolutionUseCase(
+        "invoice-1",
+        {
+          toStatus: "REJECTED",
+          correctionReason: "",
+          correctedByUserId: "user-1",
+        },
+        { invoiceRepository },
+      ),
+    ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
+  });
+
+  it("rejects correction when target final status equals current status", async () => {
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "PAID" }));
+
+    await expect(
+      correctInvoiceResolutionUseCase(
+        "invoice-1",
+        {
+          toStatus: "PAID",
+          correctionReason: "No cambia estado",
+          correctedByUserId: "user-1",
+          paidAmount: 49.5,
+          paidAt: new Date("2026-04-27T00:00:00.000Z"),
+        },
+        { invoiceRepository },
+      ),
+    ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
   });
 });

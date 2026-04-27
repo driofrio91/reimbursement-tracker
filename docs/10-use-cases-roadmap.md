@@ -29,24 +29,22 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 - `RegisterInvoiceClaimReferenceUseCase`
 - `MarkInvoiceAsPaidUseCase`
 - `MarkInvoiceAsRejectedUseCase`
+- `CorrectInvoiceResolutionUseCase`
 
 ## Backlog funcional prioritario (siguiente US)
 
-- `ReopenFinalizedInvoiceUseCase` (nueva US)
-  - objetivo: permitir correccion operativa ante error humano en factura finalizada
-  - transicion esperada: `PAID` o `REJECTED` -> `CLAIM_REFERENCE_COMPLETED`
-  - alcance minimo recomendado:
-    - motivo de reapertura obligatorio
-    - trazabilidad de reapertura (quien/cuando/motivo)
-    - UX explicita en detalle de servicio sin romper flujo V1 actual
+- cerrar trazabilidad historica de correcciones de estado final (mas de una correccion por factura)
+  - objetivo: pasar de "ultima correccion" a historial completo de cambios
+  - incluir tabla de eventos de correccion con auditoria completa
+  - mantener UX movil ligera para consulta de historial
 
 ## Orden recomendado para las siguientes sesiones
 
 1. cerrar UX completa de edicion por etapas en detalle de servicio
-2. abrir US de reapertura controlada de factura finalizada
-3. reforzar validaciones de transicion de estado y mensajes de error
-4. ajustar estado global de servicio derivado de facturas
-5. cerrar ciclo de vida de factura por etapas con polish UX movil
+2. reforzar validaciones de transicion de estado y mensajes de error
+3. ajustar estado global de servicio derivado de facturas
+4. cerrar ciclo de vida de factura por etapas con polish UX movil
+5. ampliar trazabilidad historica de correcciones de estado final
 
 ## Checklist por cada US con ruta privada
 

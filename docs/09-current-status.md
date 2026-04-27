@@ -11,6 +11,7 @@
   - completar informacion
   - registrar `claimReference`
   - marcar `PAID` o `REJECTED`
+  - corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio en modal in-app
 - resumen operativo por servicio con total facturado, esperado, pagado y pendientes
 
 ## Modelo funcional vigente
@@ -19,6 +20,7 @@
 - `claimReference` vive en factura
 - varias facturas pueden compartir `claimReference`
 - `paidAmount` se autocompleta con esperado y es editable
+- en correccion de estado final se guarda solo la ultima correccion (sin historial completo)
 
 ## Stack real
 
@@ -55,6 +57,7 @@ npm run db:seed
 - fase 1 completada: el codigo operativo (`src/` y `test/`) quedo desacoplado de `ReimbursementRequest`
 - fase 2 completada: se retira `ReimbursementRequest` de `prisma/schema.prisma` y de la base de datos
 - `Invoice` mantiene `claimReference` como referencia operativa unica del flujo
+- migracion aplicada: `20260427113000_add_invoice_resolution_correction_fields` con `npx prisma migrate deploy`
 
 ## Lectura minima para retomar
 

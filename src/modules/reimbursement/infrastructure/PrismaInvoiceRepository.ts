@@ -2,6 +2,7 @@ import { InvoiceStatus as PrismaInvoiceStatus, PrismaClient } from "@prisma/clie
 
 import {
   CompleteInvoiceInformationInput,
+  CorrectInvoiceResolutionInput,
   Invoice,
   InvoiceStatus,
   NewInvoice,
@@ -157,6 +158,44 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return this.mapInvoice(updatedInvoice);
   }
 
+  async correctResolution(invoiceId: string, input: CorrectInvoiceResolutionInput): Promise<Invoice | null> {
+    const existingInvoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
+
+    if (!existingInvoice) {
+      return null;
+    }
+
+    const updatedInvoice = await this.prisma.invoice.update({
+      where: { id: invoiceId },
+      data:
+        input.toStatus === "PAID"
+          ? {
+              status: PrismaInvoiceStatus.PAID,
+              paidAmount: input.paidAmount,
+              paidAt: input.paidAt,
+              rejectionReason: null,
+              correctedAt: new Date(),
+              correctionReason: input.correctionReason,
+              correctedFromStatus: existingInvoice.status,
+              correctedByUserId: input.correctedByUserId,
+              correctedByUserName: input.correctedByUserName ?? null,
+            }
+          : {
+              status: PrismaInvoiceStatus.REJECTED,
+              rejectionReason: input.rejectionReason ?? null,
+              paidAmount: null,
+              paidAt: null,
+              correctedAt: new Date(),
+              correctionReason: input.correctionReason,
+              correctedFromStatus: existingInvoice.status,
+              correctedByUserId: input.correctedByUserId,
+              correctedByUserName: input.correctedByUserName ?? null,
+            },
+    });
+
+    return this.mapInvoice(updatedInvoice);
+  }
+
   private mapInvoice(invoice: {
     id: string;
     serviceId: string;
@@ -172,6 +211,11 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     paidAmount: { toNumber(): number } | null;
     paidAt: Date | null;
     rejectionReason: string | null;
+    correctedAt: Date | null;
+    correctionReason: string | null;
+    correctedFromStatus: PrismaInvoiceStatus | null;
+    correctedByUserId: string | null;
+    correctedByUserName: string | null;
     notes: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -191,6 +235,11 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       paidAmount: invoice.paidAmount ? invoice.paidAmount.toNumber() : null,
       paidAt: invoice.paidAt,
       rejectionReason: invoice.rejectionReason,
+      correctedAt: invoice.correctedAt,
+      correctionReason: invoice.correctionReason,
+      correctedFromStatus: invoice.correctedFromStatus,
+      correctedByUserId: invoice.correctedByUserId,
+      correctedByUserName: invoice.correctedByUserName,
       notes: invoice.notes,
       createdAt: invoice.createdAt,
       updatedAt: invoice.updatedAt,

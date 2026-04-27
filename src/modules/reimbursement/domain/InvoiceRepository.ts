@@ -1,5 +1,6 @@
 import {
   CompleteInvoiceInformationInput,
+  CorrectInvoiceResolutionInput,
   Invoice,
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
@@ -13,4 +14,5 @@ export interface InvoiceRepository {
   setClaimReference(invoiceId: string, claimReference: string): Promise<Invoice | null>;
   markAsPaid(invoiceId: string, paidAmount: number, paidAt: Date): Promise<Invoice | null>;
   markAsRejected(invoiceId: string, rejectionReason?: string): Promise<Invoice | null>;
+  correctResolution(invoiceId: string, input: CorrectInvoiceResolutionInput): Promise<Invoice | null>;
 }

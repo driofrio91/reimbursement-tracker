@@ -20,6 +20,11 @@ export interface Invoice {
   paidAmount: number | null;
   paidAt: Date | null;
   rejectionReason: string | null;
+  correctedAt: Date | null;
+  correctionReason: string | null;
+  correctedFromStatus: InvoiceStatus | null;
+  correctedByUserId: string | null;
+  correctedByUserName: string | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -48,4 +53,14 @@ export interface CompleteInvoiceInformationInput {
   issuerName: string;
   issuerTaxId?: string | null;
   notes?: string | null;
+}
+
+export interface CorrectInvoiceResolutionInput {
+  toStatus: Extract<InvoiceStatus, "PAID" | "REJECTED">;
+  correctionReason: string;
+  correctedByUserId: string;
+  correctedByUserName?: string | null;
+  paidAmount?: number;
+  paidAt?: Date;
+  rejectionReason?: string | null;
 }

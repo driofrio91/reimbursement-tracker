@@ -40,6 +40,7 @@ El flujo V1 no depende de legado de solicitud.
 3. completar informacion de factura
 4. completar `claimReference`
 5. resolver factura como `PAID` o `REJECTED`
+6. corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio cuando haya error operativo
 
 ## Regla de autogeneracion de facturas
 

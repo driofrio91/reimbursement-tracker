@@ -2,6 +2,7 @@ import { Mock, vi } from "vitest";
 
 import {
   CompleteInvoiceInformationInput,
+  CorrectInvoiceResolutionInput,
   Invoice,
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
@@ -38,6 +39,7 @@ export interface InvoiceRepositoryMock extends InvoiceRepository {
   setClaimReference: Mock<(invoiceId: string, claimReference: string) => Promise<Invoice | null>>;
   markAsPaid: Mock<(invoiceId: string, paidAmount: number, paidAt: Date) => Promise<Invoice | null>>;
   markAsRejected: Mock<(invoiceId: string, rejectionReason?: string) => Promise<Invoice | null>>;
+  correctResolution: Mock<(invoiceId: string, input: CorrectInvoiceResolutionInput) => Promise<Invoice | null>>;
 }
 
 export function createInvoiceRepositoryMock(): InvoiceRepositoryMock {
@@ -50,5 +52,6 @@ export function createInvoiceRepositoryMock(): InvoiceRepositoryMock {
     setClaimReference: vi.fn(),
     markAsPaid: vi.fn(),
     markAsRejected: vi.fn(),
+    correctResolution: vi.fn(),
   };
 }

@@ -33,6 +33,11 @@ Campos clave:
 - `paidAmount` (nullable)
 - `paidAt` (nullable)
 - `rejectionReason` (nullable)
+- `correctedAt` (nullable, ultima correccion)
+- `correctionReason` (nullable, ultima correccion)
+- `correctedFromStatus` (nullable)
+- `correctedByUserId` (nullable)
+- `correctedByUserName` (nullable)
 
 ## Estados de Invoice
 

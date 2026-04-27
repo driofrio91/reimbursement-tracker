@@ -16,9 +16,14 @@ import {
   RegisterInvoiceClaimReferenceUseCaseError,
   registerInvoiceClaimReferenceUseCase,
 } from "@/modules/reimbursement/application/RegisterInvoiceClaimReferenceUseCase";
+import {
+  CorrectInvoiceResolutionUseCaseError,
+  correctInvoiceResolutionUseCase,
+} from "@/modules/reimbursement/application/CorrectInvoiceResolutionUseCase";
 import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
+import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -50,6 +55,45 @@ const paidSchema = z.object({
 const rejectedSchema = z.object({
   rejectionReason: z.string().trim().optional(),
 });
+
+const correctionSchema = z
+  .object({
+    toStatus: z.enum(["PAID", "REJECTED"]),
+    correctionReason: z.string().trim().min(1),
+    paidAmount: z.string().trim().optional(),
+    paidAt: z.string().trim().optional(),
+    rejectionReason: z.string().trim().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.toStatus !== "PAID") {
+      return;
+    }
+
+    if (!value.paidAmount || !value.paidAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Para corregir a pagada debes indicar importe y fecha.",
+      });
+
+      return;
+    }
+
+    const normalizedPaidAmount = Number(value.paidAmount.replace(",", "."));
+
+    if (Number.isNaN(normalizedPaidAmount) || normalizedPaidAmount <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El importe pagado debe ser mayor que cero.",
+      });
+    }
+
+    if (!datePattern.test(value.paidAt)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La fecha de pago no es valida.",
+      });
+    }
+  });
 
 export interface InvoiceActionResult {
   status: "idle" | "success" | "error";
@@ -199,6 +243,64 @@ export async function markInvoiceAsRejectedAction(
   await syncServiceStatusForInvoiceFlow(serviceId);
   revalidatePath(`/services/${serviceId}`);
   return buildActionResult("success", "Factura marcada como rechazada.");
+}
+
+export async function correctInvoiceResolutionAction(
+  serviceId: string,
+  invoiceId: string,
+  _previousState: InvoiceActionResult,
+  formData: FormData,
+): Promise<InvoiceActionResult> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return buildActionResult("error", "No se pudo identificar al usuario para registrar la correccion.");
+  }
+
+  const parsedInput = correctionSchema.safeParse({
+    toStatus: getString(formData, "toStatus"),
+    correctionReason: getString(formData, "correctionReason"),
+    paidAmount: getString(formData, "paidAmount"),
+    paidAt: getString(formData, "paidAt"),
+    rejectionReason: getString(formData, "rejectionReason"),
+  });
+
+  if (!parsedInput.success) {
+    return buildActionResult("error", "Revisa los datos de correccion antes de confirmar.");
+  }
+
+  const toStatus = parsedInput.data.toStatus;
+  const paidAmountValue = parsedInput.data.paidAmount;
+  const paidAtValue = parsedInput.data.paidAt;
+
+  try {
+    await correctInvoiceResolutionUseCase(
+      invoiceId,
+      {
+        toStatus,
+        correctionReason: parsedInput.data.correctionReason,
+        correctedByUserId: session.user.id,
+        correctedByUserName: session.user.name ?? null,
+        paidAmount: toStatus === "PAID" && paidAmountValue ? Number(paidAmountValue.replace(",", ".")) : undefined,
+        paidAt: toStatus === "PAID" && paidAtValue ? new Date(`${paidAtValue}T00:00:00`) : undefined,
+        rejectionReason: toStatus === "REJECTED" ? parsedInput.data.rejectionReason || null : null,
+      },
+      {
+        invoiceRepository: new PrismaInvoiceRepository(prisma),
+      },
+    );
+  } catch (error) {
+    if (error instanceof CorrectInvoiceResolutionUseCaseError) {
+      return buildActionResult("error", error.message);
+    }
+
+    return buildActionResult("error", "No se pudo corregir el estado final de la factura.");
+  }
+
+  await syncServiceStatusForInvoiceFlow(serviceId);
+  revalidatePath(`/services/${serviceId}`);
+
+  return buildActionResult("success", "Estado final de factura corregido.");
 }
 
 async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void> {
