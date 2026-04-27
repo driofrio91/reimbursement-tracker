@@ -27,26 +27,26 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-16 sm:px-10">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-10 sm:py-10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <HomeIconLink />
 
             <div>
               <p className="text-sm text-slate-500">Detalle del servicio</p>
-              <p className="mt-1 text-sm text-slate-500">Aqui ira creciendo despues la trazabilidad completa del caso.</p>
+              <p className="mt-1 text-sm text-slate-500">Gestiona aqui el ciclo por etapas de las facturas del servicio.</p>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:gap-3">
             <Link
-              className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
               href="/services"
             >
               Volver al listado
             </Link>
             <Link
-              className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800"
+              className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500"
               href="/services/new"
             >
               Nuevo servicio

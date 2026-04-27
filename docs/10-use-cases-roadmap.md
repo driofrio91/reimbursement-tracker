@@ -30,13 +30,23 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 - `MarkInvoiceAsPaidUseCase`
 - `MarkInvoiceAsRejectedUseCase`
 
+## Backlog funcional prioritario (siguiente US)
+
+- `ReopenFinalizedInvoiceUseCase` (nueva US)
+  - objetivo: permitir correccion operativa ante error humano en factura finalizada
+  - transicion esperada: `PAID` o `REJECTED` -> `CLAIM_REFERENCE_COMPLETED`
+  - alcance minimo recomendado:
+    - motivo de reapertura obligatorio
+    - trazabilidad de reapertura (quien/cuando/motivo)
+    - UX explicita en detalle de servicio sin romper flujo V1 actual
+
 ## Orden recomendado para las siguientes sesiones
 
 1. cerrar UX completa de edicion por etapas en detalle de servicio
-2. reforzar validaciones de transicion de estado y mensajes de error
-3. ajustar estado global de servicio derivado de facturas
-4. cerrar ciclo de vida de factura por etapas con polish UX movil
-5. cerrar polish UX movil de etapas y mensajes operativos
+2. abrir US de reapertura controlada de factura finalizada
+3. reforzar validaciones de transicion de estado y mensajes de error
+4. ajustar estado global de servicio derivado de facturas
+5. cerrar ciclo de vida de factura por etapas con polish UX movil
 
 ## Checklist por cada US con ruta privada
 
