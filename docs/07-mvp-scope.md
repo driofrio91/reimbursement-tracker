@@ -21,10 +21,34 @@ Definir el recorte operativo de V1 para sustituir el Excel sin sobredimensionar.
 3. autogenerar facturas del servicio
 4. listar servicios
 5. ver detalle de servicio
-6. completar informacion de factura
-7. completar `claimReference`
-8. resolver factura como `PAID` o `REJECTED`
-9. ver resumen operativo de facturado, esperado y pagado
+6. listar y buscar facturas
+7. ver detalle de factura
+8. completar informacion de factura
+9. completar `claimReference`
+10. resolver factura como `PAID` o `REJECTED`
+11. ver resumen operativo de facturado, esperado y pagado
+
+### Buscador de facturas V1
+
+Filtros iniciales acordados:
+
+- `invoiceNumber`
+- `claimReference`
+- `status`
+
+Reglas funcionales de V1 para esta vista:
+
+- filtros combinados con AND
+- `invoiceNumber` y `claimReference` con busqueda parcial case-insensitive
+- `status` opcional de seleccion unica
+- orden por defecto por `updatedAt` descendente
+- sin paginacion en esta primera iteracion
+
+### Detalle de factura V1
+
+- ruta: `/invoices/[id]`
+- alcance inicial: lectura operativa de la factura
+- debe incluir enlace directo a `/services/[id]` para operar el ciclo por etapas
 
 ### Configuracion por servicio
 
@@ -53,7 +77,7 @@ Definir el recorte operativo de V1 para sustituir el Excel sin sobredimensionar.
 - `PAID`
 - `REJECTED`
 
-### Reglas de solicitud
+### Regla de referencia
 
 - `claimReference` vive en `Invoice`
 - varias facturas pueden compartir la misma `claimReference`

@@ -14,6 +14,22 @@
   - corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio en modal in-app
 - resumen operativo por servicio con total facturado, esperado, pagado y pendientes
 
+## Siguiente foco aprobado
+
+- implementar buscador global de facturas
+- implementar vista de detalle dedicada por factura
+- filtros iniciales del buscador: `invoiceNumber`, `claimReference`, `status`
+
+Definicion operativa cerrada del siguiente foco:
+
+- rutas objetivo: `/invoices` y `/invoices/[id]`
+- `invoiceNumber` y `claimReference`: busqueda parcial case-insensitive
+- `status`: filtro opcional de seleccion unica
+- filtros combinados con AND
+- orden por defecto por `updatedAt` descendente
+- sin paginacion en la primera iteracion
+- detalle de factura en modo lectura con enlace a `/services/[id]` para acciones del ciclo
+
 ## Modelo funcional vigente
 
 - operativa centrada en `Invoice`
@@ -51,6 +67,11 @@ npm run db:seed
 - `/services`
 - `/services/new`
 - `/services/[id]`
+
+## Rutas previstas (siguiente US)
+
+- `/invoices`
+- `/invoices/[id]`
 
 ## Notas de transicion
 

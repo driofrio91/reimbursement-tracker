@@ -42,6 +42,32 @@ El flujo V1 no depende de legado de solicitud.
 5. resolver factura como `PAID` o `REJECTED`
 6. corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio cuando haya error operativo
 
+## Siguiente US prioritaria
+
+Se aplaza a V2 la trazabilidad historica avanzada de correcciones.
+
+El siguiente bloque aprobado para V1 es:
+
+1. buscador global de facturas
+2. abrir detalle dedicado por factura
+
+Filtros iniciales acordados para el buscador:
+
+- `invoiceNumber`
+- `claimReference`
+- `status`
+
+Definicion funcional cerrada para esta US:
+
+- ruta de listado: `/invoices`
+- ruta de detalle: `/invoices/[id]`
+- `invoiceNumber` y `claimReference`: busqueda parcial, case-insensitive
+- `status`: filtro opcional de seleccion unica
+- combinacion de filtros con operador AND
+- orden por defecto: mas recientes primero (`updatedAt` descendente)
+- sin paginacion en esta primera iteracion
+- el detalle de factura en V1 es de lectura y enlaza al detalle del servicio para ejecutar acciones del ciclo
+
 ## Regla de autogeneracion de facturas
 
 En el alta de servicio se configuran:

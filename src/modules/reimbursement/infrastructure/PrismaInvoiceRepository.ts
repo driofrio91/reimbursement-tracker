@@ -7,7 +7,7 @@ import {
   InvoiceStatus,
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
-import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { InvoiceRepository, SearchInvoicesFilters } from "@/modules/reimbursement/domain/InvoiceRepository";
 
 export class PrismaInvoiceRepository implements InvoiceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -16,6 +16,29 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const invoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
 
     return invoice ? this.mapInvoice(invoice) : null;
+  }
+
+  async search(filters: SearchInvoicesFilters): Promise<Invoice[]> {
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        invoiceNumber: filters.invoiceNumber
+          ? {
+              contains: filters.invoiceNumber,
+              mode: "insensitive",
+            }
+          : undefined,
+        claimReference: filters.claimReference
+          ? {
+              contains: filters.claimReference,
+              mode: "insensitive",
+            }
+          : undefined,
+        status: filters.status ? this.toPrismaStatus(filters.status) : undefined,
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    return invoices.map((invoice) => this.mapInvoice(invoice));
   }
 
   async create(invoice: NewInvoice): Promise<Invoice> {
