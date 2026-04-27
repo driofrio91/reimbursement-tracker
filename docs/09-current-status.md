@@ -1,27 +1,42 @@
 # Current Status
 
-## Objetivo
+## Estado implementado
 
-Este documento resume el estado tecnico real del repositorio para poder continuar el trabajo en otra sesion sin releer toda la documentacion historica.
+- proyecto `Next.js` con `TypeScript` y App Router
+- autenticacion con `Auth.js` credentials
+- rutas privadas protegidas
+- flujo de servicios activo (`crear`, `listar`, `detalle`)
+- al crear servicio se autogeneran facturas
+- detalle de servicio con ciclo de factura por etapas:
+  - completar informacion
+  - registrar `claimReference`
+  - marcar `PAID` o `REJECTED`
+  - corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio en modal in-app
+- resumen operativo por servicio con total facturado, esperado, pagado y pendientes
+- buscador global de facturas en `/invoices`
+- detalle dedicado de factura en `/invoices/[id]` en modo lectura con enlace a `/services/[id]`
+- filtros operativos de facturas implementados:
+  - `invoiceNumber` y `claimReference` con busqueda parcial case-insensitive
+  - `status` opcional de seleccion unica
+  - filtros combinados con AND
+  - orden por `updatedAt` descendente
+  - sin paginacion en esta iteracion
 
-## Estado actual implementado
+## Siguiente foco propuesto
 
-- proyecto inicializado con `Next.js`, `TypeScript`, `App Router` y `Tailwind CSS`
-- codigo fuente organizado en `src/app`, `src/modules` y `src/lib`
-- `Prisma` configurado y conectado a `PostgreSQL` en `Neon`
-- migracion inicial aplicada contra la base de datos remota
-- seed de desarrollo disponible con usuarios, aseguradoras y personas
-- `Auth.js` montado con `Credentials` (`email + password`)
-- ruta publica `/login`
-- ruta protegida `/` mediante `src/app/(private)/layout.tsx`
-- primer flujo de negocio de servicios implementado: crear, listar y ver detalle
-- base de testing inicial montada con `vitest` y primeros tests unitarios del modulo `reimbursement`
-- shell privada con sidebar compartida y navegacion contextual por pantalla
-- navegacion responsive en movil con menu hamburguesa y panel lateral colapsable
-- primer flujo de facturas implementado: crear factura desde el detalle de servicio
-- feedback en UI privada con toast mediante `sonner`
+- reforzar validaciones de transicion de estado y mensajes de error
+- ajustar estado global de servicio derivado de facturas
+- cerrar el ciclo por etapas con QA funcional final de V1
 
-## Stack real del repositorio
+## Modelo funcional vigente
+
+- operativa centrada en `Invoice`
+- `claimReference` vive en factura
+- varias facturas pueden compartir `claimReference`
+- `paidAmount` se autocompleta con esperado y es editable
+- en correccion de estado final se guarda solo la ultima correccion (sin historial completo)
+
+## Stack real
 
 - `Next.js`
 - `TypeScript`
@@ -30,9 +45,8 @@ Este documento resume el estado tecnico real del repositorio para poder continua
 - `PostgreSQL` en `Neon`
 - `Tailwind CSS`
 - `Vitest`
-- `sonner`
 
-## Comandos verificados
+## Comandos verificados historicamente
 
 ```bash
 npm run dev
@@ -44,103 +58,27 @@ npm run prisma:migrate
 npm run db:seed
 ```
 
-## Credenciales de desarrollo
-
-- `admin@local.test` / `admin123`
-- `operator@local.test` / `operator123`
-
 ## Rutas actuales
 
-- `/login`: pantalla publica de acceso
-- `/`: pantalla privada inicial tras autenticacion
-- `/services`: listado inicial de servicios
-- `/services/new`: alta de servicio reembolsable
-- `/services/[id]`: detalle de servicio
-- `/api/auth/[...nextauth]`: handlers de autenticacion
+- `/login`
+- `/`
+- `/services`
+- `/services/new`
+- `/services/[id]`
+- `/invoices`
+- `/invoices/[id]`
 
-Notas de flujo actual en `/services/[id]`:
+## Notas de transicion
 
-- muestra resumen de servicio
-- permite registrar factura vinculada al servicio
-- muestra toast de exito o error y mantiene navegacion activa
+- fase 1 completada: el codigo operativo (`src/` y `test/`) quedo desacoplado de `ReimbursementRequest`
+- fase 2 completada: se retira `ReimbursementRequest` de `prisma/schema.prisma` y de la base de datos
+- `Invoice` mantiene `claimReference` como referencia operativa unica del flujo
+- migracion aplicada: `20260427113000_add_invoice_resolution_correction_fields` con `npx prisma migrate deploy`
 
-## Estructura relevante actual
-
-```text
-prisma/
-  schema.prisma
-  seed.ts
-
-src/
-  app/
-    (private)/
-    api/auth/[...nextauth]/
-    login/
-  lib/
-    auth/
-    db/
-  modules/
-    reimbursement/
-```
-
-## Que esta ya validado
-
-- `npm run lint`
-- `npm run test`
-- `npm run typecheck`
-- `npm run build`
-- `npm run dev`
-- login manual verificado con usuario seed
-- `/login` carga correctamente
-- la ruta `/` exige sesion
-- la ruta `/` carga correctamente tras autenticacion
-
-## Decisiones tecnicas cerradas durante la implementacion
-
-- se usa `Neon` ya desde desarrollo para evitar dependencia de `Docker` o `PostgreSQL` local
-- se mantienen credenciales simples solo para desarrollo, pero las contrasenas siguen guardadas con hash
-- `Prisma` se fija en v6 para evitar la complejidad adicional de configuracion introducida en `Prisma` v7 en este arranque
-- se mantiene `src/app` en lugar de `app` en raiz para agrupar todo el codigo fuente bajo `src/`
-- el primer bloque de tests vive en `test/` y usa `vitest` con `vi` para mockear contratos en `application`
-- los tests cubren `CreateServiceUseCase`, `GetServiceDetailUseCase`, `ListServicesUseCase`, `CreateInvoiceForServiceUseCase`, `CreateServiceFormSchema` y `CreateInvoiceFormSchema`
-- los tests incluyen politica de credenciales dev en `test/auth/DevLoginPolicy.test.ts`
-- en la UI privada, `Nuevo servicio` pasa a subitem de `Servicios` y se diferencia el estado de pagina activa frente a seccion activa
-- se aplican correcciones de UX en sidebar movil: animacion de apertura/cierre, cierre con `Escape` y bloqueo de scroll del fondo
-- se declara mobile-first como regla de implementacion obligatoria para toda UI nueva o refactor
-- cada US con nuevas rutas privadas debe incluir como DoD su integracion en sidebar y estados activos
-- en facturas, se permite sobrefacturacion en esta fase y se pospone el aviso operativo para la siguiente iteracion
-- las credenciales `@local.test` solo se muestran en local y quedan bloqueadas en backend fuera de local
-- en `production`, el backend bloquea siempre `@local.test` aunque `AUTH_ALLOW_DEV_LOGIN=true`
-
-## Riesgos o notas operativas
-
-- `.env` es local y esta ignorado por git
-- `.env.example` existe como plantilla sin secretos reales
-- la cadena de conexion de `Neon` no debe copiarse a markdown del repositorio
-- como la credencial de base de datos fue compartida durante una sesion interactiva, conviene rotarla cuando esta fase inicial termine
-- el aviso de hidratacion visto en desarrollo no se reprodujo como error real de la app; la causa mas probable es una extension del navegador sobre el formulario de login
-
-## Siguiente paso recomendado
-
-Expandir la base de testing y seguir con el roadmap de negocio:
-
-1. implementar `ListInvoicesByServiceUseCase`
-2. anadir visibilidad operativa de importe pendiente y sobrefacturacion en detalle de servicio
-
-## Propuesta concreta para la siguiente sesion
-
-1. implementar `ListInvoicesByServiceUseCase` y exponerlo en `/services/[id]`
-2. mostrar lectura operativa de importe pendiente por cubrir
-3. mostrar aviso de sobrefacturacion sin bloquear el flujo
-4. mantener toasts para operaciones de factura en la shell privada
-5. mantener la checklist mobile-first en cualquier cambio visual futuro
-
-La hoja de ruta completa de casos de uso y su orden recomendado vive en `docs/10-use-cases-roadmap.md`.
-
-## Lectura minima para retomar el proyecto
+## Lectura minima para retomar
 
 1. `docs/START-HERE.md`
-2. `docs/09-current-status.md`
-3. `docs/10-use-cases-roadmap.md`
-4. `docs/sessions/2026-04-23-session-07-dev-login-security-policy.md`
+2. `docs/07-mvp-scope.md`
+3. `docs/09-current-status.md`
+4. `docs/10-use-cases-roadmap.md`
 5. `AGENTS.md`

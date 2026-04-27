@@ -1,0 +1,47 @@
+import { Invoice } from "@/modules/reimbursement/domain/Invoice";
+import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+
+export type MarkInvoiceAsPaidUseCaseErrorCode = "INVOICE_NOT_FOUND" | "INVALID_STATUS" | "INVALID_PAID_AMOUNT";
+
+export class MarkInvoiceAsPaidUseCaseError extends Error {
+  constructor(public readonly code: MarkInvoiceAsPaidUseCaseErrorCode, message: string) {
+    super(message);
+    this.name = "MarkInvoiceAsPaidUseCaseError";
+  }
+}
+
+interface MarkInvoiceAsPaidUseCaseDependencies {
+  invoiceRepository: Pick<InvoiceRepository, "getById" | "markAsPaid">;
+}
+
+export async function markInvoiceAsPaidUseCase(
+  invoiceId: string,
+  paidAmount: number,
+  paidAt: Date,
+  dependencies: MarkInvoiceAsPaidUseCaseDependencies,
+): Promise<Invoice> {
+  if (paidAmount <= 0) {
+    throw new MarkInvoiceAsPaidUseCaseError("INVALID_PAID_AMOUNT", "El importe pagado debe ser mayor que cero.");
+  }
+
+  const invoice = await dependencies.invoiceRepository.getById(invoiceId);
+
+  if (!invoice) {
+    throw new MarkInvoiceAsPaidUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+  }
+
+  if (invoice.status !== "CLAIM_REFERENCE_COMPLETED" && invoice.status !== "PAID") {
+    throw new MarkInvoiceAsPaidUseCaseError(
+      "INVALID_STATUS",
+      "La factura debe tener referencia registrada para poder marcarse como pagada.",
+    );
+  }
+
+  const updatedInvoice = await dependencies.invoiceRepository.markAsPaid(invoiceId, paidAmount, paidAt);
+
+  if (!updatedInvoice) {
+    throw new MarkInvoiceAsPaidUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+  }
+
+  return updatedInvoice;
+}

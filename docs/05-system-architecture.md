@@ -65,7 +65,7 @@ Ejemplos:
 
 - `ReimbursableService`
 - `Invoice`
-- `ReimbursementRequest`
+- `ServiceInvoiceSummary`
 
 ### Application
 
@@ -80,9 +80,10 @@ Contiene los casos de uso del sistema y la orquestacion del flujo:
 Ejemplos:
 
 - `CreateReimbursableServiceUseCase`
-- `CreateInvoiceForServiceUseCase`
-- `CreateReimbursementRequestUseCase`
-- `RegisterRequestResolutionUseCase`
+- `CompleteInvoiceInformationUseCase`
+- `RegisterInvoiceClaimReferenceUseCase`
+- `MarkInvoiceAsPaidUseCase`
+- `MarkInvoiceAsRejectedUseCase`
 
 ### Infrastructure
 
@@ -147,7 +148,6 @@ src/
     (dashboard)/
     services/
     invoices/
-    requests/
     api/
 
   modules/
@@ -192,7 +192,7 @@ Dentro de ese modulo conviviran:
 
 - servicios reembolsables
 - facturas
-- solicitudes de reembolso
+- referencia de reembolso en factura (`claimReference`)
 - reglas de calculo y avisos
 
 Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
@@ -208,20 +208,13 @@ Mas adelante, si crece el producto, podra dividirse en modulos mas pequenos.
 
 ### Facturas
 
-- `CreateInvoiceForServiceUseCase`
+- `CompleteInvoiceInformationUseCase`
+- `RegisterInvoiceClaimReferenceUseCase`
+- `MarkInvoiceAsPaidUseCase`
+- `MarkInvoiceAsRejectedUseCase`
 - `ListInvoicesByServiceUseCase`
-
-### Solicitudes
-
-- `CreateReimbursementRequestUseCase`
-- `SubmitReimbursementRequestUseCase`
-- `RegisterRequestResolutionUseCase`
-- `CloseReimbursementRequestUseCase`
-
-### Importacion
-
-- `ImportHistoricalSpreadsheetUseCase`
-- `PreviewSpreadsheetImportUseCase`
+- `SearchInvoicesUseCase`
+- `GetInvoiceDetailUseCase`
 
 ## Repositorios recomendados
 
@@ -229,7 +222,6 @@ Estos contratos deberian definirse cerca del dominio o de aplicacion, segun el n
 
 - `ReimbursableServiceRepository`
 - `InvoiceRepository`
-- `ReimbursementRequestRepository`
 
 ## Prisma como infraestructura
 
@@ -297,10 +289,10 @@ Esto puede hacerse con `zod`.
 
 Para reglas del dominio:
 
-- no enviar solicitudes vacias
+- respetar el flujo por etapas de factura
 - advertir sobrefacturacion
 - impedir estados incoherentes
-- detectar reutilizacion de facturas con historial previo
+- validar cambios de resolucion final con motivo obligatorio
 
 Esto debe vivir en casos de uso y dominio, no en la UI.
 
@@ -318,22 +310,21 @@ No hace falta introducir CQRS formal desde el primer dia, pero si conviene separ
 
 Hay operaciones que deberian ser transaccionales:
 
-- crear solicitud con varios items
-- registrar resolucion de una solicitud y actualizar sus registros operativos
-- reutilizar una factura creando un nuevo registro operativo enlazado al anterior
+- crear servicio y autogenerar sus facturas
+- ejecutar cambios de estado de factura y sincronizar estado operativo de servicio
+- corregir resolucion final de factura con metadatos de auditoria
 
 Estas transacciones deben orquestarse en aplicacion usando la infraestructura de persistencia.
 
 ## Historial y auditoria
 
-Cada cambio relevante de estado debe producir un registro en `StatusHistory`.
+Cada cambio relevante debe dejar trazabilidad operativa en el modelo vigente de V1.
 
 Debe auditarse al menos:
 
 - cambios de estado de servicio
-- cambios de estado de registro operativo
-- cambios de estado de solicitud
-- resoluciones de items
+- cambios de estado de factura
+- correcciones de resolucion final de factura
 
 ## Estrategia recomendada para empezar
 

@@ -14,6 +14,8 @@ export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
   const isServicesExactActive = pathname === "/services";
   const isServicesSectionActive = pathname.startsWith("/services");
   const isNewServiceActive = pathname === "/services/new";
+  const isInvoicesExactActive = pathname === "/invoices";
+  const isInvoicesSectionActive = pathname.startsWith("/invoices");
 
   return (
     <nav className="space-y-2">
@@ -36,6 +38,13 @@ export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
           />
         </div>
       </div>
+
+      <SidebarLink
+        href="/invoices"
+        state={isInvoicesExactActive ? "page" : isInvoicesSectionActive ? "section" : "idle"}
+        label="Facturas"
+        onNavigate={onNavigate}
+      />
     </nav>
   );
 }

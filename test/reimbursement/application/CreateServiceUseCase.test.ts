@@ -2,27 +2,32 @@ import { describe, expect, it } from "vitest";
 
 import { createServiceUseCase } from "@/modules/reimbursement/application/CreateServiceUseCase";
 
-import { createServiceRepositoryMock } from "../support/RepositoryMocks";
+import { createInvoiceRepositoryMock, createServiceRepositoryMock } from "../support/RepositoryMocks";
 import { buildCreateServiceInput, buildService } from "../support/ServiceTestBuilders";
 
 describe("CreateServiceUseCase", () => {
   it("creates a service with the expected defaults", async () => {
-    const repository = createServiceRepositoryMock();
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({ attended: undefined });
 
-    repository.personExists.mockResolvedValue(true);
-    repository.insurerIsActive.mockResolvedValue(true);
-    repository.create.mockResolvedValue(buildService());
+    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insurerIsActive.mockResolvedValue(true);
+    serviceRepository.create.mockResolvedValue(buildService());
+    invoiceRepository.createMany.mockResolvedValue([]);
 
     const result = await createServiceUseCase(input, {
-      serviceRepository: repository,
+      serviceRepository,
+      invoiceRepository,
     });
 
     expect(result).toEqual({ id: "service-1" });
-    expect(repository.create).toHaveBeenCalledWith({
+    expect(serviceRepository.create).toHaveBeenCalledWith({
       serviceDate: input.serviceDate,
       description: "Consulta de fisioterapia",
       actualAmount: 200,
+      invoiceBilledAmount: 55,
+      invoiceExpectedAmount: 49.5,
       currency: "EUR",
       personId: "person-1",
       insurerId: "insurer-1",
@@ -31,25 +36,39 @@ describe("CreateServiceUseCase", () => {
       status: "REGISTERED",
       notes: "Sin incidencias",
     });
+
+    expect(invoiceRepository.createMany).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          serviceId: "service-1",
+          invoiceBilledAmount: 55,
+          invoiceExpectedAmount: 49.5,
+          status: "CREATED",
+        }),
+      ]),
+    );
   });
 
   it("trims description, policy holder and notes before creating", async () => {
-    const repository = createServiceRepositoryMock();
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({
       description: "  Consulta de rehabilitacion  ",
       policyHolderName: "  Luis Garcia  ",
       notes: "  Nota interna  ",
     });
 
-    repository.personExists.mockResolvedValue(true);
-    repository.insurerIsActive.mockResolvedValue(true);
-    repository.create.mockResolvedValue(buildService());
+    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insurerIsActive.mockResolvedValue(true);
+    serviceRepository.create.mockResolvedValue(buildService());
+    invoiceRepository.createMany.mockResolvedValue([]);
 
     await createServiceUseCase(input, {
-      serviceRepository: repository,
+      serviceRepository,
+      invoiceRepository,
     });
 
-    expect(repository.create).toHaveBeenCalledWith(
+    expect(serviceRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         description: "Consulta de rehabilitacion",
         policyHolderName: "Luis Garcia",
@@ -59,18 +78,21 @@ describe("CreateServiceUseCase", () => {
   });
 
   it("converts blank notes to undefined", async () => {
-    const repository = createServiceRepositoryMock();
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({ notes: "   " });
 
-    repository.personExists.mockResolvedValue(true);
-    repository.insurerIsActive.mockResolvedValue(true);
-    repository.create.mockResolvedValue(buildService({ notes: null }));
+    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insurerIsActive.mockResolvedValue(true);
+    serviceRepository.create.mockResolvedValue(buildService({ notes: null }));
+    invoiceRepository.createMany.mockResolvedValue([]);
 
     await createServiceUseCase(input, {
-      serviceRepository: repository,
+      serviceRepository,
+      invoiceRepository,
     });
 
-    expect(repository.create).toHaveBeenCalledWith(
+    expect(serviceRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         notes: undefined,
       }),
@@ -78,52 +100,73 @@ describe("CreateServiceUseCase", () => {
   });
 
   it("fails when the amount is not greater than zero", async () => {
-    const repository = createServiceRepositoryMock();
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({ actualAmount: 0 });
 
     await expect(
       createServiceUseCase(input, {
-        serviceRepository: repository,
+        serviceRepository,
+        invoiceRepository,
       }),
     ).rejects.toMatchObject({
       code: "INVALID_AMOUNT",
     });
 
-    expect(repository.personExists).not.toHaveBeenCalled();
-    expect(repository.create).not.toHaveBeenCalled();
+    expect(serviceRepository.personExists).not.toHaveBeenCalled();
+    expect(serviceRepository.create).not.toHaveBeenCalled();
+    expect(invoiceRepository.createMany).not.toHaveBeenCalled();
   });
 
   it("fails when the person does not exist", async () => {
-    const repository = createServiceRepositoryMock();
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
 
-    repository.personExists.mockResolvedValue(false);
-    repository.insurerIsActive.mockResolvedValue(true);
+    serviceRepository.personExists.mockResolvedValue(false);
+    serviceRepository.insurerIsActive.mockResolvedValue(true);
 
     await expect(
       createServiceUseCase(buildCreateServiceInput(), {
-        serviceRepository: repository,
+        serviceRepository,
+        invoiceRepository,
       }),
     ).rejects.toMatchObject({
       code: "PERSON_NOT_FOUND",
     });
 
-    expect(repository.create).not.toHaveBeenCalled();
+    expect(serviceRepository.create).not.toHaveBeenCalled();
   });
 
   it("fails when the insurer does not exist or is inactive", async () => {
-    const repository = createServiceRepositoryMock();
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
 
-    repository.personExists.mockResolvedValue(true);
-    repository.insurerIsActive.mockResolvedValue(false);
+    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insurerIsActive.mockResolvedValue(false);
 
     await expect(
       createServiceUseCase(buildCreateServiceInput(), {
-        serviceRepository: repository,
+        serviceRepository,
+        invoiceRepository,
       }),
     ).rejects.toMatchObject({
       code: "INSURER_NOT_FOUND_OR_INACTIVE",
     });
 
-    expect(repository.create).not.toHaveBeenCalled();
+    expect(serviceRepository.create).not.toHaveBeenCalled();
+  });
+
+  it("fails when invoice configuration is not greater than zero", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    await expect(
+      createServiceUseCase(buildCreateServiceInput({ invoiceExpectedAmount: 0 }), {
+        serviceRepository,
+        invoiceRepository,
+      }),
+    ).rejects.toMatchObject({
+      code: "INVALID_INVOICE_CONFIGURATION",
+    });
   });
 });

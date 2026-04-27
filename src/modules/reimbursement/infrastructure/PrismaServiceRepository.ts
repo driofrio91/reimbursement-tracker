@@ -12,6 +12,8 @@ export class PrismaServiceRepository implements ServiceRepository {
         serviceDate: service.serviceDate,
         description: service.description,
         actualAmount: service.actualAmount,
+        invoiceBilledAmount: service.invoiceBilledAmount,
+        invoiceExpectedAmount: service.invoiceExpectedAmount,
         currency: service.currency,
         personId: service.personId,
         insurerId: service.insurerId,
@@ -53,6 +55,33 @@ export class PrismaServiceRepository implements ServiceRepository {
     return services.map((service) => this.mapService(service));
   }
 
+  async updateStatus(serviceId: string, status: ServiceStatus): Promise<Service | null> {
+    const existingService = await this.prisma.reimbursableService.findUnique({
+      where: { id: serviceId },
+      include: {
+        insurer: true,
+        person: true,
+      },
+    });
+
+    if (!existingService) {
+      return null;
+    }
+
+    const updatedService = await this.prisma.reimbursableService.update({
+      where: { id: serviceId },
+      data: {
+        status: this.toPrismaStatus(status),
+      },
+      include: {
+        insurer: true,
+        person: true,
+      },
+    });
+
+    return this.mapService(updatedService);
+  }
+
   async personExists(personId: string): Promise<boolean> {
     const person = await this.prisma.person.findUnique({
       where: { id: personId },
@@ -76,6 +105,8 @@ export class PrismaServiceRepository implements ServiceRepository {
     serviceDate: Date;
     description: string;
     actualAmount: { toNumber(): number };
+    invoiceBilledAmount: { toNumber(): number };
+    invoiceExpectedAmount: { toNumber(): number };
     currency: string;
     personId: string;
     insurerId: string;
@@ -93,6 +124,8 @@ export class PrismaServiceRepository implements ServiceRepository {
       serviceDate: service.serviceDate,
       description: service.description,
       actualAmount: service.actualAmount.toNumber(),
+      invoiceBilledAmount: service.invoiceBilledAmount.toNumber(),
+      invoiceExpectedAmount: service.invoiceExpectedAmount.toNumber(),
       currency: service.currency,
       personId: service.personId,
       personName: service.person.displayName,
