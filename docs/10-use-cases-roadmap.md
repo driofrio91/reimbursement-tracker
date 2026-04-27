@@ -10,7 +10,7 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 - servicios base: completada
 - autogeneracion de facturas en alta de servicio: completada
 - ciclo de vida de factura por etapas: en curso
-- buscador global de facturas y detalle dedicado por factura: pendiente prioritario
+- buscador global de facturas y detalle dedicado por factura: completada
 - limpieza operativa de legado de `ReimbursementRequest` (codigo y docs): completada
 - retirada definitiva de `ReimbursementRequest` en persistencia: completada
 
@@ -34,23 +34,14 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 
 ## Backlog funcional prioritario (siguiente US)
 
-- implementar buscador global de facturas
-  - filtros iniciales: `invoiceNumber`, `claimReference`, `status`
-  - listado con acceso directo al detalle por factura
-  - filtros con AND
-  - `invoiceNumber` y `claimReference` por busqueda parcial case-insensitive
-  - `status` opcional de seleccion unica
-  - orden por defecto por `updatedAt` descendente
-  - sin paginacion en la primera iteracion
-- implementar detalle dedicado de factura
-  - alcance inicial de lectura
-  - incluir enlace directo a `/services/[id]` para ejecutar acciones del ciclo
-  - mantener UX movil ligera
-
-## Casos de uso propuestos para la siguiente US
-
-- `SearchInvoicesUseCase` (lectura con filtros operativos)
-- `GetInvoiceDetailUseCase` (lectura por id)
+- reforzar validaciones de transicion de estado y mensajes de error
+  - cubrir entradas invalidas en todas las acciones de etapa
+  - unificar mensajes operativos de error para usuario final
+- ajustar estado global de servicio derivado de facturas
+  - validar escenarios limite (`PARTIAL`, `FULL`, `NONE`) con tests de regresion
+- cerrar QA funcional final de V1
+  - smoke de rutas privadas en desktop y movil
+  - checklist final de acciones principales visibles en movil
 
 ## Backlog V2 orientativo
 
@@ -61,10 +52,10 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 
 ## Orden recomendado para las siguientes sesiones
 
-1. implementar buscador global de facturas con filtros iniciales
-2. implementar detalle dedicado por factura y navegacion desde resultados
-3. reforzar validaciones de transicion de estado y mensajes de error
-4. ajustar estado global de servicio derivado de facturas
+1. reforzar validaciones de transicion de estado y mensajes de error
+2. ajustar estado global de servicio derivado de facturas
+3. cerrar QA funcional final de V1
+4. documentar cierre operativo de V1
 5. ampliar trazabilidad historica de correcciones de estado final (V2)
 
 ## Checklist por cada US con ruta privada

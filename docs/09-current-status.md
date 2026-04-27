@@ -13,22 +13,20 @@
   - marcar `PAID` o `REJECTED`
   - corregir estado final (`PAID` <-> `REJECTED`) con motivo obligatorio en modal in-app
 - resumen operativo por servicio con total facturado, esperado, pagado y pendientes
+- buscador global de facturas en `/invoices`
+- detalle dedicado de factura en `/invoices/[id]` en modo lectura con enlace a `/services/[id]`
+- filtros operativos de facturas implementados:
+  - `invoiceNumber` y `claimReference` con busqueda parcial case-insensitive
+  - `status` opcional de seleccion unica
+  - filtros combinados con AND
+  - orden por `updatedAt` descendente
+  - sin paginacion en esta iteracion
 
-## Siguiente foco aprobado
+## Siguiente foco propuesto
 
-- implementar buscador global de facturas
-- implementar vista de detalle dedicada por factura
-- filtros iniciales del buscador: `invoiceNumber`, `claimReference`, `status`
-
-Definicion operativa cerrada del siguiente foco:
-
-- rutas objetivo: `/invoices` y `/invoices/[id]`
-- `invoiceNumber` y `claimReference`: busqueda parcial case-insensitive
-- `status`: filtro opcional de seleccion unica
-- filtros combinados con AND
-- orden por defecto por `updatedAt` descendente
-- sin paginacion en la primera iteracion
-- detalle de factura en modo lectura con enlace a `/services/[id]` para acciones del ciclo
+- reforzar validaciones de transicion de estado y mensajes de error
+- ajustar estado global de servicio derivado de facturas
+- cerrar el ciclo por etapas con QA funcional final de V1
 
 ## Modelo funcional vigente
 
@@ -67,9 +65,6 @@ npm run db:seed
 - `/services`
 - `/services/new`
 - `/services/[id]`
-
-## Rutas previstas (siguiente US)
-
 - `/invoices`
 - `/invoices/[id]`
 

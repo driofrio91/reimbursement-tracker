@@ -46,7 +46,7 @@ El flujo V1 no depende de legado de solicitud.
 
 Se aplaza a V2 la trazabilidad historica avanzada de correcciones.
 
-El siguiente bloque aprobado para V1 es:
+Bloque completado en esta fase de V1:
 
 1. buscador global de facturas
 2. abrir detalle dedicado por factura
@@ -67,6 +67,12 @@ Definicion funcional cerrada para esta US:
 - orden por defecto: mas recientes primero (`updatedAt` descendente)
 - sin paginacion en esta primera iteracion
 - el detalle de factura en V1 es de lectura y enlaza al detalle del servicio para ejecutar acciones del ciclo
+
+Siguiente bloque priorizado para cerrar V1:
+
+1. reforzar validaciones de transicion de estado y mensajes de error
+2. ajustar estado global de servicio derivado de facturas
+3. cerrar QA funcional final en movil y desktop
 
 ## Regla de autogeneracion de facturas
 
