@@ -123,6 +123,12 @@ Al marcar factura pagada:
 - `Vercel`
 - `shadcn/ui`
 
+## Regla de seed local
+
+- `prisma/seed.ts` queda reservado para datos de entorno local
+- el seed solo se permite cuando `NODE_ENV` no es `production` y `ALLOW_LOCAL_SEED=true`
+- en produccion se aplica solo esquema incremental con `npx prisma migrate deploy`
+
 ## Arquitectura aprobada
 
 Arquitectura limpia ligera por modulos.

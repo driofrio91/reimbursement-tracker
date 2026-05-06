@@ -29,4 +29,4 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 
 ## Ultimo relevo recomendado hoy
 
-- `2026-04-28-session-20-edge-case-matrix-tests-and-docs.md`
+- `2026-05-07-session-21-local-seed-guard-and-env-example.md`

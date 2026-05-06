@@ -66,8 +66,14 @@ npm run test
 npm run typecheck
 npm run build
 npm run prisma:migrate
-npm run db:seed
+ALLOW_LOCAL_SEED=true npm run db:seed:local
 ```
+
+## Politica de seed y migraciones
+
+- `prisma/seed.ts` se usa solo para datos locales de desarrollo
+- el seed exige `ALLOW_LOCAL_SEED=true` y bloquea ejecucion en `NODE_ENV=production`
+- en produccion se aplican migraciones incrementales con `npx prisma migrate deploy`
 
 ## Rutas actuales
 
