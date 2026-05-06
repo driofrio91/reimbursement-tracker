@@ -129,6 +129,12 @@ Al marcar factura pagada:
 - el seed solo se permite cuando `NODE_ENV` no es `production` y `ALLOW_LOCAL_SEED=true`
 - en produccion se aplica solo esquema incremental con `npx prisma migrate deploy`
 
+## Regla de release a produccion
+
+- despliegue de produccion solo al publicar una release final con tag `v*` (ejemplo: `v1.0.0`)
+- releases en borrador o prerelease no despliegan a produccion
+- el workflow de release ejecuta `lint`, `test`, `typecheck`, `build`, `prisma migrate deploy` y despues despliegue en `Vercel`
+
 ## Arquitectura aprobada
 
 Arquitectura limpia ligera por modulos.

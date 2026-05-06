@@ -39,6 +39,11 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
   - smoke de rutas privadas en desktop y movil
   - checklist final de acciones principales visibles en movil
 
+## Backlog operativo de despliegue
+
+- release a produccion automatizada por tag final `v*` (sin deploy en draft/prerelease)
+- preparar flujo futuro de prerelease a staging/preview sin afectar produccion
+
 ## Backlog V2 orientativo
 
 - cerrar trazabilidad historica de correcciones de estado final (mas de una correccion por factura)

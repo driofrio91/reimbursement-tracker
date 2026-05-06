@@ -29,4 +29,4 @@ Esta carpeta guarda una bitacora corta de cada sesion de trabajo para poder reto
 
 ## Ultimo relevo recomendado hoy
 
-- `2026-05-07-session-21-local-seed-guard-and-env-example.md`
+- `2026-05-07-session-22-release-prod-workflow.md`

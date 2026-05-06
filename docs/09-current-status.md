@@ -27,6 +27,23 @@
 
 - preparar despliegue del entorno para QA funcional final de V1
 
+## Pipeline de release a produccion
+
+- workflow creado: `.github/workflows/release-prod.yml`
+- trigger: `release.published`
+- guardas de seguridad para despliegue prod:
+  - no `draft`
+  - no `prerelease`
+  - tag que empiece por `v`
+- orden de ejecucion:
+  - `npm ci`
+  - `npm run lint`
+  - `npm run test`
+  - `npm run typecheck`
+  - `npm run build`
+  - `npx prisma migrate deploy`
+  - `vercel deploy --prebuilt --prod`
+
 ## Cobertura de escenarios limite
 
 - sincronizacion de `Service.status` validada con tests de regresion para:
