@@ -18,12 +18,27 @@ function assertLocalSeedExecution(): void {
   }
 }
 
+function getRequiredLocalPassword(variableName: "LOCAL_ADMIN_PASSWORD" | "LOCAL_OPERATOR_PASSWORD"): string {
+  const value = process.env[variableName];
+
+  if (!value || !value.trim()) {
+    throw new Error(
+      `Falta ${variableName}. Define una contrasena local en .env antes de ejecutar el seed de desarrollo.`,
+    );
+  }
+
+  return value;
+}
+
 async function main() {
   assertLocalSeedExecution();
 
+  const adminPassword = getRequiredLocalPassword("LOCAL_ADMIN_PASSWORD");
+  const operatorPassword = getRequiredLocalPassword("LOCAL_OPERATOR_PASSWORD");
+
   const [adminPasswordHash, operatorPasswordHash] = await Promise.all([
-    bcrypt.hash("admin123", 10),
-    bcrypt.hash("operator123", 10),
+    bcrypt.hash(adminPassword, 10),
+    bcrypt.hash(operatorPassword, 10),
   ]);
 
   await prisma.user.upsert({

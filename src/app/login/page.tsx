@@ -7,10 +7,11 @@ import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@local.test");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const showDevelopmentCredentials = process.env.NODE_ENV !== "production";
 
   async function handleSubmit(event: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
     event.preventDefault();
@@ -41,9 +42,7 @@ export default function LoginPage() {
             Acceso interno
           </span>
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Iniciar sesion</h1>
-          <p className="text-sm leading-6 text-slate-600">
-            Usa una de las cuentas de desarrollo sembradas en la base de datos para entrar en la aplicacion.
-          </p>
+          <p className="text-sm leading-6 text-slate-600">Introduce tus credenciales para entrar en la aplicacion.</p>
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -82,11 +81,18 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-          <p className="font-medium text-slate-900">Credenciales de desarrollo</p>
-          <p className="mt-2"><code>admin@local.test</code> / <code>admin123</code></p>
-          <p><code>operator@local.test</code> / <code>operator123</code></p>
-        </div>
+        {showDevelopmentCredentials ? (
+          <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+            <p className="font-medium text-slate-900">Usuarios de desarrollo</p>
+            <p className="mt-2">
+              <code>admin@local.test</code>
+            </p>
+            <p>
+              <code>operator@local.test</code>
+            </p>
+            <p className="mt-2 text-xs text-slate-500">Define las contrasenas en tu archivo local `.env`.</p>
+          </div>
+        ) : null}
       </div>
     </main>
   );
