@@ -27,7 +27,6 @@ Si algun documento auxiliar entra en conflicto con esta lista, prevalece la list
 
 - `sessions/README.md`
 - `sessions/TEMPLATE.md`
-- `sessions/*.md`
 
-La carpeta `sessions/` guarda decisiones historicas y evidencias de implementacion.
-No sustituye a las fuentes de verdad.
+En este repositorio publico no se versionan historicos internos de sesiones.
+La carpeta `sessions/` no sustituye a las fuentes de verdad.

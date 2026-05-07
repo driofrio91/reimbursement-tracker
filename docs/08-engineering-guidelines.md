@@ -88,5 +88,5 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 
 - Al cerrar cada US o caso de uso, actualizar `docs/10-use-cases-roadmap.md` en la misma sesion.
 - Reflejar el nuevo estado operativo y el siguiente paso en `docs/09-current-status.md`.
-- Dejar un handoff corto en `docs/sessions/` con cambios, validaciones y siguiente paso.
+- En repositorio publico, no versionar handoffs internos de sesion.
 - Si el alcance activo cambia, alinear tambien `docs/START-HERE.md` para evitar ambiguedad en sesiones futuras.
