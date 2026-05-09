@@ -21,7 +21,7 @@ npm run test
 npm run typecheck
 npm run build
 npm run prisma:migrate
-ALLOW_LOCAL_SEED=true npm run db:seed:local
+npm run db:seed:local
 ```
 
 ## Setup local
@@ -37,13 +37,27 @@ ALLOW_LOCAL_SEED=true npm run db:seed:local
 
 ```bash
 npm run prisma:migrate
-ALLOW_LOCAL_SEED=true npm run db:seed:local
+npm run db:seed:local
 ```
 
 Usuarios locales creados por seed:
 
 - `admin@local.test`
 - `operator@local.test`
+
+Las contrasenas son las que definas en:
+
+- `LOCAL_ADMIN_PASSWORD`
+- `LOCAL_OPERATOR_PASSWORD`
+
+## Troubleshooting local
+
+Si `npm run prisma:migrate` muestra que una migracion historica fue modificada y pide reset de esquema, significa que estas reutilizando una base que ya tenia un historial anterior.
+
+Opciones:
+
+1. Recomendado: usar una base de datos nueva para desarrollo local.
+2. Si puedes perder datos locales: ejecutar `npx prisma migrate reset` y despues volver a correr `npm run db:seed:local`.
 
 ## Documentacion clave
 

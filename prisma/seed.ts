@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
@@ -11,6 +13,7 @@ function assertLocalSeedExecution(): void {
     throw new Error(
       [
         "Seed local bloqueado: solo permitido fuera de production y con ALLOW_LOCAL_SEED=true.",
+        "Ejecuta: npm run db:seed:local",
         `NODE_ENV=${nodeEnv}`,
         `ALLOW_LOCAL_SEED=${allowLocalSeed}`,
       ].join(" "),

@@ -49,7 +49,7 @@ export default function LoginPage() {
           <label className="block space-y-2">
             <span className="text-sm font-medium text-slate-700">Email</span>
             <input
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 placeholder:text-slate-400 outline-none transition focus:border-slate-400"
               type="email"
               name="email"
               value={email}
@@ -61,7 +61,7 @@ export default function LoginPage() {
           <label className="block space-y-2">
             <span className="text-sm font-medium text-slate-700">Contrasena</span>
             <input
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 placeholder:text-slate-400 outline-none transition focus:border-slate-400"
               type="password"
               name="password"
               value={password}
