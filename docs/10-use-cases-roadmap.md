@@ -9,7 +9,7 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 - autenticacion: completada
 - servicios base: completada
 - autogeneracion de facturas en alta de servicio: completada
-- ciclo de vida de factura por etapas: completada en desarrollo (pendiente QA en entorno desplegado)
+- ciclo de vida de factura por etapas: completada y validada en QA local (desktop + movil)
 - estado global de servicio y resultado economico: completada con matriz de regresion documentada (`A1-A14`, `B1-B10`)
 - buscador global de facturas y detalle dedicado por factura: completada
 - limpieza operativa de legado de `ReimbursementRequest` (codigo y docs): completada
@@ -35,14 +35,14 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 
 ## Backlog funcional prioritario (siguiente US)
 
-- cerrar QA funcional final de V1
-  - smoke de rutas privadas en desktop y movil
-  - checklist final de acciones principales visibles en movil
+- documentar cierre operativo de V1
+- preparar primer bloque de V2: trazabilidad historica avanzada de correcciones
 
 ## Backlog operativo de despliegue
 
 - release a produccion automatizada por tag final `v*` (sin deploy en draft/prerelease)
 - preparar flujo futuro de prerelease a staging/preview sin afectar produccion
+- estado actual: despliegue por release final validado y QA funcional local V1 cerrada
 
 ## Backlog V2 orientativo
 
@@ -53,9 +53,9 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 
 ## Orden recomendado para las siguientes sesiones
 
-1. cerrar QA funcional final de V1 en entorno desplegado
-2. documentar cierre operativo de V1
-3. ampliar trazabilidad historica de correcciones de estado final (V2)
+1. documentar cierre operativo de V1
+2. ampliar trazabilidad historica de correcciones de estado final (V2)
+3. preparar flujo de prerelease a staging/preview sin afectar produccion
 
 ## Checklist por cada US con ruta privada
 
