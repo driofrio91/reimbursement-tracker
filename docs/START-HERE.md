@@ -68,15 +68,27 @@ Definicion funcional cerrada para esta US:
 - sin paginacion en esta primera iteracion
 - el detalle de factura en V1 es de lectura y enlaza al detalle del servicio para ejecutar acciones del ciclo
 
-Siguiente bloque priorizado para cerrar V1:
+Siguiente bloque priorizado tras cierre de V1:
 
-1. preparar entorno desplegado para QA funcional final en movil y desktop
+1. documentar cierre operativo de V1
+2. iniciar backlog V2 de trazabilidad historica de correcciones
+
+Estado de despliegue actual:
+
+- release final publicada y despliegue productivo ejecutado por workflow de release
+- auto-deploy por commit en Vercel desactivado; el despliegue queda controlado por release
 
 Cobertura de escenarios limite cerrada para estado global y resultado economico:
 
 - estado global de servicio sincronizado por reglas operativas ya validadas con tests
 - resultado economico (`FULL`, `PARTIAL`, `NONE`) cubierto con casos de borde en regresion
 - matrices cerradas y documentadas en `docs/07-mvp-scope.md` (casos `A1-A14` y `B1-B10`)
+
+QA funcional V1 cerrada:
+
+- checklist completada en `docs/12-qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
+- evidencia tecnica y de acceso autenticado en `docs/11-qa-local-evidence.md`
+- evidencia movil automatizada en `artifacts/qa-mobile/results.json` y capturas `artifacts/qa-mobile/*.png`
 
 Validacion de transiciones de factura cerrada en V1:
 

@@ -25,7 +25,10 @@
 
 ## Siguiente foco propuesto
 
-- preparar despliegue del entorno para QA funcional final de V1
+- documentar cierre operativo de V1 y preparar arranque de backlog V2
+- evidencia de QA local consolidada en `docs/11-qa-local-evidence.md`
+- checklist funcional V1 cerrada en `docs/12-qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
+- evidencias moviles automatizadas en `artifacts/qa-mobile/results.json` y `artifacts/qa-mobile/*.png`
 
 ## Pipeline de release a produccion
 
@@ -43,6 +46,8 @@
   - `npm run build`
   - `npx prisma migrate deploy`
   - `vercel deploy --prebuilt --prod`
+- estado actual: release final desplegada correctamente desde GitHub Release
+- nota operativa: en Vercel se desactivo build automatico por commit para evitar deploys fuera de release
 
 ## Cobertura de escenarios limite
 
