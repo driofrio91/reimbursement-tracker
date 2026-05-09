@@ -5,13 +5,13 @@
 - Use `npm` for repo commands. Verified scripts currently are `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run build`, `npm run prisma:migrate`, and `npm run db:seed`.
 
 ## Source of truth
-- Start with `docs/START-HERE.md`. It is the explicit handoff document for new sessions.
+- Start with `docs/PROJECT-HUB.md`. It defines the active version and documentation hierarchy.
 - Read `docs/09-current-status.md` for the current executable state before assuming what is already implemented.
-- Read `docs/10-use-cases-roadmap.md` before choosing the next feature to implement.
+- Read `docs/versions/v2/roadmap.md` before choosing the next feature to implement.
 - Read the latest file in `docs/sessions/` for the most recent verified work log.
-- Treat `docs/07-mvp-scope.md` as the authoritative scope cut for V1.
-- Use `docs/06-technical-decisions.md` for approved stack decisions.
-- Use `docs/05-system-architecture.md` for the intended module/layer boundaries.
+- Treat `docs/versions/v1/mvp-scope.md` as the historical V1 scope cut.
+- Use `docs/shared/technical-decisions.md` for approved stack decisions.
+- Use `docs/shared/system-architecture.md` for the intended module/layer boundaries.
 
 ## Verified product constraints
 - V1 is intentionally narrow: `login`, `create reimbursable service`, `list services`, `service detail`.
@@ -20,14 +20,14 @@
 - Keep business rules out of React components, Next.js pages, server actions, route handlers, and raw Prisma queries.
 
 ## Conflict handling
-- There is a docs conflict: `docs/00-overview.md` mentions broader MVP items like dashboard/import, but `docs/START-HERE.md` and `docs/07-mvp-scope.md` explicitly cut those from the first iteration.
-- When scope documents disagree, follow `START-HERE.md` + `07-mvp-scope.md` + the current executable repo state.
+- There is historical docs drift in legacy documents.
+- When scope documents disagree, follow `docs/PROJECT-HUB.md` + `docs/09-current-status.md` + `docs/versions/v2/roadmap.md` + the current executable repo state.
 
 ## Implementation guidance for future sessions
 - Keep implementation inside the root app; this is not a monorepo.
 - Preserve the approved structure under `src/`: `app/`, `modules/reimbursement/`, and `lib/`.
 - Prefer defining the V1 data model in Prisma once, but only implement the first-iteration flows at the UI/use-case level.
-- Keep the initial UI in Spanish, as approved in `docs/START-HERE.md`.
+- Keep the initial UI in Spanish, as approved project convention.
 - In `src/modules/`, use `PascalCase` filenames for business-module files and keep `Next.js` reserved files in framework naming (`page.tsx`, `layout.tsx`, `actions.ts`).
 - Inside `src/modules/reimbursement/`, prefer short entity names like `Service`, `Invoice`, and `Request` when the module context already provides the reimbursement scope.
 - All UI implementation must be mobile-first by default.

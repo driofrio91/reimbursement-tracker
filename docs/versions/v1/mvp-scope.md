@@ -1,5 +1,7 @@
 # MVP Scope
 
+> Documento historico de cierre V1. Referencia de baseline, no version activa.
+
 ## Objetivo
 
 Definir el recorte operativo de V1 para sustituir el Excel sin sobredimensionar.

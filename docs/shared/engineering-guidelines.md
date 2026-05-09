@@ -63,7 +63,7 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 
 ## Regla general de implementacion
 
-- Si una solucion parece util pero no ayuda directamente a la V1 definida en `docs/07-mvp-scope.md`, no entra todavia.
+- Si una solucion parece util pero no ayuda al alcance definido para la version activa, no entra todavia.
 
 ## Testing
 
@@ -86,7 +86,7 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 
 ## Continuidad documental obligatoria
 
-- Al cerrar cada US o caso de uso, actualizar `docs/10-use-cases-roadmap.md` en la misma sesion.
+- Al cerrar cada US o caso de uso, actualizar el roadmap de la version activa en `docs/versions/`.
 - Reflejar el nuevo estado operativo y el siguiente paso en `docs/09-current-status.md`.
 - En repositorio publico, no versionar handoffs internos de sesion.
-- Si el alcance activo cambia, alinear tambien `docs/START-HERE.md` para evitar ambiguedad en sesiones futuras.
+- Si el alcance activo cambia, alinear `docs/PROJECT-HUB.md` para evitar ambiguedad en sesiones futuras.

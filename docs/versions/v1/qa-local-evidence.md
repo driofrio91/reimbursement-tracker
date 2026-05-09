@@ -1,5 +1,7 @@
 # QA Local Evidence (2026-05-09)
 
+> Evidencia historica de cierre V1.
+
 ## Scope
 
 - Local technical QA run for V1 closure support.

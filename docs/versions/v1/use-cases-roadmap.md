@@ -1,5 +1,7 @@
 # Use Cases Roadmap
 
+> Documento historico de roadmap V1. La planificacion activa vive en `docs/versions/v2/roadmap.md`.
+
 ## Objetivo
 
 Priorizar implementacion sobre el modelo vigente centrado en facturas.

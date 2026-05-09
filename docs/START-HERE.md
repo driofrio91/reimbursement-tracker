@@ -1,5 +1,9 @@
 # Start Here
 
+> Legacy onboarding de V1. Este documento ya no es el punto de entrada principal.
+>
+> Usa `docs/PROJECT-HUB.md` para navegar la documentacion vigente.
+
 ## Objetivo
 
 Este archivo es el punto unico de entrada para retomar el proyecto.
@@ -17,9 +21,9 @@ Si una pieza no ayuda directamente a sustituir el Excel diario, no entra en V1.
 ## Fuentes de verdad
 
 1. `docs/START-HERE.md`
-2. `docs/07-mvp-scope.md`
+2. `docs/versions/v1/mvp-scope.md`
 3. `docs/09-current-status.md`
-4. `docs/10-use-cases-roadmap.md`
+4. `docs/versions/v1/use-cases-roadmap.md`
 5. `AGENTS.md`
 
 ## Cambio de modelo vigente
@@ -82,12 +86,12 @@ Cobertura de escenarios limite cerrada para estado global y resultado economico:
 
 - estado global de servicio sincronizado por reglas operativas ya validadas con tests
 - resultado economico (`FULL`, `PARTIAL`, `NONE`) cubierto con casos de borde en regresion
-- matrices cerradas y documentadas en `docs/07-mvp-scope.md` (casos `A1-A14` y `B1-B10`)
+- matrices cerradas y documentadas en `docs/versions/v1/mvp-scope.md` (casos `A1-A14` y `B1-B10`)
 
 QA funcional V1 cerrada:
 
-- checklist completada en `docs/12-qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
-- evidencia tecnica y de acceso autenticado en `docs/11-qa-local-evidence.md`
+- checklist completada en `docs/versions/v1/qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
+- evidencia tecnica y de acceso autenticado en `docs/versions/v1/qa-local-evidence.md`
 - evidencia movil automatizada en `artifacts/qa-mobile/results.json` y capturas `artifacts/qa-mobile/*.png`
 
 Validacion de transiciones de factura cerrada en V1:

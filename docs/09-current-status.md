@@ -26,8 +26,8 @@
 ## Siguiente foco propuesto
 
 - documentar cierre operativo de V1 y preparar arranque de backlog V2
-- evidencia de QA local consolidada en `docs/11-qa-local-evidence.md`
-- checklist funcional V1 cerrada en `docs/12-qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
+- evidencia de QA local consolidada en `docs/versions/v1/qa-local-evidence.md`
+- checklist funcional V1 cerrada en `docs/versions/v1/qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
 - evidencias moviles automatizadas en `artifacts/qa-mobile/results.json` y `artifacts/qa-mobile/*.png`
 
 ## Pipeline de release a produccion
@@ -59,7 +59,7 @@
   - pago exacto o superior al esperado (`FULL`)
   - pago parcial en caso resuelto o en seguimiento (`PARTIAL`)
   - cero pagado con todas las facturas resueltas (`NONE`)
-- matriz completa de escenarios documentada en `docs/07-mvp-scope.md` (casos `A1-A14` y `B1-B10`)
+- matriz completa de escenarios documentada en `docs/versions/v1/mvp-scope.md` (casos `A1-A14` y `B1-B10`)
 
 ## Modelo funcional vigente
 
@@ -116,8 +116,8 @@ npm run db:seed:local
 
 ## Lectura minima para retomar
 
-1. `docs/START-HERE.md`
-2. `docs/07-mvp-scope.md`
-3. `docs/09-current-status.md`
-4. `docs/10-use-cases-roadmap.md`
+1. `docs/PROJECT-HUB.md`
+2. `docs/09-current-status.md`
+3. `docs/versions/v2/roadmap.md`
+4. `docs/shared/data-model.md`
 5. `AGENTS.md`

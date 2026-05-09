@@ -1,5 +1,9 @@
 # User Flows
 
+> Baseline de flujos V1 como referencia transversal.
+>
+> Para evolucion activa, consultar `docs/versions/v2/roadmap.md`.
+
 ## Flujo 1. Crear servicio
 
 1. usuario registra fecha, concepto, importe real, persona, titular y aseguradora
