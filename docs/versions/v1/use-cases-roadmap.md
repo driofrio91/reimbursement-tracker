@@ -1,4 +1,4 @@
-# Use Cases Roadmap
+# Hoja de ruta de casos de uso
 
 > Documento historico de roadmap V1. La planificacion activa vive en `docs/versions/v2/roadmap.md`.
 
@@ -59,7 +59,7 @@ Priorizar implementacion sobre el modelo vigente centrado en facturas.
 2. ampliar trazabilidad historica de correcciones de estado final (V2)
 3. preparar flujo de prerelease a staging/preview sin afectar produccion
 
-## Checklist por cada US con ruta privada
+## Lista de verificacion por cada US con ruta privada
 
 1. ruta integrada en sidebar
 2. estado visual de pagina y seccion activa

@@ -51,7 +51,7 @@ npm run typecheck
 npm run build
 ```
 
-## Troubleshooting
+## Resolucion de problemas
 
 Si `npm run prisma:migrate` solicita reset por historial de migraciones, estas reutilizando una base con estado previo.
 

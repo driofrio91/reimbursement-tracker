@@ -1,4 +1,4 @@
-# User Flows
+# Flujos de usuario
 
 > Baseline de flujos V1 como referencia transversal.
 >

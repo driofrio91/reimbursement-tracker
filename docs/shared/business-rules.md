@@ -1,4 +1,4 @@
-# Business Rules
+# Reglas de negocio
 
 > Baseline funcional de V1 como referencia transversal.
 >

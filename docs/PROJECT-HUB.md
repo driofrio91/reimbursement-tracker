@@ -1,35 +1,35 @@
-# Project Hub
+# Hub del proyecto
 
-## Purpose
+## Objetivo
 
-This document is the documentation entrypoint for the project.
+Este documento es el punto de entrada de la documentacion del proyecto.
 
-## Active Version
+## Version activa
 
 - `activeVersion: v2`
 
-## Documentation Navigation
+## Navegacion de la documentacion
 
-- Current executable state: `docs/09-current-status.md`
-- Active planning and execution scope: `docs/versions/v2/roadmap.md`
-- Historical V1 scope and closure: `docs/versions/v1/`
-- Cross-version references: `docs/shared/`
+- Estado ejecutable actual: `docs/09-current-status.md`
+- Planificacion y alcance de ejecucion activos: `docs/versions/v2/roadmap.md`
+- Alcance y cierre historico de V1: `docs/versions/v1/`
+- Referencias transversales entre versiones: `docs/shared/`
 
-## Precedence Rules
+## Reglas de precedencia
 
-When documents conflict, apply this order:
+Cuando haya conflicto entre documentos, aplicar este orden:
 
-1. `docs/PROJECT-HUB.md` (defines active version and hierarchy)
-2. `docs/09-current-status.md` (real executable state)
-3. `docs/versions/v2/` (active version planning and scope)
-4. `docs/shared/` (cross-version product and engineering references)
-5. `docs/versions/v1/` and legacy docs (historical context)
+1. `docs/PROJECT-HUB.md` (define version activa y jerarquia)
+2. `docs/09-current-status.md` (estado ejecutable real)
+3. `docs/versions/v2/` (planificacion y alcance de version activa)
+4. `docs/shared/` (referencias transversales de producto e ingenieria)
+5. `docs/versions/v1/` y docs legacy (contexto historico)
 
-## Stable References
+## Referencias estables
 
-- Shared business rules: `docs/shared/business-rules.md`
-- Shared user flows baseline: `docs/shared/user-flows.md`
-- Shared data model: `docs/shared/data-model.md`
-- Shared system architecture: `docs/shared/system-architecture.md`
-- Shared technical decisions: `docs/shared/technical-decisions.md`
-- Shared engineering guidelines: `docs/shared/engineering-guidelines.md`
+- Reglas de negocio transversales: `docs/shared/business-rules.md`
+- Baseline transversal de flujos: `docs/shared/user-flows.md`
+- Modelo de datos transversal: `docs/shared/data-model.md`
+- Arquitectura de sistema transversal: `docs/shared/system-architecture.md`
+- Decisiones tecnicas transversales: `docs/shared/technical-decisions.md`
+- Guias de ingenieria transversales: `docs/shared/engineering-guidelines.md`

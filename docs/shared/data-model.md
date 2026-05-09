@@ -1,4 +1,4 @@
-# Data Model
+# Modelo de datos
 
 ## Nota de vigencia
 

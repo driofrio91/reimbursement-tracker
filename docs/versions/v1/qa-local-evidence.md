@@ -1,14 +1,14 @@
-# QA Local Evidence (2026-05-09)
+# Evidencia de QA local (2026-05-09)
 
 > Evidencia historica de cierre V1.
 
-## Scope
+## Alcance
 
-- Local technical QA run for V1 closure support.
-- Environment: local app + Neon database.
-- Accounts validated: `sandy@local.test` and `danny@local.test`.
+- Ejecucion de QA tecnica local para soporte de cierre de V1.
+- Entorno: app local + base de datos Neon.
+- Cuentas validadas: `sandy@local.test` y `danny@local.test`.
 
-## Executed Commands and Results
+## Comandos ejecutados y resultados
 
 1. `npm run lint`
    - Result: pass.
@@ -28,7 +28,7 @@
    - Result: pass.
    - Seed script executed with `NODE_ENV=development` and `ALLOW_LOCAL_SEED=true`.
 
-## User Evidence
+## Evidencia de usuarios
 
 - Existing local seeded users confirmed active:
   - `admin@local.test`
@@ -42,7 +42,7 @@
   - `sandy@local.test` with `Sandy123!` -> `OK`
   - `danny@local.test` with `Danny123!` -> `OK`
 
-## Route Protection Smoke (HTTP)
+## Smoke de proteccion de rutas (HTTP)
 
 - App started locally with `next start` on port `4010`.
 - HTTP status checks:
@@ -56,7 +56,7 @@ Interpretation:
 - Public login route is accessible.
 - Private routes redirect without session as expected.
 
-## Authenticated Access Smoke (HTTP)
+## Smoke de acceso autenticado (HTTP)
 
 - Local auth flow executed against `Auth.js` credentials endpoints:
   - `GET /api/auth/csrf`
@@ -87,9 +87,9 @@ Interpretation:
 Interpretation:
 
 - Credential login is operational for both local users.
-- Session creation and protected-route access are operational after login.
+- La creacion de sesion y el acceso a rutas protegidas son operativos tras el login.
 
-## Mobile Browser QA Automation (Playwright)
+## Automatizacion QA de navegador movil (Playwright)
 
 - Tooling executed:
   - `npm install -D playwright`

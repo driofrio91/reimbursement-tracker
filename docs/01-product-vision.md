@@ -1,4 +1,4 @@
-# Product Vision
+# Vision de producto
 
 > Documento de vision de producto. No usar como fuente operativa para ejecucion de version.
 >

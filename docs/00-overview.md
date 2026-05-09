@@ -1,4 +1,4 @@
-# Overview
+# Resumen general
 
 > Documento de contexto historico. No usar como fuente operativa.
 >

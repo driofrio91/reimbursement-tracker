@@ -1,4 +1,4 @@
-# QA Funcional V1 Checklist (Local)
+# Lista de verificacion funcional QA V1 (local)
 
 > Evidencia historica de cierre V1.
 
@@ -31,8 +31,8 @@ Usar columnas: `Resultado` (`PASS`/`FAIL`), `Evidencia` (captura o nota), `Obser
 
 | ID | Caso | Pasos | Esperado | Resultado | Evidencia | Observaciones |
 |---|---|---|---|---|---|---|
-| QA-01 | Login Sandy | Ir a `/login`, autenticar con Sandy | Login correcto, redireccion a ruta privada | PASS | `docs/versions/v1/qa-local-evidence.md` (Authenticated Access Smoke) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
-| QA-02 | Login Danny | Cerrar sesion, autenticar con Danny | Login correcto, redireccion a ruta privada | PASS | `docs/versions/v1/qa-local-evidence.md` (Authenticated Access Smoke) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
+| QA-01 | Login Sandy | Ir a `/login`, autenticar con Sandy | Login correcto, redireccion a ruta privada | PASS | `docs/versions/v1/qa-local-evidence.md` (Smoke de acceso autenticado) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
+| QA-02 | Login Danny | Cerrar sesion, autenticar con Danny | Login correcto, redireccion a ruta privada | PASS | `docs/versions/v1/qa-local-evidence.md` (Smoke de acceso autenticado) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
 | QA-03 | Ruta privada sin sesion | Sin sesion abrir `/services` | Redireccion a `/login` | PASS | `docs/versions/v1/qa-local-evidence.md` | `GET /services -> 307` sin sesion. |
 | QA-04 | Home privada | Con sesion abrir `/` | Render correcto sin error | PASS | `docs/versions/v1/qa-local-evidence.md` | `GET / -> 200` con sesion para ambos usuarios. |
 | QA-05 | Listado servicios | Abrir `/services` | Listado visible y navegable | PASS | `docs/versions/v1/qa-local-evidence.md` | `GET /services -> 200` autenticado. |

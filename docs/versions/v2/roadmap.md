@@ -1,4 +1,4 @@
-# V2 Roadmap
+# Hoja de ruta V2
 
 ## Objetivo
 
@@ -21,7 +21,7 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 - definir modelo de eventos de correccion con auditoria
 - mantener compatibilidad con flujo actual de resolucion
 
-## Definition of Done por US
+## Criterio de cierre por US
 
 - caso de uso implementado en capa `application`
 - reglas de negocio en `domain` o `application`, no en UI

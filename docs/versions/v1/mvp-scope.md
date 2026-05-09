@@ -1,4 +1,4 @@
-# MVP Scope
+# Alcance MVP
 
 > Documento historico de cierre V1. Referencia de baseline, no version activa.
 

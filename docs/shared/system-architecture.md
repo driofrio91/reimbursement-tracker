@@ -1,4 +1,4 @@
-# System Architecture
+# Arquitectura del sistema
 
 ## Objetivo
 

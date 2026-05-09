@@ -1,4 +1,4 @@
-# Technical Decisions
+# Decisiones tecnicas
 
 ## Objetivo
 

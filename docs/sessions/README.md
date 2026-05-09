@@ -1,4 +1,4 @@
-# Session Notes
+# Notas de sesion
 
 ## Objetivo
 
