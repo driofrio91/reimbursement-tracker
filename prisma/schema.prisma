@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReimbursableServiceStatus {
+  REGISTERED
+  SUBMITTED
+  REIMBURSED
+}
+
+enum InvoiceStatus {
+  CREATED
+  INFORMATION_COMPLETED
+  CLAIM_REFERENCE_COMPLETED
+  PAID
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  name         String
+  passwordHash String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Insurer {
+  id        String               @id @default(uuid()) @db.Uuid
+  name      String
+  code      String               @unique
+  isActive  Boolean              @default(true)
+  notes     String?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  services  ReimbursableService[]
+}
+
+model Person {
+  id             String                 @id @default(uuid()) @db.Uuid
+  firstName      String
+  lastName       String
+  displayName    String                 @unique
+  documentNumber String?
+  notes          String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  services       ReimbursableService[]
+}
+
+model ReimbursableService {
+  id               String                    @id @default(uuid()) @db.Uuid
+  serviceDate      DateTime                  @db.Date
+  description      String
+  actualAmount     Decimal                   @db.Decimal(10, 2)
+  invoiceBilledAmount   Decimal              @default(55) @db.Decimal(10, 2)
+  invoiceExpectedAmount Decimal              @default(49.5) @db.Decimal(10, 2)
+  currency         String                    @default("EUR")
+  personId         String                    @db.Uuid
+  insurerId        String                    @db.Uuid
+  policyHolderName String
+  attended         Boolean                   @default(true)
+  status           ReimbursableServiceStatus @default(REGISTERED)
+  notes            String?
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  person           Person                    @relation(fields: [personId], references: [id])
+  insurer          Insurer                   @relation(fields: [insurerId], references: [id])
+  invoices         Invoice[]
+
+  @@index([personId])
+  @@index([insurerId])
+  @@index([status])
+  @@index([serviceDate])
+}
+
+model Invoice {
+  id                    String              @id @default(uuid()) @db.Uuid
+  serviceId             String              @db.Uuid
+  invoiceNumber         String?
+  invoiceDate           DateTime?           @db.Date
+  invoiceBilledAmount   Decimal             @default(55) @db.Decimal(10, 2)
+  invoiceExpectedAmount Decimal             @default(49.5) @db.Decimal(10, 2)
+  currency              String              @default("EUR")
+  issuerName            String?
+  issuerTaxId           String?
+  claimReference        String?
+  status                InvoiceStatus       @default(CREATED)
+  paidAmount            Decimal?            @db.Decimal(10, 2)
+  paidAt                DateTime?           @db.Date
+  rejectionReason       String?
+  correctedAt           DateTime?
+  correctionReason      String?
+  correctedFromStatus   InvoiceStatus?
+  correctedByUserId     String?             @db.Uuid
+  correctedByUserName   String?
+  notes                 String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  service               ReimbursableService @relation(fields: [serviceId], references: [id])
+
+  @@index([serviceId])
+  @@index([status])
+  @@index([invoiceDate])
+}

@@ -104,7 +104,7 @@ Motivo:
 
 - auditoria basica desde el inicio
 - guardar quien crea o actualiza registros cuando aplique
-- registrar cambios relevantes en `StatusHistory`
+- registrar cambios relevantes directamente en entidades operativas de V1 cuando aplique
 
 Motivo:
 
@@ -129,9 +129,9 @@ Motivo:
 - creacion de servicio reembolsable
 - calculo de importes facturados
 - deteccion de sobrefacturacion
-- creacion de solicitud con varias facturas
-- resolucion de solicitud y actualizacion de estados
-- creacion de una factura nueva cuando una anterior fue rechazada y sigue faltando importe por cubrir
+- ciclo de factura por etapas (`CREATED` -> `INFORMATION_COMPLETED` -> `CLAIM_REFERENCE_COMPLETED`)
+- resolucion de factura (`PAID` o `REJECTED`) y correccion operativa final
+- busqueda de facturas y consulta de detalle de factura
 
 ## Decision sobre adjuntos
 
@@ -212,7 +212,7 @@ La primera iteracion funcional del proyecto incluira unicamente:
 Motivo:
 
 - permite validar autenticacion, arquitectura, persistencia y primer caso de uso real
-- fija una base pequena y estable antes de entrar en facturas, solicitudes y resoluciones
+- fija una base pequena y estable antes de ampliar el flujo completo de facturas y resoluciones
 
 ## Decision de alcance
 
@@ -222,7 +222,7 @@ La V1 se centra solo en sustituir el Excel a nivel operativo.
 
 El detalle completo del recorte entre V1 y V2 queda definido en `docs/07-mvp-scope.md`.
 
-La V1 queda ademas simplificada al modelo `Service + Invoice + Request`, eliminando toda la logica de reutilizacion de facturas rechazadas.
+La V1 queda simplificada al modelo `Service + Invoice`, con `claimReference` en la factura y sin entidad `Request` persistida.
 
 ## Stack final aprobado
 

@@ -2,183 +2,166 @@
 
 ## Objetivo
 
-Este documento fija el recorte definitivo del alcance para evitar sobredimensionar la primera version del producto.
+Definir el recorte operativo de V1 para sustituir el Excel sin sobredimensionar.
 
-La meta de la V1 no es construir el sistema mas completo posible, sino sustituir el Excel con una aplicacion sencilla que permita controlar servicios, facturas y reembolsos con mas claridad.
+## V1 incluida
 
-## Criterio de recorte
-
-La V1 debe resolver solo estas necesidades:
-
-- registrar servicios o gastos reembolsables
-- asociar facturas a esos servicios
-- agrupar facturas dentro de solicitudes de reembolso
-- marcar reembolsos o rechazos
-- consultar el estado actual y los pendientes
-
-Todo lo que no ayude directamente a ese objetivo pasa a V2.
-
-## V1 aprobada
-
-### Objetivo funcional
-
-Sustituir operativamente el Excel para el seguimiento diario.
-
-### Entidades incluidas
+### Entidades
 
 - `User`
 - `Insurer`
 - `Person`
 - `ReimbursableService`
 - `Invoice`
-- `ReimbursementRequest`
 
-### Entidades excluidas de V1
+### Flujo funcional
 
-- `Attachment`
-- `Note`
-- `PolicyHolder` como entidad separada
-- `StatusHistory` como sistema completo de auditoria avanzada
+1. login
+2. crear servicio reembolsable
+3. autogenerar facturas del servicio
+4. listar servicios
+5. ver detalle de servicio
+6. listar y buscar facturas
+7. ver detalle de factura
+8. completar informacion de factura
+9. completar `claimReference`
+10. resolver factura como `PAID` o `REJECTED`
+11. ver resumen operativo de facturado, esperado y pagado
 
-### Estados persistidos en V1
+### Buscador de facturas V1
+
+Filtros iniciales acordados:
+
+- `invoiceNumber`
+- `claimReference`
+- `status`
+
+Reglas funcionales de V1 para esta vista:
+
+- filtros combinados con AND
+- `invoiceNumber` y `claimReference` con busqueda parcial case-insensitive
+- `status` opcional de seleccion unica
+- orden por defecto por `updatedAt` descendente
+- sin paginacion en esta primera iteracion
+
+### Detalle de factura V1
+
+- ruta: `/invoices/[id]`
+- alcance inicial: lectura operativa de la factura
+- debe incluir enlace directo a `/services/[id]` para operar el ciclo por etapas
+
+### Configuracion por servicio
+
+- `invoiceBilledAmount` (default `55`)
+- `invoiceExpectedAmount` (default `49.5`)
+
+### Regla de cantidad de facturas
+
+- `invoiceCount = ceil(actualAmount / invoiceExpectedAmount)`
+- siempre igualar o superar
+- si se supera, mostrar aviso sin bloquear
+
+### Estados persistidos de V1
 
 #### `ReimbursableService`
 
-- `registered`
-- `submitted`
-- `reimbursed`
+- `REGISTERED`
+- `SUBMITTED`
+- `REIMBURSED`
 
 #### `Invoice`
 
-- `received`
-- `submitted`
-- `rejected`
-- `reimbursed`
+- `CREATED`
+- `INFORMATION_COMPLETED`
+- `CLAIM_REFERENCE_COMPLETED`
+- `PAID`
+- `REJECTED`
 
-#### `ReimbursementRequest`
+### Reglas de transicion de estado de factura V1
 
-- `submitted`
-- `reimbursed`
-- `rejected`
+| Estado actual | Accion | Estado destino | Permitida | Regla |
+|---|---|---|---|---|
+| `CREATED` | completar informacion | `INFORMATION_COMPLETED` | si | requiere `invoiceNumber`, `invoiceDate`, `issuerName` |
+| `CREATED` | registrar referencia | `CLAIM_REFERENCE_COMPLETED` | no | no se permite salto de etapa |
+| `CREATED` | marcar pagada/rechazada | `PAID`/`REJECTED` | no | no se permite salto de etapa |
+| `INFORMATION_COMPLETED` | completar informacion | `INFORMATION_COMPLETED` | no | no se permite re-confirmacion de etapa |
+| `INFORMATION_COMPLETED` | registrar referencia | `CLAIM_REFERENCE_COMPLETED` | si | mantiene validacion de datos de factura completos |
+| `INFORMATION_COMPLETED` | marcar pagada/rechazada | `PAID`/`REJECTED` | no | no se permite salto de etapa |
+| `CLAIM_REFERENCE_COMPLETED` | completar informacion | `INFORMATION_COMPLETED` | no | no se permite retroceso de etapa |
+| `CLAIM_REFERENCE_COMPLETED` | registrar referencia | `CLAIM_REFERENCE_COMPLETED` | no | no se permite re-confirmacion de etapa |
+| `CLAIM_REFERENCE_COMPLETED` | marcar pagada | `PAID` | si | requiere `paidAmount > 0` y `paidAt` |
+| `CLAIM_REFERENCE_COMPLETED` | marcar rechazada | `REJECTED` | si | `rejectionReason` opcional |
+| `PAID` | corregir estado final | `REJECTED` | si | requiere `correctionReason` |
+| `REJECTED` | corregir estado final | `PAID` | si | requiere `correctionReason`, `paidAmount > 0`, `paidAt` |
+| `PAID`/`REJECTED` | acciones normales de etapa | cualquier otro | no | solo se permite cambio por correccion final |
 
-### Estados derivados o calculados en UI
+### Matriz de escenarios limite para estado global de servicio
 
-Estos conceptos siguen existiendo, pero no requieren persistencia especifica en V1:
+Regla operativa vigente:
 
-- parcialmente facturado
-- sobrefacturado
-- parcialmente reembolsado
+- `REGISTERED`: existe al menos una factura en `CREATED` o `INFORMATION_COMPLETED`
+- `SUBMITTED`: no hay facturas en etapas iniciales y el caso no esta totalmente cerrado
+- `REIMBURSED`: todas las facturas estan en `PAID` o `REJECTED`
 
-### Funcionalidad incluida
+| Caso | Estados de facturas (entrada) | Estado esperado |
+|---|---|---|
+| `A1` | `[]` | `REGISTERED` |
+| `A2` | `[CREATED]` | `REGISTERED` |
+| `A3` | `[INFORMATION_COMPLETED]` | `REGISTERED` |
+| `A4` | `[CLAIM_REFERENCE_COMPLETED]` | `SUBMITTED` |
+| `A5` | `[PAID]` | `REIMBURSED` |
+| `A6` | `[REJECTED]` | `REIMBURSED` |
+| `A7` | `[PAID, REJECTED]` | `REIMBURSED` |
+| `A8` | `[CLAIM_REFERENCE_COMPLETED, PAID]` | `SUBMITTED` |
+| `A9` | `[CLAIM_REFERENCE_COMPLETED, REJECTED]` | `SUBMITTED` |
+| `A10` | `[PAID, INFORMATION_COMPLETED]` | `REGISTERED` |
+| `A11` | `[REJECTED, CREATED]` | `REGISTERED` |
+| `A12` | `[CLAIM_REFERENCE_COMPLETED, CLAIM_REFERENCE_COMPLETED]` | `SUBMITTED` |
+| `A13` | `[PAID, PAID, REJECTED]` | `REIMBURSED` |
+| `A14` | `[CREATED, CLAIM_REFERENCE_COMPLETED, PAID]` | `REGISTERED` |
 
-- login
-- crear servicio reembolsable
-- listar servicios
-- ver detalle de servicio
-- crear o vincular factura
-- calcular importe pendiente por cubrir
-- mostrar aviso de sobrefacturacion
-- crear solicitud con una o varias facturas
-- registrar referencia externa
-- marcar facturas como reembolsadas o rechazadas
-- crear una nueva factura para cubrir importe pendiente tras rechazo
-- filtros basicos por estado, persona y fecha
+### Matriz de escenarios limite para resultado economico
 
-### Testing incluido
+Regla vigente para `reimbursementOutcome`:
 
-- tests de casos de uso
-- tests de funcionalidad critica
+- `FULL`: `totalPaidAmount >= totalExpectedAmount` y `totalExpectedAmount > 0`
+- `PARTIAL`: `totalPaidAmount > 0` y `totalPaidAmount < totalExpectedAmount`
+- `NONE`: `totalPaidAmount === 0` y todas las facturas resueltas (`PAID`/`REJECTED`)
+- fallback operativo: `PARTIAL`
 
-### Arquitectura incluida
+| Caso | `totalExpectedAmount` | `totalPaidAmount` | Todas resueltas | Resultado esperado |
+|---|---:|---:|---|---|
+| `B1` | 100 | 100 | si | `FULL` |
+| `B2` | 90 | 100 | si | `FULL` |
+| `B3` | 100 | 20 | si | `PARTIAL` |
+| `B4` | 100 | 20 | no | `PARTIAL` |
+| `B5` | 100 | 0 | si | `NONE` |
+| `B6` | 100 | 0 | no | `PARTIAL` |
+| `B7` | 0 | 0 | si | `NONE` |
+| `B8` | 0 | 10 | si | `PARTIAL` |
+| `B9` | 150 | 74.99 | si | `PARTIAL` |
+| `B10` | 150 | 150.01 | si | `FULL` |
 
-- misma arquitectura limpia ligera ya aprobada
-- un unico modulo funcional `reimbursement`
-- pocos casos de uso iniciales
-- pocos repositorios
-- mapeo minimo y pragmatico
+### Regla de referencia
 
-## V2 aprobada
+- `claimReference` vive en `Invoice`
+- varias facturas pueden compartir la misma `claimReference`
 
-### Objetivo funcional
+### Regla de pago
 
-Mejorar trazabilidad, comodidad operativa, migracion historica y capacidades de gestion.
+- `paidAmount` se propone con el esperado por defecto
+- `paidAmount` es editable
 
-La V2 no cambia la regla ya aprobada de negocio:
-
-- una factura solo puede pertenecer a una solicitud
-- una factura rechazada no se reutiliza
-- si falta importe por cubrir, se crea una factura nueva
-
-### Entidades y modulos que pasan a V2
-
-- `Attachment`
-- `Note`
-- `PolicyHolder` separado si aporta valor real
-- `StatusHistory` completo
-
-### Ampliaciones del modelo que pueden entrar en V2
-
-- separar `policyHolderName` en una entidad `PolicyHolder` real
-- enriquecer `Invoice` con mas metadatos fiscales o contables si hace falta
-- anadir tablas auxiliares para reporting o read models si el dashboard lo requiere
-
-### Funcionalidad que pasa a V2
+## V1 excluida
 
 - importacion historica desde Excel
-- preview de importacion
-- limpieza asistida de datos
-- adjuntos de facturas y justificantes
-- notas internas estructuradas
-- dashboard analitico avanzado
-- KPIs y tiempos medios
-- reporting de actividad por usuario
-- gestion de usuarios desde la aplicacion
-- recuperacion de contrasena
-- permisos mas finos si hacen falta
-
-### Funcionalidad que expresamente no pasa a V2
-
-Estas ideas quedan descartadas tambien para V2 salvo cambio real del negocio:
-
-- reutilizar una factura rechazada en otra solicitud
-- reenvios de la misma factura como si fuera el mismo documento
-- volver al modelo `InvoiceDocument + ServiceInvoiceRecord + ReimbursementRequestItem` sin necesidad demostrada
-
-### Estados y trazabilidad que pasan a V2
-
-- `partially_invoiced`
-- `over_invoiced` persistido
-- `partially_reimbursed` persistido
-- `closed`
-- fases persistidas detalladas
-- historico detallado por cambio de estado
-
-## Lo que se elimina del primer build
-
 - adjuntos
-- notas como entidad separada
-- importacion del Excel
-- auditoria completa
-- exceso de estados persistidos
-- separacion excesiva entre titular y persona si no aporta valor inmediato
-- dashboard avanzado
-- abstracciones tecnicas no necesarias para los primeros casos de uso
+- notas estructuradas como entidad separada
+- dashboard analitico avanzado
+- auditoria avanzada
+- permisos finos y gestion avanzada de usuarios
 
-## Orden recomendado de implementacion de V1
+## V2 orientativa
 
-1. autenticacion
-2. servicios
-3. facturas
-4. solicitudes
-5. resolucion
-6. filtros y listados
-
-## Regla de decision para el desarrollo
-
-Si una pieza no ayuda de forma directa a sustituir el Excel en la operativa diaria, no entra en V1.
-
-## Decision final
-
-La V1 queda oficialmente recortada a un nucleo operativo minimo.
-
-La V2 agrupa todas las mejoras de trazabilidad avanzada, importacion historica, adjuntos y capacidades analiticas, pero mantiene el mismo nucleo de negocio simplificado de `Service + Invoice + Request`.
+- ampliar trazabilidad avanzada
+- importacion y limpieza asistida de historico
