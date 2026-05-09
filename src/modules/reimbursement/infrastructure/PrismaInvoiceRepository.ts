@@ -105,14 +105,11 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
   }
 
   async completeInformation(invoiceId: string, input: CompleteInvoiceInformationInput): Promise<Invoice | null> {
-    const existingInvoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
-
-    if (!existingInvoice) {
-      return null;
-    }
-
-    const updatedInvoice = await this.prisma.invoice.update({
-      where: { id: invoiceId },
+    const updateResult = await this.prisma.invoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: PrismaInvoiceStatus.CREATED,
+      },
       data: {
         invoiceNumber: input.invoiceNumber,
         invoiceDate: input.invoiceDate,
@@ -123,36 +120,38 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       },
     });
 
-    return this.mapInvoice(updatedInvoice);
-  }
-
-  async setClaimReference(invoiceId: string, claimReference: string): Promise<Invoice | null> {
-    const existingInvoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
-
-    if (!existingInvoice) {
+    if (updateResult.count === 0) {
       return null;
     }
 
-    const updatedInvoice = await this.prisma.invoice.update({
-      where: { id: invoiceId },
+    return this.getById(invoiceId);
+  }
+
+  async setClaimReference(invoiceId: string, claimReference: string): Promise<Invoice | null> {
+    const updateResult = await this.prisma.invoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: PrismaInvoiceStatus.INFORMATION_COMPLETED,
+      },
       data: {
         claimReference,
         status: PrismaInvoiceStatus.CLAIM_REFERENCE_COMPLETED,
       },
     });
 
-    return this.mapInvoice(updatedInvoice);
-  }
-
-  async markAsPaid(invoiceId: string, paidAmount: number, paidAt: Date): Promise<Invoice | null> {
-    const existingInvoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
-
-    if (!existingInvoice) {
+    if (updateResult.count === 0) {
       return null;
     }
 
-    const updatedInvoice = await this.prisma.invoice.update({
-      where: { id: invoiceId },
+    return this.getById(invoiceId);
+  }
+
+  async markAsPaid(invoiceId: string, paidAmount: number, paidAt: Date): Promise<Invoice | null> {
+    const updateResult = await this.prisma.invoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: PrismaInvoiceStatus.CLAIM_REFERENCE_COMPLETED,
+      },
       data: {
         status: PrismaInvoiceStatus.PAID,
         paidAmount,
@@ -160,25 +159,30 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       },
     });
 
-    return this.mapInvoice(updatedInvoice);
-  }
-
-  async markAsRejected(invoiceId: string, rejectionReason?: string): Promise<Invoice | null> {
-    const existingInvoice = await this.prisma.invoice.findUnique({ where: { id: invoiceId } });
-
-    if (!existingInvoice) {
+    if (updateResult.count === 0) {
       return null;
     }
 
-    const updatedInvoice = await this.prisma.invoice.update({
-      where: { id: invoiceId },
+    return this.getById(invoiceId);
+  }
+
+  async markAsRejected(invoiceId: string, rejectionReason?: string): Promise<Invoice | null> {
+    const updateResult = await this.prisma.invoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: PrismaInvoiceStatus.CLAIM_REFERENCE_COMPLETED,
+      },
       data: {
         status: PrismaInvoiceStatus.REJECTED,
         rejectionReason: rejectionReason ?? null,
       },
     });
 
-    return this.mapInvoice(updatedInvoice);
+    if (updateResult.count === 0) {
+      return null;
+    }
+
+    return this.getById(invoiceId);
   }
 
   async correctResolution(invoiceId: string, input: CorrectInvoiceResolutionInput): Promise<Invoice | null> {
@@ -188,8 +192,15 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       return null;
     }
 
-    const updatedInvoice = await this.prisma.invoice.update({
-      where: { id: invoiceId },
+    if (existingInvoice.status !== PrismaInvoiceStatus.PAID && existingInvoice.status !== PrismaInvoiceStatus.REJECTED) {
+      return null;
+    }
+
+    const updateResult = await this.prisma.invoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: existingInvoice.status,
+      },
       data:
         input.toStatus === "PAID"
           ? {
@@ -216,7 +227,11 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
             },
     });
 
-    return this.mapInvoice(updatedInvoice);
+    if (updateResult.count === 0) {
+      return null;
+    }
+
+    return this.getById(invoiceId);
   }
 
   private mapInvoice(invoice: {

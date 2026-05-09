@@ -30,7 +30,7 @@ export async function markInvoiceAsPaidUseCase(
     throw new MarkInvoiceAsPaidUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
   }
 
-  if (invoice.status !== "CLAIM_REFERENCE_COMPLETED" && invoice.status !== "PAID") {
+  if (invoice.status !== "CLAIM_REFERENCE_COMPLETED") {
     throw new MarkInvoiceAsPaidUseCaseError(
       "INVALID_STATUS",
       "La factura debe tener referencia registrada para poder marcarse como pagada.",
@@ -40,7 +40,10 @@ export async function markInvoiceAsPaidUseCase(
   const updatedInvoice = await dependencies.invoiceRepository.markAsPaid(invoiceId, paidAmount, paidAt);
 
   if (!updatedInvoice) {
-    throw new MarkInvoiceAsPaidUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+    throw new MarkInvoiceAsPaidUseCaseError(
+      "INVALID_STATUS",
+      "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
+    );
   }
 
   return updatedInvoice;

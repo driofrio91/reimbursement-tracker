@@ -28,10 +28,10 @@ export async function registerInvoiceClaimReferenceUseCase(
     throw new RegisterInvoiceClaimReferenceUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
   }
 
-  if (invoice.status === "PAID" || invoice.status === "REJECTED") {
+  if (invoice.status !== "INFORMATION_COMPLETED") {
     throw new RegisterInvoiceClaimReferenceUseCaseError(
       "INVALID_STATUS",
-      "No se puede registrar referencia sobre una factura finalizada.",
+      "Solo puedes registrar referencia cuando la factura esta en informacion completada.",
     );
   }
 
@@ -45,7 +45,10 @@ export async function registerInvoiceClaimReferenceUseCase(
   const updatedInvoice = await dependencies.invoiceRepository.setClaimReference(invoiceId, claimReference);
 
   if (!updatedInvoice) {
-    throw new RegisterInvoiceClaimReferenceUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+    throw new RegisterInvoiceClaimReferenceUseCaseError(
+      "INVALID_STATUS",
+      "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
+    );
   }
 
   return updatedInvoice;

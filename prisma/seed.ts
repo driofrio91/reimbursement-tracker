@@ -1,12 +1,47 @@
+import "dotenv/config";
+
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+function assertLocalSeedExecution(): void {
+  const nodeEnv = process.env.NODE_ENV ?? "undefined";
+  const allowLocalSeed = process.env.ALLOW_LOCAL_SEED ?? "undefined";
+
+  if (nodeEnv === "production" || allowLocalSeed !== "true") {
+    throw new Error(
+      [
+        "Seed local bloqueado: solo permitido fuera de production y con ALLOW_LOCAL_SEED=true.",
+        "Ejecuta: npm run db:seed:local",
+        `NODE_ENV=${nodeEnv}`,
+        `ALLOW_LOCAL_SEED=${allowLocalSeed}`,
+      ].join(" "),
+    );
+  }
+}
+
+function getRequiredLocalPassword(variableName: "LOCAL_ADMIN_PASSWORD" | "LOCAL_OPERATOR_PASSWORD"): string {
+  const value = process.env[variableName];
+
+  if (!value || !value.trim()) {
+    throw new Error(
+      `Falta ${variableName}. Define una contrasena local en .env antes de ejecutar el seed de desarrollo.`,
+    );
+  }
+
+  return value;
+}
+
 async function main() {
+  assertLocalSeedExecution();
+
+  const adminPassword = getRequiredLocalPassword("LOCAL_ADMIN_PASSWORD");
+  const operatorPassword = getRequiredLocalPassword("LOCAL_OPERATOR_PASSWORD");
+
   const [adminPasswordHash, operatorPasswordHash] = await Promise.all([
-    bcrypt.hash("admin123", 10),
-    bcrypt.hash("operator123", 10),
+    bcrypt.hash(adminPassword, 10),
+    bcrypt.hash(operatorPassword, 10),
   ]);
 
   await prisma.user.upsert({

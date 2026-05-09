@@ -1,0 +1,57 @@
+name: Release Production
+
+on:
+  release:
+    types:
+      - published
+
+concurrency:
+  group: release-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy-production:
+    if: ${{ !github.event.release.draft && !github.event.release.prerelease && startsWith(github.event.release.tag_name, 'v') }}
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Apply production migrations
+        run: npx prisma migrate deploy
+
+      - name: Pull Vercel environment
+        run: npx vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Build Vercel artifact
+        run: npx vercel build --prod --token "$VERCEL_TOKEN"
+
+      - name: Deploy to Vercel production
+        run: npx vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"

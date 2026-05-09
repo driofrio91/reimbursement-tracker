@@ -135,7 +135,7 @@ export async function completeInvoiceInformationAction(
     );
   } catch (error) {
     if (error instanceof CompleteInvoiceInformationUseCaseError) {
-      return buildActionResult("error", error.message);
+      return buildActionResult("error", toCompleteInvoiceInformationErrorMessage(error));
     }
 
     return buildActionResult("error", "No se pudo completar la informacion de la factura.");
@@ -166,7 +166,7 @@ export async function registerInvoiceClaimReferenceAction(
     });
   } catch (error) {
     if (error instanceof RegisterInvoiceClaimReferenceUseCaseError) {
-      return buildActionResult("error", error.message);
+      return buildActionResult("error", toRegisterClaimReferenceErrorMessage(error));
     }
 
     return buildActionResult("error", "No se pudo registrar la referencia de reembolso.");
@@ -203,7 +203,7 @@ export async function markInvoiceAsPaidAction(
     );
   } catch (error) {
     if (error instanceof MarkInvoiceAsPaidUseCaseError) {
-      return buildActionResult("error", error.message);
+      return buildActionResult("error", toMarkAsPaidErrorMessage(error));
     }
 
     return buildActionResult("error", "No se pudo marcar la factura como pagada.");
@@ -234,7 +234,7 @@ export async function markInvoiceAsRejectedAction(
     });
   } catch (error) {
     if (error instanceof MarkInvoiceAsRejectedUseCaseError) {
-      return buildActionResult("error", error.message);
+      return buildActionResult("error", toMarkAsRejectedErrorMessage(error));
     }
 
     return buildActionResult("error", "No se pudo marcar la factura como rechazada.");
@@ -291,7 +291,7 @@ export async function correctInvoiceResolutionAction(
     );
   } catch (error) {
     if (error instanceof CorrectInvoiceResolutionUseCaseError) {
-      return buildActionResult("error", error.message);
+      return buildActionResult("error", toCorrectResolutionErrorMessage(error));
     }
 
     return buildActionResult("error", "No se pudo corregir el estado final de la factura.");
@@ -322,4 +322,61 @@ function buildActionResult(status: "success" | "error", message: string): Invoic
     message,
     token: Date.now(),
   };
+}
+
+function toCompleteInvoiceInformationErrorMessage(error: CompleteInvoiceInformationUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura seleccionada no existe.";
+    case "INVALID_STATUS":
+      return "Solo puedes completar informacion cuando la factura esta en estado creada.";
+  }
+}
+
+function toRegisterClaimReferenceErrorMessage(error: RegisterInvoiceClaimReferenceUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura seleccionada no existe.";
+    case "INVALID_STATUS":
+      return "Solo puedes registrar referencia cuando la factura esta en informacion completada.";
+    case "INCOMPLETE_INFORMATION":
+      return "Completa primero la informacion de factura para registrar la referencia.";
+  }
+}
+
+function toMarkAsPaidErrorMessage(error: MarkInvoiceAsPaidUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura seleccionada no existe.";
+    case "INVALID_STATUS":
+      return "La factura debe tener referencia registrada para poder marcarse como pagada.";
+    case "INVALID_PAID_AMOUNT":
+      return "El importe pagado debe ser mayor que cero.";
+  }
+}
+
+function toMarkAsRejectedErrorMessage(error: MarkInvoiceAsRejectedUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura seleccionada no existe.";
+    case "INVALID_STATUS":
+      return "La factura debe tener referencia registrada para poder marcarse como rechazada.";
+  }
+}
+
+function toCorrectResolutionErrorMessage(error: CorrectInvoiceResolutionUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura seleccionada no existe.";
+    case "INVALID_STATUS":
+      return "Solo se puede corregir el estado final de una factura ya resuelta.";
+    case "SAME_FINAL_STATUS":
+      return "La correccion debe cambiar la factura a un estado final diferente.";
+    case "MISSING_CORRECTION_REASON":
+      return "Debes indicar un motivo de correccion.";
+    case "MISSING_PAID_DATA":
+      return "Para corregir a pagada debes indicar importe y fecha de pago.";
+    case "INVALID_PAID_AMOUNT":
+      return "El importe pagado debe ser mayor que cero.";
+  }
 }

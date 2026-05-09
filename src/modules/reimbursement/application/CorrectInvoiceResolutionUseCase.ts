@@ -6,7 +6,8 @@ export type CorrectInvoiceResolutionUseCaseErrorCode =
   | "INVALID_STATUS"
   | "SAME_FINAL_STATUS"
   | "MISSING_CORRECTION_REASON"
-  | "MISSING_PAID_DATA";
+  | "MISSING_PAID_DATA"
+  | "INVALID_PAID_AMOUNT";
 
 export class CorrectInvoiceResolutionUseCaseError extends Error {
   constructor(public readonly code: CorrectInvoiceResolutionUseCaseErrorCode, message: string) {
@@ -55,10 +56,20 @@ export async function correctInvoiceResolutionUseCase(
     );
   }
 
+  if (input.toStatus === "PAID" && typeof input.paidAmount === "number" && input.paidAmount <= 0) {
+    throw new CorrectInvoiceResolutionUseCaseError(
+      "INVALID_PAID_AMOUNT",
+      "El importe pagado debe ser mayor que cero.",
+    );
+  }
+
   const correctedInvoice = await dependencies.invoiceRepository.correctResolution(invoiceId, input);
 
   if (!correctedInvoice) {
-    throw new CorrectInvoiceResolutionUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+    throw new CorrectInvoiceResolutionUseCaseError(
+      "INVALID_STATUS",
+      "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
+    );
   }
 
   return correctedInvoice;

@@ -28,7 +28,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
       <div className="grid gap-6 md:grid-cols-2">
         <Field label="Fecha del servicio" error={state.errors.serviceDate}>
           <input
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="date"
             name="serviceDate"
             defaultValue={state.values.serviceDate}
@@ -38,7 +38,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field label="Importe real" error={state.errors.actualAmount}>
           <input
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="text"
             name="actualAmount"
             inputMode="decimal"
@@ -50,7 +50,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field label="Importe facturado por factura" error={state.errors.invoiceBilledAmount}>
           <input
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="text"
             name="invoiceBilledAmount"
             inputMode="decimal"
@@ -62,7 +62,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field label="Importe esperado por factura" error={state.errors.invoiceExpectedAmount}>
           <input
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="text"
             name="invoiceExpectedAmount"
             inputMode="decimal"
@@ -74,7 +74,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field className="md:col-span-2" label="Concepto" error={state.errors.description}>
           <input
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="text"
             name="description"
             defaultValue={state.values.description}
@@ -84,7 +84,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field label="Persona" error={state.errors.personId}>
           <select
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             name="personId"
             defaultValue={state.values.personId}
             required
@@ -100,7 +100,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field label="Aseguradora" error={state.errors.insurerId}>
           <select
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             name="insurerId"
             defaultValue={state.values.insurerId}
             required
@@ -116,7 +116,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field className="md:col-span-2" label="Titular" error={state.errors.policyHolderName}>
           <input
-            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="text"
             name="policyHolderName"
             defaultValue={state.values.policyHolderName}
@@ -126,7 +126,7 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
 
         <Field className="md:col-span-2" label="Notas" error={state.errors.notes}>
           <textarea
-            className="min-h-28 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+            className="min-h-28 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             name="notes"
             defaultValue={state.values.notes}
           />

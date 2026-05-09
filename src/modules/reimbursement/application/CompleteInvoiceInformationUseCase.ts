@@ -25,17 +25,20 @@ export async function completeInvoiceInformationUseCase(
     throw new CompleteInvoiceInformationUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
   }
 
-  if (invoice.status === "PAID" || invoice.status === "REJECTED") {
+  if (invoice.status !== "CREATED") {
     throw new CompleteInvoiceInformationUseCaseError(
       "INVALID_STATUS",
-      "No se puede editar informacion de una factura finalizada.",
+      "Solo puedes completar informacion cuando la factura esta en estado creada.",
     );
   }
 
   const updatedInvoice = await dependencies.invoiceRepository.completeInformation(invoiceId, input);
 
   if (!updatedInvoice) {
-    throw new CompleteInvoiceInformationUseCaseError("INVOICE_NOT_FOUND", "La factura seleccionada no existe.");
+    throw new CompleteInvoiceInformationUseCaseError(
+      "INVALID_STATUS",
+      "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
+    );
   }
 
   return updatedInvoice;
