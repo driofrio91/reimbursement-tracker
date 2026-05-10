@@ -1,9 +1,11 @@
-# QA Funcional V1 Checklist (Local)
+# Lista de verificacion funcional QA V1 (local)
+
+> Evidencia historica de cierre V1.
 
 ## Objetivo
 
 - Cerrar QA funcional de V1 en entorno local con evidencia trazable.
-- Complementa evidencia tecnica ya registrada en `docs/11-qa-local-evidence.md`.
+- Complementa evidencia tecnica ya registrada en `docs/versions/v1/qa-local-evidence.md`.
 
 ## Datos de prueba
 
@@ -29,11 +31,11 @@ Usar columnas: `Resultado` (`PASS`/`FAIL`), `Evidencia` (captura o nota), `Obser
 
 | ID | Caso | Pasos | Esperado | Resultado | Evidencia | Observaciones |
 |---|---|---|---|---|---|---|
-| QA-01 | Login Sandy | Ir a `/login`, autenticar con Sandy | Login correcto, redireccion a ruta privada | PASS | `docs/11-qa-local-evidence.md` (Authenticated Access Smoke) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
-| QA-02 | Login Danny | Cerrar sesion, autenticar con Danny | Login correcto, redireccion a ruta privada | PASS | `docs/11-qa-local-evidence.md` (Authenticated Access Smoke) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
-| QA-03 | Ruta privada sin sesion | Sin sesion abrir `/services` | Redireccion a `/login` | PASS | `docs/11-qa-local-evidence.md` | `GET /services -> 307` sin sesion. |
-| QA-04 | Home privada | Con sesion abrir `/` | Render correcto sin error | PASS | `docs/11-qa-local-evidence.md` | `GET / -> 200` con sesion para ambos usuarios. |
-| QA-05 | Listado servicios | Abrir `/services` | Listado visible y navegable | PASS | `docs/11-qa-local-evidence.md` | `GET /services -> 200` autenticado. |
+| QA-01 | Login Sandy | Ir a `/login`, autenticar con Sandy | Login correcto, redireccion a ruta privada | PASS | `docs/versions/v1/qa-local-evidence.md` (Smoke de acceso autenticado) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
+| QA-02 | Login Danny | Cerrar sesion, autenticar con Danny | Login correcto, redireccion a ruta privada | PASS | `docs/versions/v1/qa-local-evidence.md` (Smoke de acceso autenticado) | Ejecutado por HTTP (`/api/auth/callback/credentials` + session). |
+| QA-03 | Ruta privada sin sesion | Sin sesion abrir `/services` | Redireccion a `/login` | PASS | `docs/versions/v1/qa-local-evidence.md` | `GET /services -> 307` sin sesion. |
+| QA-04 | Home privada | Con sesion abrir `/` | Render correcto sin error | PASS | `docs/versions/v1/qa-local-evidence.md` | `GET / -> 200` con sesion para ambos usuarios. |
+| QA-05 | Listado servicios | Abrir `/services` | Listado visible y navegable | PASS | `docs/versions/v1/qa-local-evidence.md` | `GET /services -> 200` autenticado. |
 | QA-06 | Alta servicio | Abrir `/services/new`, crear servicio valido | Servicio creado correctamente | PASS | `test/reimbursement/application/CreateServiceUseCase.test.ts` | Cubierto por test de aplicacion (automated). |
 | QA-07 | Autogeneracion facturas | Tras alta, revisar detalle servicio | Facturas generadas con regla `ceil(actual/expected)` | PASS | `test/reimbursement/application/CreateServiceUseCase.test.ts` | Regla de autogeneracion validada en tests. |
 | QA-08 | Completar info factura | En factura `CREATED`, completar datos obligatorios | Pasa a `INFORMATION_COMPLETED` | PASS | `test/reimbursement/application/InvoiceLifecycleUseCases.test.ts` | Cubierto por pruebas de ciclo de vida. |
@@ -49,7 +51,7 @@ Usar columnas: `Resultado` (`PASS`/`FAIL`), `Evidencia` (captura o nota), `Obser
 | QA-18 | Filtro por status | Aplicar status unico | Lista filtrada por estado exacto | PASS | `test/reimbursement/application/SearchInvoicesUseCase.test.ts` | Cobertura automatizada de filtro por estado. |
 | QA-19 | Filtros combinados | Aplicar invoiceNumber + claimReference + status | Combinacion AND correcta | PASS | `test/reimbursement/application/SearchInvoicesUseCase.test.ts` | Cobertura automatizada de filtros AND. |
 | QA-20 | Orden listado facturas | Sin filtros o con filtros | Orden por `updatedAt` descendente | PASS | `test/reimbursement/application/SearchInvoicesUseCase.test.ts` | Orden esperado validado en test de busqueda. |
-| QA-21 | Detalle factura lectura | Abrir `/invoices/[id]` | Vista lectura operativa con enlace a servicio | PASS | `docs/11-qa-local-evidence.md` + `test/reimbursement/application/GetInvoiceDetailUseCase.test.ts` | Ruta autenticada `/invoices` valida; detalle cubierto a nivel use case. |
+| QA-21 | Detalle factura lectura | Abrir `/invoices/[id]` | Vista lectura operativa con enlace a servicio | PASS | `docs/versions/v1/qa-local-evidence.md` + `test/reimbursement/application/GetInvoiceDetailUseCase.test.ts` | Ruta autenticada `/invoices` valida; detalle cubierto a nivel use case. |
 | QA-22 | Navegacion movil | Viewport movil, navegar rutas privadas | Navegacion usable y estable | PASS | `artifacts/qa-mobile/results.json` + capturas en `artifacts/qa-mobile/` | Ejecutado con Playwright (`iPhone 12`) en rutas privadas principales. |
 | QA-23 | Acciones visibles movil | En movil revisar acciones primarias | Acciones principales visibles sin desktop-dependencia | PASS | `artifacts/qa-mobile/results.json` + `artifacts/qa-mobile/route-_services.png` + `artifacts/qa-mobile/route-_invoices.png` | Accion `/services/new` visible y boton `Buscar` visible en facturas. |
 | QA-24 | Scroll horizontal movil | Recorrer pantallas clave en movil | Sin scroll horizontal accidental | PASS | `artifacts/qa-mobile/results.json` | `hasHorizontalOverflow=false` en `/`, `/services`, `/services/new`, `/invoices`. |

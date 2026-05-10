@@ -1,4 +1,4 @@
-# Session YYYY-MM-DD
+# Sesion YYYY-MM-DD
 
 ## Objetivo
 

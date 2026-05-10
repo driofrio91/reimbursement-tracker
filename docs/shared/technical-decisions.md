@@ -1,4 +1,4 @@
-# Technical Decisions
+# Decisiones tecnicas
 
 ## Objetivo
 
@@ -220,7 +220,7 @@ Se considera aprobado un recorte explicito del MVP para evitar sobredimensionar 
 
 La V1 se centra solo en sustituir el Excel a nivel operativo.
 
-El detalle completo del recorte entre V1 y V2 queda definido en `docs/07-mvp-scope.md`.
+El detalle completo del recorte entre V1 y V2 queda definido en `docs/versions/v1/mvp-scope.md`.
 
 La V1 queda simplificada al modelo `Service + Invoice`, con `claimReference` en la factura y sin entidad `Request` persistida.
 

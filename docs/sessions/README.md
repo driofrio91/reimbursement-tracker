@@ -1,4 +1,4 @@
-# Session Notes
+# Notas de sesion
 
 ## Objetivo
 
@@ -8,13 +8,13 @@ Esta carpeta se conserva solo como referencia de formato de handoff para uso int
 
 - no versionar historicos de sesiones en el repositorio publico
 - mantener como fuentes de estado operativo unicamente:
-  - `docs/START-HERE.md`
+  - `docs/PROJECT-HUB.md`
   - `docs/09-current-status.md`
-  - `docs/10-use-cases-roadmap.md`
+  - `docs/versions/v2/roadmap.md`
 - si una decision cambia el rumbo del proyecto, reflejarla directamente en la documentacion principal
 
 ## Orden de lectura para retomar
 
-1. `docs/START-HERE.md`
+1. `docs/PROJECT-HUB.md`
 2. `docs/09-current-status.md`
-3. `docs/10-use-cases-roadmap.md`
+3. `docs/versions/v2/roadmap.md`

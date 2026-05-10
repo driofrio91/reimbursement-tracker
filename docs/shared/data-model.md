@@ -1,4 +1,9 @@
-# Data Model
+# Modelo de datos
+
+## Nota de vigencia
+
+- estado actual operativo: V1 cerrada con correccion final guardando ultima correccion en `Invoice`
+- objetivo V2: evolucionar a historial completo de correcciones por factura
 
 ## Entidades operativas de V1
 

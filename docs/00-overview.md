@@ -1,4 +1,8 @@
-# Overview
+# Resumen general
+
+> Documento de contexto historico. No usar como fuente operativa.
+>
+> Consulta `docs/PROJECT-HUB.md` para la jerarquia documental vigente.
 
 ## Nota
 
@@ -7,10 +11,9 @@ No es fuente de verdad operativa.
 
 Para decisiones vigentes usar:
 
-- `docs/START-HERE.md`
-- `docs/07-mvp-scope.md`
+- `docs/PROJECT-HUB.md`
 - `docs/09-current-status.md`
-- `docs/10-use-cases-roadmap.md`
+- `docs/versions/v2/roadmap.md`
 
 ## Resumen
 

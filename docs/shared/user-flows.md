@@ -1,4 +1,8 @@
-# User Flows
+# Flujos de usuario
+
+> Baseline de flujos V1 como referencia transversal.
+>
+> Para evolucion activa, consultar `docs/versions/v2/roadmap.md`.
 
 ## Flujo 1. Crear servicio
 

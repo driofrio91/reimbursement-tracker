@@ -1,18 +1,47 @@
 # reimbursement-tracker
 
-Aplicacion interna para sustituir el Excel operativo de seguimiento de servicios, facturas y solicitudes de reembolso.
+Aplicacion interna para sustituir el Excel operativo de seguimiento de servicios y facturas de reembolso.
 
-## Estado actual
+## Requisitos
 
-- Proyecto inicializado con `Next.js`, `TypeScript`, `App Router` y `Tailwind CSS`.
-- `Prisma` configurado y conectado a `PostgreSQL` en `Neon`.
-- `Auth.js` configurado con `Credentials` y login funcional.
-- Flujo inicial de facturas implementado: crear factura desde `/services/[id]`.
-- Feedback operativo con toast en el area privada usando `sonner`.
-- La documentacion funcional y tecnica vive en `docs/`.
-- La primera iteracion de servicios ya esta cerrada y el roadmap de V1 avanza por facturas.
+- `Node.js` 20+
+- `npm`
+- base de datos PostgreSQL accesible (Neon recomendado para desarrollo)
 
-## Comandos
+## Instalacion
+
+```bash
+npm install
+```
+
+## Configuracion local
+
+1. Copia `.env.example` a `.env`.
+2. Completa como minimo:
+   - `DATABASE_URL`
+   - `AUTH_SECRET`
+   - `ALLOW_LOCAL_SEED=true`
+   - `LOCAL_ADMIN_PASSWORD`
+   - `LOCAL_OPERATOR_PASSWORD`
+
+## Preparar base de datos local
+
+```bash
+npm run prisma:migrate
+npm run db:seed:local
+```
+
+Usuarios creados por seed:
+
+- `admin@local.test`
+- `operator@local.test`
+
+Las contrasenas son las definidas en:
+
+- `LOCAL_ADMIN_PASSWORD`
+- `LOCAL_OPERATOR_PASSWORD`
+
+## Comandos principales
 
 ```bash
 npm run dev
@@ -20,69 +49,17 @@ npm run lint
 npm run test
 npm run typecheck
 npm run build
-npm run prisma:migrate
-npm run db:seed:local
 ```
 
-## Setup local
+## Resolucion de problemas
 
-1. Copia `.env.example` a `.env`.
-2. Completa variables locales:
-   - `DATABASE_URL`
-   - `AUTH_SECRET`
-   - `ALLOW_LOCAL_SEED=true`
-   - `LOCAL_ADMIN_PASSWORD`
-   - `LOCAL_OPERATOR_PASSWORD`
-3. Ejecuta migraciones y seed local:
-
-```bash
-npm run prisma:migrate
-npm run db:seed:local
-```
-
-Usuarios locales creados por seed:
-
-- `admin@local.test`
-- `operator@local.test`
-
-Las contrasenas son las que definas en:
-
-- `LOCAL_ADMIN_PASSWORD`
-- `LOCAL_OPERATOR_PASSWORD`
-
-## Troubleshooting local
-
-Si `npm run prisma:migrate` muestra que una migracion historica fue modificada y pide reset de esquema, significa que estas reutilizando una base que ya tenia un historial anterior.
+Si `npm run prisma:migrate` solicita reset por historial de migraciones, estas reutilizando una base con estado previo.
 
 Opciones:
 
-1. Recomendado: usar una base de datos nueva para desarrollo local.
-2. Si puedes perder datos locales: ejecutar `npx prisma migrate reset` y despues volver a correr `npm run db:seed:local`.
+1. recomendado: usar una base nueva para desarrollo
+2. si puedes perder datos locales: `npx prisma migrate reset` y despues `npm run db:seed:local`
 
-## Documentacion clave
+## Documentacion
 
-- `docs/START-HERE.md`
-- `docs/09-current-status.md`
-- `docs/10-use-cases-roadmap.md`
-- `docs/sessions/README.md`
-- `docs/07-mvp-scope.md`
-- `docs/06-technical-decisions.md`
-- `docs/05-system-architecture.md`
-- `docs/08-engineering-guidelines.md`
-
-## Estructura prevista
-
-```text
-src/
-  app/
-  modules/
-    reimbursement/
-      domain/
-      application/
-      infrastructure/
-      ui/
-  lib/
-    auth/
-    config/
-    db/
-```
+Para contexto funcional, decisiones y roadmap por version, consulta `docs/PROJECT-HUB.md`.

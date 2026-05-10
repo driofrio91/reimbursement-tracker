@@ -1,4 +1,4 @@
-# System Architecture
+# Arquitectura del sistema
 
 ## Objetivo
 
@@ -24,7 +24,7 @@ Esta arquitectura busca equilibrar tres cosas:
 - adaptacion natural al framework
 - evitar sobreingenieria innecesaria
 
-Las decisiones de plataforma, despliegue y coste quedan detalladas en `docs/06-technical-decisions.md`.
+Las decisiones de plataforma, despliegue y coste quedan detalladas en `docs/shared/technical-decisions.md`.
 
 ## Principios de arquitectura
 
