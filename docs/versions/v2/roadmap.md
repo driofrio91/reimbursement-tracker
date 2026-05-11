@@ -39,7 +39,7 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 ## Prioridad de ejecucion (con dependencias)
 
 ### P0 - Fundacion tecnica y seguridad (bloqueante)
-- [ ] roles MVP (`ADMIN`, `USER`) + autorizacion backend (`requireAuth`, `requireRole`)
+- [x] roles MVP (`ADMIN`, `USER`) + autorizacion backend (`requireAuth`, `requireRole`)
 - [ ] flujo obligatorio de cambio de contrasena en primer inicio (`mustChangePasswordOnFirstLogin`)
 - [ ] modelo anual de topes por usuario (`UserAnnualReimbursementLimit`) con:
   - `annualLimitAmount`

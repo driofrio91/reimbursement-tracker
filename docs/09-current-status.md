@@ -4,6 +4,7 @@
 
 - proyecto `Next.js` con `TypeScript` y App Router
 - autenticacion con `Auth.js` credentials
+- roles `ADMIN` y `USER` propagados a `JWT` y `session.user`
 - rutas privadas protegidas
 - flujo de servicios activo (`crear`, `listar`, `detalle`)
 - al crear servicio se autogeneran facturas
@@ -22,11 +23,11 @@
   - filtros combinados con AND
   - orden por `updatedAt` descendente
   - sin paginacion en esta iteracion
+- autorizacion backend centralizada con `requireAuth` y `requireRole` aplicada en server actions privadas vigentes
 
 ## Siguiente foco propuesto
 
 - ejecutar `P0` de V2:
-  - roles `ADMIN` y `USER` con autorizacion backend
   - cambio de contrasena obligatorio en primer inicio de sesion
   - tabla anual de topes por usuario con cache `reimbursedAccumulated`
 - tras `P0`, avanzar a `P1`:

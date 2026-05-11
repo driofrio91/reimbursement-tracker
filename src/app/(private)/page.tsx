@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-import { auth } from "@/lib/auth/auth";
+import { requireAuth } from "@/lib/auth/authorization";
 
 export default async function HomePage() {
-  const session = await auth();
+  const actor = await requireAuth();
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
@@ -18,7 +18,7 @@ export default async function HomePage() {
               La primera vertical del modulo de reembolsos ya permite crear servicios, ver su detalle y consultar un listado basico.
             </p>
             <p className="text-sm text-slate-500">
-              Usuario actual: <span className="font-medium text-slate-900">{session?.user?.name}</span>
+              Usuario actual: <span className="font-medium text-slate-900">{actor.name}</span>
             </p>
           </div>
         </section>

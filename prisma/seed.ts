@@ -46,22 +46,38 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "admin@local.test" },
-    update: { name: "Admin", passwordHash: adminPasswordHash, isActive: true },
+    update: {
+      name: "Admin",
+      passwordHash: adminPasswordHash,
+      role: "ADMIN",
+      mustChangePasswordOnFirstLogin: false,
+      isActive: true,
+    },
     create: {
       email: "admin@local.test",
       name: "Admin",
       passwordHash: adminPasswordHash,
+      role: "ADMIN",
+      mustChangePasswordOnFirstLogin: false,
       isActive: true,
     },
   });
 
   await prisma.user.upsert({
     where: { email: "operator@local.test" },
-    update: { name: "Operator", passwordHash: operatorPasswordHash, isActive: true },
+    update: {
+      name: "Operator",
+      passwordHash: operatorPasswordHash,
+      role: "USER",
+      mustChangePasswordOnFirstLogin: false,
+      isActive: true,
+    },
     create: {
       email: "operator@local.test",
       name: "Operator",
       passwordHash: operatorPasswordHash,
+      role: "USER",
+      mustChangePasswordOnFirstLogin: false,
       isActive: true,
     },
   });

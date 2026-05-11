@@ -23,7 +23,8 @@ import {
 import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
-import { auth } from "@/lib/auth/auth";
+import { AuthorizationError, requireRole, type AuthenticatedActor } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -107,6 +108,12 @@ export async function completeInvoiceInformationAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = completeInvoiceInformationSchema.safeParse({
     invoiceNumber: getString(formData, "invoiceNumber"),
     invoiceDate: getString(formData, "invoiceDate"),
@@ -152,6 +159,12 @@ export async function registerInvoiceClaimReferenceAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = claimReferenceSchema.safeParse({
     claimReference: getString(formData, "claimReference"),
   });
@@ -183,6 +196,12 @@ export async function markInvoiceAsPaidAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = paidSchema.safeParse({
     paidAmount: getString(formData, "paidAmount"),
     paidAt: getString(formData, "paidAt"),
@@ -220,6 +239,12 @@ export async function markInvoiceAsRejectedAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = rejectedSchema.safeParse({
     rejectionReason: getString(formData, "rejectionReason"),
   });
@@ -251,9 +276,9 @@ export async function correctInvoiceResolutionAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
-  const session = await auth();
+  const actor = await authorizeInvoiceAction();
 
-  if (!session?.user?.id) {
+  if (!actor) {
     return buildActionResult("error", "No se pudo identificar al usuario para registrar la correccion.");
   }
 
@@ -279,8 +304,8 @@ export async function correctInvoiceResolutionAction(
       {
         toStatus,
         correctionReason: parsedInput.data.correctionReason,
-        correctedByUserId: session.user.id,
-        correctedByUserName: session.user.name ?? null,
+        correctedByUserId: actor.id,
+        correctedByUserName: actor.name,
         paidAmount: toStatus === "PAID" && paidAmountValue ? Number(paidAmountValue.replace(",", ".")) : undefined,
         paidAt: toStatus === "PAID" && paidAtValue ? new Date(`${paidAtValue}T00:00:00`) : undefined,
         rejectionReason: toStatus === "REJECTED" ? parsedInput.data.rejectionReason || null : null,
@@ -308,6 +333,18 @@ async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void>
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
   });
+}
+
+async function authorizeInvoiceAction(): Promise<AuthenticatedActor | null> {
+  try {
+    return await requireRole(USER_ROLES.ADMIN, USER_ROLES.USER);
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 function getString(formData: FormData, key: string): string {

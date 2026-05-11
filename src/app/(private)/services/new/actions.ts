@@ -13,12 +13,29 @@ import {
 } from "@/modules/reimbursement/entrypoints/CreateServiceFormSchema";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
+import { AuthorizationError, requireRole } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
 
 export async function createServiceAction(
   _previousState: CreateServiceFormState,
   formData: FormData,
 ): Promise<CreateServiceFormState> {
+  try {
+    await requireRole(USER_ROLES.ADMIN, USER_ROLES.USER);
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return {
+        values: getCreateServiceFormValues(formData),
+        errors: {
+          form: "Debes iniciar sesion para crear un servicio.",
+        },
+      };
+    }
+
+    throw error;
+  }
+
   const values = getCreateServiceFormValues(formData);
   const parsedInput = createServiceFormSchema.safeParse(values);
 
