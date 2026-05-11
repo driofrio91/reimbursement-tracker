@@ -25,10 +25,13 @@
 
 ## Siguiente foco propuesto
 
-- documentar cierre operativo de V1 y preparar arranque de backlog V2
-- evidencia de QA local consolidada en `docs/versions/v1/qa-local-evidence.md`
-- checklist funcional V1 cerrada en `docs/versions/v1/qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
-- evidencias moviles automatizadas en `artifacts/qa-mobile/results.json` y `artifacts/qa-mobile/*.png`
+- ejecutar `P0` de V2:
+  - roles `ADMIN` y `USER` con autorizacion backend
+  - cambio de contrasena obligatorio en primer inicio de sesion
+  - tabla anual de topes por usuario con cache `reimbursedAccumulated`
+- tras `P0`, avanzar a `P1`:
+  - consumo anual por `invoiceDate` y solo con facturas `PAID`
+  - reconciliacion `Sync` solo para `ADMIN` con resultado visible
 
 ## Pipeline de release a produccion
 
