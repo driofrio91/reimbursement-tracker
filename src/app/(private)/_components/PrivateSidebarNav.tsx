@@ -16,6 +16,7 @@ export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
   const isNewServiceActive = pathname === "/services/new";
   const isInvoicesExactActive = pathname === "/invoices";
   const isInvoicesSectionActive = pathname.startsWith("/invoices");
+  const isChangePasswordActive = pathname === "/change-password";
 
   return (
     <nav className="space-y-2">
@@ -43,6 +44,13 @@ export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
         href="/invoices"
         state={isInvoicesExactActive ? "page" : isInvoicesSectionActive ? "section" : "idle"}
         label="Facturas"
+        onNavigate={onNavigate}
+      />
+
+      <SidebarLink
+        href="/change-password"
+        state={isChangePasswordActive ? "page" : "idle"}
+        label="Mi cuenta"
         onNavigate={onNavigate}
       />
     </nav>

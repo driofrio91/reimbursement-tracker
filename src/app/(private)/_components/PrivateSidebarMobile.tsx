@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PrivateSidebarNav } from "@/app/(private)/_components/PrivateSidebarNav";
+import { UserRole } from "@/lib/auth/roles";
 
 interface PrivateSidebarMobileProps {
   logoutAction: () => Promise<void>;
   userName?: string | null;
+  role: UserRole;
 }
 
-export function PrivateSidebarMobile({ logoutAction, userName }: PrivateSidebarMobileProps) {
+export function PrivateSidebarMobile({ logoutAction, userName, role }: PrivateSidebarMobileProps) {
   const [isOpen, setIsOpen] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -111,6 +113,9 @@ export function PrivateSidebarMobile({ logoutAction, userName }: PrivateSidebarM
           <div className="mt-auto space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-slate-600">
               Usuario actual: <span className="font-medium text-slate-900">{userName || "Sin nombre"}</span>
+            </p>
+            <p className="text-sm text-slate-600">
+              Rol: <span className="font-medium text-slate-900">{role}</span>
             </p>
 
             <form action={logoutAction}>

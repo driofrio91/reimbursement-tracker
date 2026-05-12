@@ -35,6 +35,7 @@ function getRequiredLocalPassword(variableName: "LOCAL_ADMIN_PASSWORD" | "LOCAL_
 
 async function main() {
   assertLocalSeedExecution();
+  const currentYear = new Date().getFullYear();
 
   const adminPassword = getRequiredLocalPassword("LOCAL_ADMIN_PASSWORD");
   const operatorPassword = getRequiredLocalPassword("LOCAL_OPERATOR_PASSWORD");
@@ -44,7 +45,7 @@ async function main() {
     bcrypt.hash(operatorPassword, 10),
   ]);
 
-  await prisma.user.upsert({
+  const adminUser = await prisma.user.upsert({
     where: { email: "admin@local.test" },
     update: {
       name: "Admin",
@@ -63,7 +64,7 @@ async function main() {
     },
   });
 
-  await prisma.user.upsert({
+  const operatorUser = await prisma.user.upsert({
     where: { email: "operator@local.test" },
     update: {
       name: "Operator",
@@ -116,6 +117,48 @@ async function main() {
     where: { displayName: "Marta Lopez" },
     update: { firstName: "Marta", lastName: "Lopez" },
     create: { firstName: "Marta", lastName: "Lopez", displayName: "Marta Lopez" },
+  });
+
+  await prisma.userAnnualReimbursementLimit.upsert({
+    where: {
+      userId_year: {
+        userId: adminUser.id,
+        year: currentYear,
+      },
+    },
+    update: {
+      annualLimitAmount: 1500,
+      reimbursedAccumulated: 0,
+      currency: "EUR",
+    },
+    create: {
+      userId: adminUser.id,
+      year: currentYear,
+      annualLimitAmount: 1500,
+      reimbursedAccumulated: 0,
+      currency: "EUR",
+    },
+  });
+
+  await prisma.userAnnualReimbursementLimit.upsert({
+    where: {
+      userId_year: {
+        userId: operatorUser.id,
+        year: currentYear,
+      },
+    },
+    update: {
+      annualLimitAmount: 1500,
+      reimbursedAccumulated: 0,
+      currency: "EUR",
+    },
+    create: {
+      userId: operatorUser.id,
+      year: currentYear,
+      annualLimitAmount: 1500,
+      reimbursedAccumulated: 0,
+      currency: "EUR",
+    },
   });
 }
 

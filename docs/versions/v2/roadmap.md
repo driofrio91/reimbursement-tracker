@@ -29,6 +29,13 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 - ejecutar `P1` a continuacion como bloque dependiente
 - mantener la trazabilidad historica avanzada de correcciones como linea evolutiva posterior, sin bloquear `P0` y `P1`
 
+## Nota de escalabilidad (seguridad y routing)
+
+- evaluar adopcion de `middleware` cuando crezcan rutas privadas y restricciones por rol
+- objetivo: centralizar auth base, bloqueo de primer login obligatorio y segmentacion por prefijos (ej. `/admin`)
+- criterio de activacion: mas de 2 areas con reglas de acceso distintas o duplicacion de guards en `layout`/`actions`
+- alcance: mejora tecnica transversal, sin bloquear la entrega funcional de `P0-P5`
+
 ## Criterio de cierre por US
 
 - caso de uso implementado en capa `application`
@@ -40,8 +47,8 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 
 ### P0 - Fundacion tecnica y seguridad (bloqueante)
 - [x] roles MVP (`ADMIN`, `USER`) + autorizacion backend (`requireAuth`, `requireRole`)
-- [ ] flujo obligatorio de cambio de contrasena en primer inicio (`mustChangePasswordOnFirstLogin`)
-- [ ] modelo anual de topes por usuario (`UserAnnualReimbursementLimit`) con:
+- [x] flujo obligatorio de cambio de contrasena en primer inicio (`mustChangePasswordOnFirstLogin`)
+- [x] modelo anual de topes por usuario (`UserAnnualReimbursementLimit`) con:
   - `annualLimitAmount`
   - `reimbursedAccumulated`
   - unique (`userId`, `year`)

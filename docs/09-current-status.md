@@ -24,13 +24,19 @@
   - orden por `updatedAt` descendente
   - sin paginacion en esta iteracion
 - autorizacion backend centralizada con `requireAuth` y `requireRole` aplicada en server actions privadas vigentes
+- flujo obligatorio de cambio de contrasena en primer inicio implementado:
+  - bloqueo de area privada mientras `mustChangePasswordOnFirstLogin=true`
+  - ruta dedicada `/change-password` para actualizar credenciales
+  - al completar el cambio se limpia el flag y se fuerza nuevo login con la contrasena actualizada
+- modelo anual de topes por usuario implementado en persistencia:
+  - nueva tabla `UserAnnualReimbursementLimit`
+  - campos `annualLimitAmount`, `reimbursedAccumulated`, `currency`
+  - unicidad por (`userId`, `year`)
 
 ## Siguiente foco propuesto
 
-- ejecutar `P0` de V2:
-  - cambio de contrasena obligatorio en primer inicio de sesion
-  - tabla anual de topes por usuario con cache `reimbursedAccumulated`
-- tras `P0`, avanzar a `P1`:
+- `P0` de V2 completado
+- siguiente bloque: ejecutar `P1`:
   - consumo anual por `invoiceDate` y solo con facturas `PAID`
   - reconciliacion `Sync` solo para `ADMIN` con resultado visible
 

@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const showDevelopmentCredentials = process.env.NODE_ENV !== "production";
+  const passwordChanged =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("passwordChanged") === "1";
 
   async function handleSubmit(event: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
     event.preventDefault();
@@ -46,6 +48,12 @@ export default function LoginPage() {
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+          {passwordChanged ? (
+            <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              Contrasena actualizada. Inicia sesion con tu nueva contrasena.
+            </p>
+          ) : null}
+
           <label className="block space-y-2">
             <span className="text-sm font-medium text-slate-700">Email</span>
             <input
