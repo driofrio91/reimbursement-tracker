@@ -40,6 +40,24 @@
 - [ ] El `Sync` del ano actual es solo para `ADMIN`.
 - [ ] Mostrar resultado del `Sync` (usuarios procesados, ajustes aplicados y errores si los hubiera).
 
+#### Jerarquia visual obligatoria (ano actual vs anos anteriores)
+- El bloque del ano actual es el bloque principal y debe ser visualmente dominante.
+- El bloque de anos anteriores es secundario y debe ser mas compacto.
+- Debe identificarse a simple vista cual es el bloque prioritario.
+- En desktop, el bloque principal debe tener una presencia aproximada de `1.6x-1.8x` frente al bloque historico.
+- En mobile, ambos bloques van en columna, con el bloque principal primero y con mayor altura base.
+
+#### Regla de loading por bloques
+- Cada bloque de grafica anual usa su propio `Suspense`; no se permite un `Suspense` global para toda la home.
+- `Suspense` del bloque principal (ano actual) y `Suspense` del bloque secundario (anos anteriores) deben ser independientes.
+- Cada bloque debe tener fallback tipo skeleton con altura estable para evitar saltos visuales.
+- El skeleton del ano actual debe ser mayor que el de anos anteriores para mantener la jerarquia tambien durante la carga.
+- Los estados `error` y `Sin datos` deben resolverse por bloque, sin bloquear el otro contenedor.
+
+#### Regla de `Sync` en UX
+- `Sync` se gestiona con estado propio de accion (`pending`, `success`, `error`) y no como loading global de pantalla.
+- Al ejecutar `Sync`, no se bloquea toda la home; solo se actualizan/revalidan los bloques afectados.
+
 ### 4) Gestion de facturas desde el detalle de servicio
 - [ ] Boton `Anadir factura` a nivel de servicio.
 - [ ] Icono papelera por cada factura para eliminacion.

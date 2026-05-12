@@ -70,6 +70,7 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 - [ ] barras con semaforo (`<75%` verde, `75-100%` ambar, `>100%` rojo)
 - [ ] UX mobile-first
 - [ ] accion bloqueada: tooltip desktop + bottom sheet mobile
+- [ ] `Suspense` acotado al contenedor del bloque principal (sin loading global de pantalla)
 
 **Depende de:** P1 (datos correctos), P0 (roles para `Sync`).
 
@@ -78,8 +79,19 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 - [ ] navegacion de anos pasados
 - [ ] `Sync` historico solo `ADMIN` (esquina superior derecha)
 - [ ] estado vacio `Sin datos`
+- [ ] `Suspense` acotado al contenedor del bloque historico y separado del bloque principal
 
 **Depende de:** P1, P2, P0.
+
+## Criterios tecnicos para loading y jerarquia visual (P2/P3)
+
+- No se permite un unico `Suspense` envolviendo toda la home de limites anuales.
+- Se requieren dos boundaries independientes:
+  - bloque principal del ano actual
+  - bloque secundario de anos anteriores
+- La grafica del ano actual debe ser el bloque prioritario y de mayor peso visual/tamano frente al historico.
+- Durante loading, los skeletons deben mantener esa misma jerarquia (principal mayor, secundario compacto).
+- La accion `Sync` usa estado propio de accion y no bloquea la pantalla completa.
 
 ### P4 - Gestion operativa (usuarios y catalogos)
 - [ ] gestion de usuarios (admin crea usuarios, activacion/desactivacion)
