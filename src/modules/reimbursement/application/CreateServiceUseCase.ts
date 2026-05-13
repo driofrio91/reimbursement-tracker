@@ -82,6 +82,8 @@ export async function createServiceUseCase(
     issuerName: null,
     issuerTaxId: null,
     claimReference: null,
+    personId: input.personId,
+    insurerId: input.insurerId,
     status: "CREATED" as const,
     paidAmount: null,
     paidAt: null,

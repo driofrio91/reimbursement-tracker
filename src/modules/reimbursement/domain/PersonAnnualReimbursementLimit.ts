@@ -1,6 +1,7 @@
-export interface UserAnnualReimbursementLimit {
+export interface PersonAnnualReimbursementLimit {
   id: string;
-  userId: string;
+  personId: string;
+  insurerId: string;
   year: number;
   annualLimitAmount: number;
   reimbursedAccumulated: number;
@@ -9,8 +10,9 @@ export interface UserAnnualReimbursementLimit {
   updatedAt: Date;
 }
 
-export interface NewUserAnnualReimbursementLimit {
-  userId: string;
+export interface NewPersonAnnualReimbursementLimit {
+  personId: string;
+  insurerId: string;
   year: number;
   annualLimitAmount: number;
   reimbursedAccumulated: number;

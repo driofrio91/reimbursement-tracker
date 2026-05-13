@@ -36,23 +36,23 @@ model User {
   isActive                        Boolean  @default(true)
   createdAt                       DateTime @default(now())
   updatedAt                       DateTime @updatedAt
-  annualReimbursementLimits       UserAnnualReimbursementLimit[]
-
   @@index([role])
 }
 
-model UserAnnualReimbursementLimit {
-  id                   String   @id @default(uuid()) @db.Uuid
-  userId               String   @db.Uuid
-  year                 Int
-  annualLimitAmount    Decimal  @default(1500) @db.Decimal(10, 2)
-  reimbursedAccumulated Decimal @default(0) @db.Decimal(10, 2)
-  currency             String   @default("EUR")
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model PersonAnnualReimbursementLimit {
+  id                    String   @id @default(uuid()) @db.Uuid
+  personId              String   @db.Uuid
+  insurerId             String   @db.Uuid
+  year                  Int
+  annualLimitAmount     Decimal  @default(1500) @db.Decimal(10, 2)
+  reimbursedAccumulated Decimal  @default(0) @db.Decimal(10, 2)
+  currency              String   @default("EUR")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  person                Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  insurer               Insurer  @relation(fields: [insurerId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, year])
+  @@unique([personId, insurerId, year])
   @@index([year])
 }
 
@@ -65,6 +65,8 @@ model Insurer {
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
   services  ReimbursableService[]
+  invoices  Invoice[]
+  annualReimbursementLimits PersonAnnualReimbursementLimit[]
 }
 
 model Person {
@@ -77,6 +79,8 @@ model Person {
   createdAt      DateTime               @default(now())
   updatedAt      DateTime               @updatedAt
   services       ReimbursableService[]
+  invoices       Invoice[]
+  annualReimbursementLimits PersonAnnualReimbursementLimit[]
 }
 
 model ReimbursableService {
@@ -108,6 +112,8 @@ model ReimbursableService {
 model Invoice {
   id                    String              @id @default(uuid()) @db.Uuid
   serviceId             String              @db.Uuid
+  personId              String?             @db.Uuid
+  insurerId             String?             @db.Uuid
   invoiceNumber         String?
   invoiceDate           DateTime?           @db.Date
   invoiceBilledAmount   Decimal             @default(55) @db.Decimal(10, 2)
@@ -129,8 +135,13 @@ model Invoice {
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   service               ReimbursableService @relation(fields: [serviceId], references: [id])
+  person                Person?             @relation(fields: [personId], references: [id])
+  insurer               Insurer?            @relation(fields: [insurerId], references: [id])
 
   @@index([serviceId])
+  @@index([personId])
+  @@index([insurerId])
   @@index([status])
   @@index([invoiceDate])
+  @@index([status, invoiceDate])
 }

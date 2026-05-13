@@ -7,7 +7,7 @@ import {
   InvoiceStatus,
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
-import { InvoiceRepository, SearchInvoicesFilters } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { InvoiceRepository, PaidAmountByPersonInsurer, SearchInvoicesFilters } from "@/modules/reimbursement/domain/InvoiceRepository";
 
 export class PrismaInvoiceRepository implements InvoiceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -45,6 +45,8 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const createdInvoice = await this.prisma.invoice.create({
       data: {
         serviceId: invoice.serviceId,
+        personId: invoice.personId ?? null,
+        insurerId: invoice.insurerId ?? null,
         invoiceNumber: invoice.invoiceNumber ?? null,
         invoiceDate: invoice.invoiceDate ?? null,
         invoiceBilledAmount: invoice.invoiceBilledAmount,
@@ -74,6 +76,8 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         this.prisma.invoice.create({
           data: {
             serviceId: invoice.serviceId,
+            personId: invoice.personId ?? null,
+            insurerId: invoice.insurerId ?? null,
             invoiceNumber: invoice.invoiceNumber ?? null,
             invoiceDate: invoice.invoiceDate ?? null,
             invoiceBilledAmount: invoice.invoiceBilledAmount,
@@ -136,6 +140,26 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       data: {
         claimReference,
         status: PrismaInvoiceStatus.CLAIM_REFERENCE_COMPLETED,
+      },
+    });
+
+    if (updateResult.count === 0) {
+      return null;
+    }
+
+    return this.getById(invoiceId);
+  }
+
+  async setPerson(invoiceId: string, personId: string): Promise<Invoice | null> {
+    const updateResult = await this.prisma.invoice.updateMany({
+      where: {
+        id: invoiceId,
+        status: {
+          not: PrismaInvoiceStatus.PAID,
+        },
+      },
+      data: {
+        personId,
       },
     });
 
@@ -234,9 +258,60 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return this.getById(invoiceId);
   }
 
+  async getPaidAmountByPersonInsurerForYear(year: number): Promise<PaidAmountByPersonInsurer[]> {
+    const rows = await this.prisma.invoice.findMany({
+      select: {
+        personId: true,
+        paidAmount: true,
+        service: {
+          select: {
+            insurerId: true,
+          },
+        },
+      },
+      where: {
+        status: PrismaInvoiceStatus.PAID,
+        personId: {
+          not: null,
+        },
+        invoiceDate: {
+          gte: new Date(Date.UTC(year, 0, 1)),
+          lt: new Date(Date.UTC(year + 1, 0, 1)),
+        },
+      },
+    });
+
+    const bucket = new Map<string, PaidAmountByPersonInsurer>();
+
+    for (const row of rows) {
+      if (!row.personId) {
+        continue;
+      }
+
+      const key = `${row.personId}:${row.service.insurerId}`;
+      const current = bucket.get(key);
+      const amount = row.paidAmount?.toNumber() ?? 0;
+
+      if (!current) {
+        bucket.set(key, {
+          personId: row.personId,
+          insurerId: row.service.insurerId,
+          amount,
+        });
+        continue;
+      }
+
+      current.amount += amount;
+    }
+
+    return Array.from(bucket.values());
+  }
+
   private mapInvoice(invoice: {
     id: string;
     serviceId: string;
+    personId: string | null;
+    insurerId: string | null;
     invoiceNumber: string | null;
     invoiceDate: Date | null;
     invoiceBilledAmount: { toNumber(): number };
@@ -261,6 +336,8 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return {
       id: invoice.id,
       serviceId: invoice.serviceId,
+      personId: invoice.personId,
+      insurerId: invoice.insurerId,
       invoiceNumber: invoice.invoiceNumber,
       invoiceDate: invoice.invoiceDate,
       invoiceBilledAmount: invoice.invoiceBilledAmount.toNumber(),
