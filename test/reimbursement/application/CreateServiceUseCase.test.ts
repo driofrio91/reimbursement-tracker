@@ -41,6 +41,8 @@ describe("CreateServiceUseCase", () => {
       expect.arrayContaining([
         expect.objectContaining({
           serviceId: "service-1",
+          personId: "person-1",
+          insurerId: "insurer-1",
           invoiceBilledAmount: 55,
           invoiceExpectedAmount: 49.5,
           status: "CREATED",

@@ -4,6 +4,8 @@ export function buildInvoice(overrides: Partial<Invoice> = {}): Invoice {
   return {
     id: "invoice-1",
     serviceId: "service-1",
+    personId: null,
+    insurerId: null,
     invoiceNumber: null,
     invoiceDate: null,
     invoiceBilledAmount: 55,
