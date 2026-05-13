@@ -48,19 +48,19 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 ### P0 - Fundacion tecnica y seguridad (bloqueante)
 - [x] roles MVP (`ADMIN`, `USER`) + autorizacion backend (`requireAuth`, `requireRole`)
 - [x] flujo obligatorio de cambio de contrasena en primer inicio (`mustChangePasswordOnFirstLogin`)
-- [x] modelo anual de topes por usuario (`UserAnnualReimbursementLimit`) con:
+- [x] modelo anual de topes por persona+aseguradora (`PersonAnnualReimbursementLimit`) con:
   - `annualLimitAmount`
   - `reimbursedAccumulated`
-  - unique (`userId`, `year`)
+  - unique (`personId`, `insurerId`, `year`)
 
 **Dependencias:** ninguna (base de todo V2).
 **Desbloquea:** P1, P2, P3, P4.
 
 ### P1 - Regla de negocio principal de V2 (alto impacto)
-- [ ] consumo anual por ano natural basado en `invoiceDate`
-- [ ] solo `PAID` computa con `paidAmount`
-- [ ] transiciones que ajustan cache (`PAID -> REJECTED`, `REJECTED -> PAID`, delta en `PAID`, cambio de `invoiceDate`)
-- [ ] reconciliacion `Sync` (solo `ADMIN`) para ano actual con resultados visibles
+- [x] consumo anual por ano natural basado en `invoiceDate`
+- [x] solo `PAID` computa con `paidAmount`
+- [x] transiciones que ajustan cache (`PAID -> REJECTED`, `REJECTED -> PAID`, delta en `PAID`, cambio de `invoiceDate`)
+- [x] reconciliacion `Sync` (solo `ADMIN`) para ano actual con resultados visibles
 
 **Depende de:** P0.
 **Desbloquea:** visualizacion global fiable y historico.

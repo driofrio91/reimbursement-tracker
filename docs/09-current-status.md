@@ -28,17 +28,17 @@
   - bloqueo de area privada mientras `mustChangePasswordOnFirstLogin=true`
   - ruta dedicada `/change-password` para actualizar credenciales
   - al completar el cambio se limpia el flag y se fuerza nuevo login con la contrasena actualizada
-- modelo anual de topes por usuario implementado en persistencia:
-  - nueva tabla `UserAnnualReimbursementLimit`
+- modelo anual de topes por persona+aseguradora implementado en persistencia:
+  - nueva tabla `PersonAnnualReimbursementLimit`
   - campos `annualLimitAmount`, `reimbursedAccumulated`, `currency`
-  - unicidad por (`userId`, `year`)
+  - unicidad por (`personId`, `insurerId`, `year`)
 
 ## Siguiente foco propuesto
 
-- `P0` de V2 completado
-- siguiente bloque: ejecutar `P1`:
-  - consumo anual por `invoiceDate` y solo con facturas `PAID`
-  - reconciliacion `Sync` solo para `ADMIN` con resultado visible
+- `P0` y `P1` de V2 completados
+- siguiente bloque: ejecutar `P2`:
+  - home del ano actual con visibilidad global y jerarquia visual mobile-first
+  - barras con semaforo de consumo por usuario
 
 ## Pipeline de release a produccion
 
@@ -76,8 +76,24 @@
 - operativa centrada en `Invoice`
 - `claimReference` vive en factura
 - varias facturas pueden compartir `claimReference`
+- cada factura tiene `personId` imputado para consumo anual de topes
+- el consumo anual se calcula por combinacion `personId + insurerId + year(invoiceDate)`
 - `paidAmount` se autocompleta con esperado y es editable
 - en correccion de estado final se guarda solo la ultima correccion (sin historial completo)
+
+## Estado P1 implementado (topes anuales)
+
+- consumo anual por ano natural segun `invoiceDate`
+- solo facturas `PAID` computan y lo hacen con `paidAmount`
+- agrupacion anual por `persona + aseguradora`
+- ajustes incrementales por delta activos en transiciones finales:
+  - `PAID -> REJECTED`: resta aporte previo
+  - `REJECTED -> PAID`: suma aporte
+  - `PAID(old) -> PAID(new)`: ajusta por diferencia
+  - cambio de persona imputada entre estados no `PAID` respetado antes del cierre final
+- validacion de negocio activa: no se permite marcar `PAID` sin `invoice.personId`
+- `invoice.personId` bloqueado cuando la factura ya esta en `PAID`
+- reconciliacion `Sync` del ano actual disponible solo para `ADMIN` desde home privada con resumen visible
 
 ## Stack real
 
