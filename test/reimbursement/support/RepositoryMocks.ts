@@ -71,6 +71,7 @@ export interface PersonAnnualReimbursementLimitRepositoryMock extends PersonAnnu
   upsertForPersonInsurerYear: Mock;
   applyDelta: Mock;
   setAccumulated: Mock;
+  listByYear: Mock;
 }
 
 export function createPersonAnnualReimbursementLimitRepositoryMock(): PersonAnnualReimbursementLimitRepositoryMock {
@@ -80,5 +81,6 @@ export function createPersonAnnualReimbursementLimitRepositoryMock(): PersonAnnu
     upsertForPersonInsurerYear: vi.fn(),
     applyDelta: vi.fn(),
     setAccumulated: vi.fn(),
+    listByYear: vi.fn(),
   };
 }

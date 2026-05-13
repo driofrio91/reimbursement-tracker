@@ -32,13 +32,21 @@
   - nueva tabla `PersonAnnualReimbursementLimit`
   - campos `annualLimitAmount`, `reimbursedAccumulated`, `currency`
   - unicidad por (`personId`, `insurerId`, `year`)
+- home privada evolucionada a dashboard operativo del ano actual:
+  - bloque principal con visibilidad global por `persona + aseguradora`
+  - barras con semaforo de consumo (`<75%` verde, `75-100%` ambar, `>100%` rojo)
+  - accion `Sync` dentro del contenedor principal en esquina superior derecha con icono
+  - `Sync` visible para todos: habilitado en `ADMIN`, bloqueado en `USER` con tooltip desktop y bottom sheet mobile
+  - loading del bloque principal con `Suspense` y skeleton local (sin bloqueo global de pantalla)
+  - bloques existentes de home conservados como secciones secundarias (`Accesos rapidos` antes de `Ya disponible`)
 
 ## Siguiente foco propuesto
 
 - `P0` y `P1` de V2 completados
-- siguiente bloque: ejecutar `P2`:
-  - home del ano actual con visibilidad global y jerarquia visual mobile-first
-  - barras con semaforo de consumo por usuario
+- `P2` completado
+- siguiente bloque: ejecutar `P3`:
+  - historico anual de topes (anos pasados, sin anos futuros)
+  - bloque secundario con `Suspense` independiente del bloque principal
 
 ## Pipeline de release a produccion
 

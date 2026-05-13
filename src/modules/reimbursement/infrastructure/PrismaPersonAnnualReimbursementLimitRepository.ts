@@ -4,7 +4,10 @@ import {
   NewPersonAnnualReimbursementLimit,
   PersonAnnualReimbursementLimit,
 } from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimit";
-import { PersonAnnualReimbursementLimitRepository } from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimitRepository";
+import {
+  PersonAnnualLimitYearRow,
+  PersonAnnualReimbursementLimitRepository,
+} from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimitRepository";
 
 export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnnualReimbursementLimitRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -99,6 +102,40 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
     });
 
     return this.map(updatedLimit);
+  }
+
+  async listByYear(year: number): Promise<PersonAnnualLimitYearRow[]> {
+    const rows = await this.prisma.personAnnualReimbursementLimit.findMany({
+      where: { year },
+      select: {
+        personId: true,
+        insurerId: true,
+        annualLimitAmount: true,
+        reimbursedAccumulated: true,
+        currency: true,
+        person: {
+          select: {
+            displayName: true,
+          },
+        },
+        insurer: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: [{ person: { displayName: "asc" } }, { insurer: { name: "asc" } }],
+    });
+
+    return rows.map((row) => ({
+      personId: row.personId,
+      personDisplayName: row.person.displayName,
+      insurerId: row.insurerId,
+      insurerName: row.insurer.name,
+      annualLimitAmount: row.annualLimitAmount.toNumber(),
+      reimbursedAccumulated: row.reimbursedAccumulated.toNumber(),
+      currency: row.currency,
+    }));
   }
 
   private map(limit: {

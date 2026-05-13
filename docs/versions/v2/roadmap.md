@@ -66,11 +66,11 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 **Desbloquea:** visualizacion global fiable y historico.
 
 ### P2 - Home y visibilidad operativa
-- [ ] bloque principal del ano actual (todos los usuarios visibles)
-- [ ] barras con semaforo (`<75%` verde, `75-100%` ambar, `>100%` rojo)
-- [ ] UX mobile-first
-- [ ] accion bloqueada: tooltip desktop + bottom sheet mobile
-- [ ] `Suspense` acotado al contenedor del bloque principal (sin loading global de pantalla)
+- [x] bloque principal del ano actual (todos los usuarios visibles)
+- [x] barras con semaforo (`<75%` verde, `75-100%` ambar, `>100%` rojo)
+- [x] UX mobile-first
+- [x] accion bloqueada: tooltip desktop + bottom sheet mobile
+- [x] `Suspense` acotado al contenedor del bloque principal (sin loading global de pantalla)
 
 **Depende de:** P1 (datos correctos), P0 (roles para `Sync`).
 
