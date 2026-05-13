@@ -35,6 +35,7 @@ import { prisma } from "@/lib/db/prisma";
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 const completeInvoiceInformationSchema = z.object({
+  personId: z.string().trim().min(1),
   invoiceNumber: z.string().trim().min(1),
   invoiceDate: z.string().trim().regex(datePattern),
   issuerName: z.string().trim().min(1),
@@ -43,6 +44,7 @@ const completeInvoiceInformationSchema = z.object({
 });
 
 const claimReferenceSchema = z.object({
+  personId: z.string().trim().min(1),
   claimReference: z.string().trim().min(1),
 });
 
@@ -51,6 +53,7 @@ const assignInvoicePersonSchema = z.object({
 });
 
 const paidSchema = z.object({
+  personId: z.string().trim().min(1),
   paidAmount: z
     .string()
     .trim()
@@ -63,6 +66,7 @@ const paidSchema = z.object({
 });
 
 const rejectedSchema = z.object({
+  personId: z.string().trim().min(1),
   rejectionReason: z.string().trim().optional(),
 });
 
@@ -124,6 +128,7 @@ export async function completeInvoiceInformationAction(
   }
 
   const parsedInput = completeInvoiceInformationSchema.safeParse({
+    personId: getString(formData, "personId"),
     invoiceNumber: getString(formData, "invoiceNumber"),
     invoiceDate: getString(formData, "invoiceDate"),
     issuerName: getString(formData, "issuerName"),
@@ -136,6 +141,10 @@ export async function completeInvoiceInformationAction(
   }
 
   try {
+    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await completeInvoiceInformationUseCase(
       invoiceId,
       {
@@ -150,6 +159,10 @@ export async function completeInvoiceInformationAction(
       },
     );
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof CompleteInvoiceInformationUseCaseError) {
       return buildActionResult("error", toCompleteInvoiceInformationErrorMessage(error));
     }
@@ -175,6 +188,7 @@ export async function registerInvoiceClaimReferenceAction(
   }
 
   const parsedInput = claimReferenceSchema.safeParse({
+    personId: getString(formData, "personId"),
     claimReference: getString(formData, "claimReference"),
   });
 
@@ -183,10 +197,18 @@ export async function registerInvoiceClaimReferenceAction(
   }
 
   try {
+    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await registerInvoiceClaimReferenceUseCase(invoiceId, parsedInput.data.claimReference, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof RegisterInvoiceClaimReferenceUseCaseError) {
       return buildActionResult("error", toRegisterClaimReferenceErrorMessage(error));
     }
@@ -212,6 +234,7 @@ export async function markInvoiceAsPaidAction(
   }
 
   const parsedInput = paidSchema.safeParse({
+    personId: getString(formData, "personId"),
     paidAmount: getString(formData, "paidAmount"),
     paidAt: getString(formData, "paidAt"),
   });
@@ -221,6 +244,10 @@ export async function markInvoiceAsPaidAction(
   }
 
   try {
+    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await markInvoiceAsPaidUseCase(
       invoiceId,
       parsedInput.data.paidAmount,
@@ -231,6 +258,10 @@ export async function markInvoiceAsPaidAction(
       },
     );
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof MarkInvoiceAsPaidUseCaseError) {
       return buildActionResult("error", toMarkAsPaidErrorMessage(error));
     }
@@ -256,6 +287,7 @@ export async function markInvoiceAsRejectedAction(
   }
 
   const parsedInput = rejectedSchema.safeParse({
+    personId: getString(formData, "personId"),
     rejectionReason: getString(formData, "rejectionReason"),
   });
 
@@ -264,11 +296,19 @@ export async function markInvoiceAsRejectedAction(
   }
 
   try {
+    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await markInvoiceAsRejectedUseCase(invoiceId, parsedInput.data.rejectionReason || undefined, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
       annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
     });
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof MarkInvoiceAsRejectedUseCaseError) {
       return buildActionResult("error", toMarkAsRejectedErrorMessage(error));
     }

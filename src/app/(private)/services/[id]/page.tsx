@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import {
-  assignInvoicePersonAction,
   completeInvoiceInformationAction,
   correctInvoiceResolutionAction,
   markInvoiceAsPaidAction,
@@ -71,7 +70,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
           people={people}
-          assignInvoicePersonAction={assignInvoicePersonAction}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}

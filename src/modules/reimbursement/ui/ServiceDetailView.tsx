@@ -78,12 +78,6 @@ interface ServiceDetailViewProps {
     previousState: InvoiceActionResult,
     formData: FormData,
   ) => Promise<InvoiceActionResult>;
-  assignInvoicePersonAction: (
-    serviceId: string,
-    invoiceId: string,
-    previousState: InvoiceActionResult,
-    formData: FormData,
-  ) => Promise<InvoiceActionResult>;
 }
 
 export function ServiceDetailView({
@@ -104,7 +98,6 @@ export function ServiceDetailView({
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   correctInvoiceResolutionAction,
-  assignInvoicePersonAction,
 }: ServiceDetailViewProps) {
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -195,7 +188,6 @@ export function ServiceDetailView({
                 markInvoiceAsPaidAction={markInvoiceAsPaidAction}
                 markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
                 correctInvoiceResolutionAction={correctInvoiceResolutionAction}
-                assignInvoicePersonAction={assignInvoicePersonAction}
               />
             ))}
           </div>
@@ -216,7 +208,6 @@ interface InvoiceStageCardProps {
   markInvoiceAsPaidAction: ServiceDetailViewProps["markInvoiceAsPaidAction"];
   markInvoiceAsRejectedAction: ServiceDetailViewProps["markInvoiceAsRejectedAction"];
   correctInvoiceResolutionAction: ServiceDetailViewProps["correctInvoiceResolutionAction"];
-  assignInvoicePersonAction: ServiceDetailViewProps["assignInvoicePersonAction"];
 }
 
 function InvoiceStageCard({
@@ -230,7 +221,6 @@ function InvoiceStageCard({
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   correctInvoiceResolutionAction,
-  assignInvoicePersonAction,
 }: InvoiceStageCardProps) {
   const router = useRouter();
   const defaultPaidDate = new Date().toISOString().slice(0, 10);
@@ -240,17 +230,12 @@ function InvoiceStageCard({
   const paidAction = markInvoiceAsPaidAction.bind(null, serviceId, invoice.id);
   const rejectedAction = markInvoiceAsRejectedAction.bind(null, serviceId, invoice.id);
   const correctionAction = correctInvoiceResolutionAction.bind(null, serviceId, invoice.id);
-  const assignPersonAction = assignInvoicePersonAction.bind(null, serviceId, invoice.id);
 
   const [completeState, completeFormAction, isCompleting] = useActionState(completeAction, initialInvoiceActionResult);
   const [claimState, claimFormAction, isClaiming] = useActionState(claimAction, initialInvoiceActionResult);
   const [paidState, paidFormAction, isMarkingPaid] = useActionState(paidAction, initialInvoiceActionResult);
   const [rejectedState, rejectedFormAction, isMarkingRejected] = useActionState(rejectedAction, initialInvoiceActionResult);
   const [correctionState, correctionFormAction, isCorrectingResolution] = useActionState(correctionAction, initialInvoiceActionResult);
-  const [assignPersonState, assignPersonFormAction, isAssigningPerson] = useActionState(
-    assignPersonAction,
-    initialInvoiceActionResult,
-  );
   const correctionFormRef = useRef<HTMLFormElement>(null);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
@@ -263,10 +248,6 @@ function InvoiceStageCard({
   useEffect(() => {
     notifyActionResult(claimState, router);
   }, [claimState, router]);
-
-  useEffect(() => {
-    notifyActionResult(assignPersonState, router);
-  }, [assignPersonState, router]);
 
   useEffect(() => {
     notifyActionResult(paidState, router);
@@ -342,21 +323,20 @@ function InvoiceStageCard({
       <div className="space-y-3">
         <StageHint status={invoice.status} />
 
-        {invoice.status !== "PAID" ? (
-          <form action={assignPersonFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-            <p className="text-sm font-medium text-slate-900">Persona imputada de la factura</p>
+        {invoice.status === "CREATED" ? (
+          <form action={completeFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+            <p className="text-sm font-medium text-slate-900">Completar informacion de factura</p>
             <Field
-              label="Persona"
-              htmlFor={`invoice-person-${invoice.id}`}
-              helper="Revisa este dato antes de cerrar la factura como pagada."
+              label="Persona imputada"
+              htmlFor={`invoice-person-created-${invoice.id}`}
+              helper="Este pago computara sobre el tope anual de esta persona."
             >
               <select
-                id={`invoice-person-${invoice.id}`}
+                id={`invoice-person-created-${invoice.id}`}
                 className={inputBaseClassName}
                 name="personId"
                 defaultValue={invoice.personId ?? servicePersonId}
                 required
-                autoFocus={!invoice.personId}
               >
                 <option value="">Selecciona una persona</option>
                 {people.map((person) => (
@@ -366,16 +346,6 @@ function InvoiceStageCard({
                 ))}
               </select>
             </Field>
-            <button className={primaryButtonClassName} type="submit" disabled={isAssigningPerson}>
-              {isAssigningPerson ? "Guardando..." : "Guardar persona imputada"}
-            </button>
-            <ActionFeedback result={assignPersonState} />
-          </form>
-        ) : null}
-
-        {invoice.status === "CREATED" ? (
-          <form action={completeFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-            <p className="text-sm font-medium text-slate-900">Completar informacion de factura</p>
             <Field label="Numero de factura" htmlFor={`invoiceNumber-${invoice.id}`} helper="Ejemplo: F-2026-001">
               <input
                 id={`invoiceNumber-${invoice.id}`}
@@ -433,6 +403,22 @@ function InvoiceStageCard({
         {invoice.status === "INFORMATION_COMPLETED" ? (
           <form action={claimFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
             <p className="text-sm font-medium text-slate-900">Registrar referencia de reembolso</p>
+            <Field label="Persona imputada" htmlFor={`invoice-person-claim-${invoice.id}`}>
+              <select
+                id={`invoice-person-claim-${invoice.id}`}
+                className={inputBaseClassName}
+                name="personId"
+                defaultValue={invoice.personId ?? servicePersonId}
+                required
+              >
+                <option value="">Selecciona una persona</option>
+                {people.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.displayName}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <Field label="Referencia" htmlFor={`claimReference-${invoice.id}`} helper="Codigo recibido de la aseguradora o portal.">
               <input
                 id={`claimReference-${invoice.id}`}
@@ -500,6 +486,25 @@ function InvoiceStageCard({
             </h3>
             <p className="mt-1 text-sm text-slate-600">Indica importe y fecha para cerrar la factura como pagada.</p>
             <form action={paidFormAction} className="mt-4 space-y-3">
+              <Field label="Persona imputada" htmlFor={`invoice-person-paid-${invoice.id}`} helper="Confirma la persona antes de cerrar en pagada.">
+                <select
+                  id={`invoice-person-paid-${invoice.id}`}
+                  className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-200"
+                  name="personId"
+                  defaultValue={invoice.personId ?? servicePersonId}
+                  required
+                >
+                  <option value="">Selecciona una persona</option>
+                  {people.map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.displayName}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+                Esta factura se imputara al tope anual de <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "la persona seleccionada"}</strong>.
+              </p>
               <Field label="Importe pagado" htmlFor={`paidAmount-${invoice.id}`} helper="Puedes ajustar el importe final recibido.">
                 <input
                   id={`paidAmount-${invoice.id}`}
@@ -548,6 +553,22 @@ function InvoiceStageCard({
             </h3>
             <p className="mt-1 text-sm text-slate-600">Si lo necesitas, anade un motivo para la trazabilidad operativa.</p>
             <form action={rejectedFormAction} className="mt-4 space-y-3">
+              <Field label="Persona imputada" htmlFor={`invoice-person-rejected-${invoice.id}`} helper="Se conserva para trazabilidad de imputacion.">
+                <select
+                  id={`invoice-person-rejected-${invoice.id}`}
+                  className="w-full rounded-lg border border-rose-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-rose-500 focus-visible:ring-2 focus-visible:ring-rose-200"
+                  name="personId"
+                  defaultValue={invoice.personId ?? servicePersonId}
+                  required
+                >
+                  <option value="">Selecciona una persona</option>
+                  {people.map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.displayName}
+                    </option>
+                  ))}
+                </select>
+              </Field>
               <Field label="Motivo de rechazo" htmlFor={`rejectionReason-${invoice.id}`} helper="Opcional. Recomendado para trazabilidad operativa.">
                 <input
                   id={`rejectionReason-${invoice.id}`}
