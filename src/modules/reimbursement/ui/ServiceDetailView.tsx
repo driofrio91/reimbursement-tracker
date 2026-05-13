@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
+import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
 
 interface InvoiceActionResult {
   status: "idle" | "success" | "error";
@@ -37,6 +38,7 @@ const rejectedSecondaryButtonClassName =
 interface ServiceDetailViewProps {
   service: Service;
   invoices: Invoice[];
+  people: ReferencePerson[];
   totalBilledAmount: number;
   totalExpectedAmount: number;
   totalPaidAmount: number;
@@ -76,11 +78,18 @@ interface ServiceDetailViewProps {
     previousState: InvoiceActionResult,
     formData: FormData,
   ) => Promise<InvoiceActionResult>;
+  assignInvoicePersonAction: (
+    serviceId: string,
+    invoiceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
 }
 
 export function ServiceDetailView({
   service,
   invoices,
+  people,
   totalBilledAmount,
   totalExpectedAmount,
   totalPaidAmount,
@@ -95,6 +104,7 @@ export function ServiceDetailView({
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   correctInvoiceResolutionAction,
+  assignInvoicePersonAction,
 }: ServiceDetailViewProps) {
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -178,11 +188,14 @@ export function ServiceDetailView({
                 serviceId={service.id}
                 invoice={invoice}
                 index={index}
+                people={people}
+                servicePersonId={service.personId}
                 completeInvoiceInformationAction={completeInvoiceInformationAction}
                 registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
                 markInvoiceAsPaidAction={markInvoiceAsPaidAction}
                 markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
                 correctInvoiceResolutionAction={correctInvoiceResolutionAction}
+                assignInvoicePersonAction={assignInvoicePersonAction}
               />
             ))}
           </div>
@@ -196,22 +209,28 @@ interface InvoiceStageCardProps {
   serviceId: string;
   invoice: Invoice;
   index: number;
+  people: ReferencePerson[];
+  servicePersonId: string;
   completeInvoiceInformationAction: ServiceDetailViewProps["completeInvoiceInformationAction"];
   registerInvoiceClaimReferenceAction: ServiceDetailViewProps["registerInvoiceClaimReferenceAction"];
   markInvoiceAsPaidAction: ServiceDetailViewProps["markInvoiceAsPaidAction"];
   markInvoiceAsRejectedAction: ServiceDetailViewProps["markInvoiceAsRejectedAction"];
   correctInvoiceResolutionAction: ServiceDetailViewProps["correctInvoiceResolutionAction"];
+  assignInvoicePersonAction: ServiceDetailViewProps["assignInvoicePersonAction"];
 }
 
 function InvoiceStageCard({
   serviceId,
   invoice,
   index,
+  people,
+  servicePersonId,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   correctInvoiceResolutionAction,
+  assignInvoicePersonAction,
 }: InvoiceStageCardProps) {
   const router = useRouter();
   const defaultPaidDate = new Date().toISOString().slice(0, 10);
@@ -221,12 +240,17 @@ function InvoiceStageCard({
   const paidAction = markInvoiceAsPaidAction.bind(null, serviceId, invoice.id);
   const rejectedAction = markInvoiceAsRejectedAction.bind(null, serviceId, invoice.id);
   const correctionAction = correctInvoiceResolutionAction.bind(null, serviceId, invoice.id);
+  const assignPersonAction = assignInvoicePersonAction.bind(null, serviceId, invoice.id);
 
   const [completeState, completeFormAction, isCompleting] = useActionState(completeAction, initialInvoiceActionResult);
   const [claimState, claimFormAction, isClaiming] = useActionState(claimAction, initialInvoiceActionResult);
   const [paidState, paidFormAction, isMarkingPaid] = useActionState(paidAction, initialInvoiceActionResult);
   const [rejectedState, rejectedFormAction, isMarkingRejected] = useActionState(rejectedAction, initialInvoiceActionResult);
   const [correctionState, correctionFormAction, isCorrectingResolution] = useActionState(correctionAction, initialInvoiceActionResult);
+  const [assignPersonState, assignPersonFormAction, isAssigningPerson] = useActionState(
+    assignPersonAction,
+    initialInvoiceActionResult,
+  );
   const correctionFormRef = useRef<HTMLFormElement>(null);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
@@ -239,6 +263,10 @@ function InvoiceStageCard({
   useEffect(() => {
     notifyActionResult(claimState, router);
   }, [claimState, router]);
+
+  useEffect(() => {
+    notifyActionResult(assignPersonState, router);
+  }, [assignPersonState, router]);
 
   useEffect(() => {
     notifyActionResult(paidState, router);
@@ -305,10 +333,45 @@ function InvoiceStageCard({
           <span className="font-medium text-slate-900">Pagado:</span>{" "}
           {invoice.paidAmount ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
         </p>
+        <p>
+          <span className="font-medium text-slate-900">Persona:</span>{" "}
+          {people.find((person) => person.id === invoice.personId)?.displayName ?? "Sin asignar"}
+        </p>
       </div>
 
       <div className="space-y-3">
         <StageHint status={invoice.status} />
+
+        {invoice.status !== "PAID" ? (
+          <form action={assignPersonFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+            <p className="text-sm font-medium text-slate-900">Persona imputada de la factura</p>
+            <Field
+              label="Persona"
+              htmlFor={`invoice-person-${invoice.id}`}
+              helper="Revisa este dato antes de cerrar la factura como pagada."
+            >
+              <select
+                id={`invoice-person-${invoice.id}`}
+                className={inputBaseClassName}
+                name="personId"
+                defaultValue={invoice.personId ?? servicePersonId}
+                required
+                autoFocus={!invoice.personId}
+              >
+                <option value="">Selecciona una persona</option>
+                {people.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.displayName}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <button className={primaryButtonClassName} type="submit" disabled={isAssigningPerson}>
+              {isAssigningPerson ? "Guardando..." : "Guardar persona imputada"}
+            </button>
+            <ActionFeedback result={assignPersonState} />
+          </form>
+        ) : null}
 
         {invoice.status === "CREATED" ? (
           <form action={completeFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">

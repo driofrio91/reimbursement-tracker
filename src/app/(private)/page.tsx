@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { requireAuth } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
+import { SyncAnnualLimitsButton } from "@/app/(private)/_components/SyncAnnualLimitsButton";
 
 export default async function HomePage() {
   const actor = await requireAuth();
@@ -51,6 +53,7 @@ export default async function HomePage() {
               >
                 Ver listado de servicios
               </Link>
+              {actor.role === USER_ROLES.ADMIN ? <SyncAnnualLimitsButton /> : null}
             </div>
           </article>
         </section>

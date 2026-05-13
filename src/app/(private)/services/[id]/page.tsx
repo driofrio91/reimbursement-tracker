@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import {
+  assignInvoicePersonAction,
   completeInvoiceInformationAction,
   correctInvoiceResolutionAction,
   markInvoiceAsPaidAction,
@@ -10,6 +11,7 @@ import {
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
+import { getReimbursementReferenceData } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
@@ -17,6 +19,7 @@ import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const { people } = await getReimbursementReferenceData();
   const summary = await getServiceInvoiceSummaryUseCase(id, {
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
@@ -67,6 +70,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
+          people={people}
+          assignInvoicePersonAction={assignInvoicePersonAction}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}

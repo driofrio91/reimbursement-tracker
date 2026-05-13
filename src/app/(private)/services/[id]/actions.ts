@@ -20,9 +20,14 @@ import {
   CorrectInvoiceResolutionUseCaseError,
   correctInvoiceResolutionUseCase,
 } from "@/modules/reimbursement/application/CorrectInvoiceResolutionUseCase";
+import {
+  AssignInvoicePersonUseCaseError,
+  assignInvoicePersonUseCase,
+} from "@/modules/reimbursement/application/AssignInvoicePersonUseCase";
 import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
+import { PrismaPersonAnnualReimbursementLimitRepository } from "@/modules/reimbursement/infrastructure/PrismaPersonAnnualReimbursementLimitRepository";
 import { AuthorizationError, requireRole, type AuthenticatedActor } from "@/lib/auth/authorization";
 import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
@@ -39,6 +44,10 @@ const completeInvoiceInformationSchema = z.object({
 
 const claimReferenceSchema = z.object({
   claimReference: z.string().trim().min(1),
+});
+
+const assignInvoicePersonSchema = z.object({
+  personId: z.string().trim().min(1),
 });
 
 const paidSchema = z.object({
@@ -218,6 +227,7 @@ export async function markInvoiceAsPaidAction(
       new Date(`${parsedInput.data.paidAt}T00:00:00`),
       {
         invoiceRepository: new PrismaInvoiceRepository(prisma),
+        annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
       },
     );
   } catch (error) {
@@ -256,6 +266,7 @@ export async function markInvoiceAsRejectedAction(
   try {
     await markInvoiceAsRejectedUseCase(invoiceId, parsedInput.data.rejectionReason || undefined, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
+      annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
     });
   } catch (error) {
     if (error instanceof MarkInvoiceAsRejectedUseCaseError) {
@@ -310,10 +321,11 @@ export async function correctInvoiceResolutionAction(
         paidAt: toStatus === "PAID" && paidAtValue ? new Date(`${paidAtValue}T00:00:00`) : undefined,
         rejectionReason: toStatus === "REJECTED" ? parsedInput.data.rejectionReason || null : null,
       },
-      {
-        invoiceRepository: new PrismaInvoiceRepository(prisma),
-      },
-    );
+        {
+          invoiceRepository: new PrismaInvoiceRepository(prisma),
+          annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
+        },
+      );
   } catch (error) {
     if (error instanceof CorrectInvoiceResolutionUseCaseError) {
       return buildActionResult("error", toCorrectResolutionErrorMessage(error));
@@ -333,6 +345,42 @@ async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void>
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
   });
+}
+
+export async function assignInvoicePersonAction(
+  serviceId: string,
+  invoiceId: string,
+  _previousState: InvoiceActionResult,
+  formData: FormData,
+): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  const parsedInput = assignInvoicePersonSchema.safeParse({
+    personId: getString(formData, "personId"),
+  });
+
+  if (!parsedInput.success) {
+    return buildActionResult("error", "Debes seleccionar la persona imputada de la factura.");
+  }
+
+  try {
+    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo guardar la persona imputada de la factura.");
+  }
+
+  revalidatePath(`/services/${serviceId}`);
+  return buildActionResult("success", "Persona imputada de factura guardada.");
 }
 
 async function authorizeInvoiceAction(): Promise<AuthenticatedActor | null> {
@@ -359,6 +407,17 @@ function buildActionResult(status: "success" | "error", message: string): Invoic
     message,
     token: Date.now(),
   };
+}
+
+function toAssignInvoicePersonErrorMessage(error: AssignInvoicePersonUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura ya no existe o fue eliminada.";
+    case "INVALID_STATUS":
+      return error.message;
+    case "INVALID_PERSON":
+      return "Debes seleccionar una persona valida para la factura.";
+  }
 }
 
 function toCompleteInvoiceInformationErrorMessage(error: CompleteInvoiceInformationUseCaseError): string {
@@ -389,6 +448,8 @@ function toMarkAsPaidErrorMessage(error: MarkInvoiceAsPaidUseCaseError): string 
       return "La factura debe tener referencia registrada para poder marcarse como pagada.";
     case "INVALID_PAID_AMOUNT":
       return "El importe pagado debe ser mayor que cero.";
+    case "MISSING_INVOICE_PERSON":
+      return "Debes revisar y guardar la persona imputada antes de marcar la factura como pagada.";
   }
 }
 

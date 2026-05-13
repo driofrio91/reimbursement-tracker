@@ -1,5 +1,7 @@
 import { CorrectInvoiceResolutionInput, Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { PersonAnnualReimbursementLimitRepository } from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimitRepository";
+import { applyInvoiceAnnualLimitDeltaUseCase } from "@/modules/reimbursement/application/ApplyInvoiceAnnualLimitDeltaUseCase";
 
 export type CorrectInvoiceResolutionUseCaseErrorCode =
   | "INVOICE_NOT_FOUND"
@@ -18,6 +20,7 @@ export class CorrectInvoiceResolutionUseCaseError extends Error {
 
 interface CorrectInvoiceResolutionUseCaseDependencies {
   invoiceRepository: Pick<InvoiceRepository, "getById" | "correctResolution">;
+  annualLimitRepository: Pick<PersonAnnualReimbursementLimitRepository, "applyDelta">;
 }
 
 export async function correctInvoiceResolutionUseCase(
@@ -71,6 +74,10 @@ export async function correctInvoiceResolutionUseCase(
       "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
     );
   }
+
+  await applyInvoiceAnnualLimitDeltaUseCase(invoice, correctedInvoice, {
+    annualLimitRepository: dependencies.annualLimitRepository,
+  });
 
   return correctedInvoice;
 }
