@@ -22,9 +22,9 @@ const initialInvoiceActionResult: InvoiceActionResult = {
 };
 
 const inputBaseClassName =
-  "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-slate-400 focus-visible:ring-2 focus-visible:ring-slate-200";
+  "w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-slate-500 focus-visible:ring-2 focus-visible:ring-slate-200";
 
-const helperTextClassName = "text-xs text-slate-500";
+const helperTextClassName = "text-xs text-slate-500/90";
 
 const primaryButtonClassName =
   "inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400";
@@ -183,6 +183,7 @@ export function ServiceDetailView({
                 index={index}
                 people={people}
                 servicePersonId={service.personId}
+                serviceInsurerName={service.insurerName}
                 completeInvoiceInformationAction={completeInvoiceInformationAction}
                 registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
                 markInvoiceAsPaidAction={markInvoiceAsPaidAction}
@@ -203,6 +204,7 @@ interface InvoiceStageCardProps {
   index: number;
   people: ReferencePerson[];
   servicePersonId: string;
+  serviceInsurerName: string;
   completeInvoiceInformationAction: ServiceDetailViewProps["completeInvoiceInformationAction"];
   registerInvoiceClaimReferenceAction: ServiceDetailViewProps["registerInvoiceClaimReferenceAction"];
   markInvoiceAsPaidAction: ServiceDetailViewProps["markInvoiceAsPaidAction"];
@@ -216,6 +218,7 @@ function InvoiceStageCard({
   index,
   people,
   servicePersonId,
+  serviceInsurerName,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
@@ -320,11 +323,11 @@ function InvoiceStageCard({
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 border-t border-slate-200 pt-3 sm:space-y-4 sm:pt-4">
         <StageHint status={invoice.status} />
 
         {invoice.status === "CREATED" ? (
-          <form action={completeFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+          <form action={completeFormAction} className="space-y-3 pt-1 sm:space-y-3.5">
             <p className="text-sm font-medium text-slate-900">Completar informacion de factura</p>
             <Field
               label="Persona imputada"
@@ -401,7 +404,7 @@ function InvoiceStageCard({
         ) : null}
 
         {invoice.status === "INFORMATION_COMPLETED" ? (
-          <form action={claimFormAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+          <form action={claimFormAction} className="space-y-3 pt-1 sm:space-y-3.5">
             <p className="text-sm font-medium text-slate-900">Registrar referencia de reembolso</p>
             <Field label="Persona imputada" htmlFor={`invoice-person-claim-${invoice.id}`}>
               <select
@@ -437,7 +440,7 @@ function InvoiceStageCard({
         ) : null}
 
         {invoice.status === "CLAIM_REFERENCE_COMPLETED" ? (
-          <div className="space-y-3">
+          <div className="space-y-3 pt-1">
             <p className="text-sm font-medium text-slate-700">Resolucion final de factura</p>
             <div className="grid gap-3 lg:grid-cols-2">
               <button
@@ -461,7 +464,7 @@ function InvoiceStageCard({
         ) : null}
 
         {invoice.status === "PAID" || invoice.status === "REJECTED" ? (
-          <section className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+          <section className="space-y-2 pt-1 text-sm text-slate-700">
             <button
               className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
               type="button"
@@ -502,9 +505,12 @@ function InvoiceStageCard({
                   ))}
                 </select>
               </Field>
-              <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
-                Esta factura se imputara al tope anual de <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "la persona seleccionada"}</strong>.
-              </p>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+                <p className="font-semibold">Confirmacion de imputacion anual</p>
+                <p className="mt-1">
+                  Se imputara a <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "la persona seleccionada"}</strong> con aseguradora <strong>{serviceInsurerName}</strong>.
+                </p>
+              </div>
               <Field label="Importe pagado" htmlFor={`paidAmount-${invoice.id}`} helper="Puedes ajustar el importe final recibido.">
                 <input
                   id={`paidAmount-${invoice.id}`}
@@ -578,6 +584,9 @@ function InvoiceStageCard({
                   defaultValue={invoice.rejectionReason ?? ""}
                 />
               </Field>
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                Persona imputada actual: <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "sin asignar"}</strong>.
+              </p>
               <ActionFeedback result={rejectedState} />
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
@@ -758,7 +767,7 @@ function Field({
   helper?: string;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 sm:space-y-2">
       <label className="text-sm font-medium text-slate-800" htmlFor={htmlFor}>
         {label}
       </label>
