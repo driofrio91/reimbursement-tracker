@@ -15,9 +15,10 @@ export function SyncAnnualLimitsButton() {
 
 interface SyncAnnualLimitsButtonBaseProps {
   canSync: boolean;
+  year?: number;
 }
 
-export function SyncAnnualLimitsButtonBase({ canSync }: SyncAnnualLimitsButtonBaseProps) {
+export function SyncAnnualLimitsButtonBase({ canSync, year }: SyncAnnualLimitsButtonBaseProps) {
   const [state, formAction, isPending] = useActionState<SyncAnnualLimitsActionResult, FormData>(
     syncAnnualLimitsAction,
     initialSyncAnnualLimitsActionResult,
@@ -86,6 +87,7 @@ export function SyncAnnualLimitsButtonBase({ canSync }: SyncAnnualLimitsButtonBa
 
   return (
     <form action={formAction}>
+      {typeof year === "number" ? <input type="hidden" name="year" value={String(year)} /> : null}
       <button
         aria-label={isPending ? "Sincronizando topes anuales" : "Sincronizar topes anuales"}
         className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"

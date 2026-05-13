@@ -12,10 +12,9 @@ import { SyncAnnualLimitsActionResult } from "@/app/(private)/sync-annual-limits
 
 export async function syncAnnualLimitsAction(
   _previousState: SyncAnnualLimitsActionResult,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<SyncAnnualLimitsActionResult> {
   void _previousState;
-  void _formData;
 
   try {
     await requireRole(USER_ROLES.ADMIN);
@@ -31,7 +30,9 @@ export async function syncAnnualLimitsAction(
     throw error;
   }
 
-  const year = new Date().getUTCFullYear();
+  const currentYear = new Date().getUTCFullYear();
+  const parsedYear = Number(formData.get("year"));
+  const year = Number.isInteger(parsedYear) && parsedYear > 2000 && parsedYear <= currentYear ? parsedYear : currentYear;
 
   const result = await syncAnnualReimbursementLimitsUseCase(year, {
     invoiceRepository: new PrismaInvoiceRepository(prisma),

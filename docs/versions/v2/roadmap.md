@@ -75,11 +75,11 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 **Depende de:** P1 (datos correctos), P0 (roles para `Sync`).
 
 ### P3 - Historico anual
-- [ ] bloque secundario para anos anteriores (sin anos futuros)
-- [ ] navegacion de anos pasados
-- [ ] `Sync` historico solo `ADMIN` (esquina superior derecha)
-- [ ] estado vacio `Sin datos`
-- [ ] `Suspense` acotado al contenedor del bloque historico y separado del bloque principal
+- [x] bloque secundario para anos anteriores (sin anos futuros)
+- [x] navegacion de anos pasados
+- [x] `Sync` historico solo `ADMIN` (esquina superior derecha)
+- [x] estado vacio `Sin datos`
+- [x] `Suspense` acotado al contenedor del bloque historico y separado del bloque principal
 
 **Depende de:** P1, P2, P0.
 

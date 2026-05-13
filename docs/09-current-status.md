@@ -44,9 +44,14 @@
 
 - `P0` y `P1` de V2 completados
 - `P2` completado
-- siguiente bloque: ejecutar `P3`:
-  - historico anual de topes (anos pasados, sin anos futuros)
-  - bloque secundario con `Suspense` independiente del bloque principal
+- `P3` completado
+- home privada ampliada con bloque historico anual:
+  - bloque secundario compacto para anos pasados con navegacion por `historyYear`
+  - no se permite seleccionar anos futuros y el maximo del historico es `ano actual - 1`
+  - `Sync` historico con icono en esquina superior derecha del bloque
+  - `Sync` historico visible para todos: habilitado en `ADMIN`, bloqueado en `USER` con tooltip desktop y bottom sheet mobile
+  - `Suspense` independiente para bloque historico y estado vacio `Sin datos para {ano}`
+- siguiente bloque: ejecutar `P4`/`P5` segun prioridad de sprint
 
 ## Pipeline de release a produccion
 
