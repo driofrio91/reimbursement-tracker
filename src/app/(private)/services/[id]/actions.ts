@@ -31,6 +31,7 @@ import { PrismaPersonAnnualReimbursementLimitRepository } from "@/modules/reimbu
 import { AuthorizationError, requireRole, type AuthenticatedActor } from "@/lib/auth/authorization";
 import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
+import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -108,12 +109,6 @@ const correctionSchema = z
       });
     }
   });
-
-export interface InvoiceActionResult {
-  status: "idle" | "success" | "error";
-  message: string;
-  token: number;
-}
 
 export async function completeInvoiceInformationAction(
   serviceId: string,

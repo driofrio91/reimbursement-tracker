@@ -108,7 +108,7 @@ export function PrivateSidebarMobile({ logoutAction, userName, role }: PrivateSi
           }
           id="private-mobile-menu"
         >
-          <PrivateSidebarNav onNavigate={closeMenu} />
+          <PrivateSidebarNav onNavigate={closeMenu} role={role} />
 
           <div className="mt-auto space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-slate-600">

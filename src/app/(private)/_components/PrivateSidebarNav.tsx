@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { USER_ROLES, UserRole } from "@/lib/auth/roles";
 
 interface PrivateSidebarNavProps {
   onNavigate?: () => void;
+  role: UserRole;
 }
 
-export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
+export function PrivateSidebarNav({ onNavigate, role }: PrivateSidebarNavProps) {
   const pathname = usePathname();
 
   const isHomeActive = pathname === "/";
@@ -16,7 +18,10 @@ export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
   const isNewServiceActive = pathname === "/services/new";
   const isInvoicesExactActive = pathname === "/invoices";
   const isInvoicesSectionActive = pathname.startsWith("/invoices");
-  const isChangePasswordActive = pathname === "/change-password";
+  const isAccountActive = pathname === "/account";
+  const isAdminUsersActive = pathname.startsWith("/admin/users");
+  const isAdminPeopleActive = pathname.startsWith("/admin/people");
+  const isAdminInsurersActive = pathname.startsWith("/admin/insurers");
 
   return (
     <nav className="space-y-2">
@@ -47,12 +52,16 @@ export function PrivateSidebarNav({ onNavigate }: PrivateSidebarNavProps) {
         onNavigate={onNavigate}
       />
 
-      <SidebarLink
-        href="/change-password"
-        state={isChangePasswordActive ? "page" : "idle"}
-        label="Mi cuenta"
-        onNavigate={onNavigate}
-      />
+      <SidebarLink href="/account" state={isAccountActive ? "page" : "idle"} label="Mi cuenta" onNavigate={onNavigate} />
+
+      {role === USER_ROLES.ADMIN ? (
+        <div className="space-y-1">
+          <p className="px-3 pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Administracion</p>
+          <SidebarLink href="/admin/users" state={isAdminUsersActive ? "page" : "idle"} label="Usuarios" onNavigate={onNavigate} />
+          <SidebarLink href="/admin/people" state={isAdminPeopleActive ? "page" : "idle"} label="Personas" onNavigate={onNavigate} />
+          <SidebarLink href="/admin/insurers" state={isAdminInsurersActive ? "page" : "idle"} label="Aseguradoras" onNavigate={onNavigate} />
+        </div>
+      ) : null}
     </nav>
   );
 }

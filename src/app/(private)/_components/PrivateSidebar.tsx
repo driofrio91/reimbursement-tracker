@@ -25,7 +25,7 @@ export function PrivateSidebar({ userName, role }: PrivateSidebarProps) {
             <p className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Reimbursement Tracker</p>
           </div>
 
-          <PrivateSidebarNav />
+          <PrivateSidebarNav role={role} />
 
           <div className="mt-auto space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm text-slate-600">

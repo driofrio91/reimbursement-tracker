@@ -10,17 +10,17 @@ import {
 
 interface ChangePasswordFormProps {
   mustChangePasswordOnFirstLogin: boolean;
+  embedded?: boolean;
 }
 
-export function ChangePasswordForm({ mustChangePasswordOnFirstLogin }: ChangePasswordFormProps) {
+export function ChangePasswordForm({ mustChangePasswordOnFirstLogin, embedded = false }: ChangePasswordFormProps) {
   const [state, action, isPending] = useActionState<ChangePasswordFormState, FormData>(
     changeOwnPasswordAction,
     initialChangePasswordFormState,
   );
 
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-      <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+  const content = (
+    <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="space-y-3">
           <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">
             Seguridad de cuenta
@@ -49,6 +49,15 @@ export function ChangePasswordForm({ mustChangePasswordOnFirstLogin }: ChangePas
           </button>
         </form>
       </div>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
+      {content}
     </main>
   );
 }

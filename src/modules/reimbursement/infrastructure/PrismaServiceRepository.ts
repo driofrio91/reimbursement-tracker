@@ -85,10 +85,10 @@ export class PrismaServiceRepository implements ServiceRepository {
   async personExists(personId: string): Promise<boolean> {
     const person = await this.prisma.person.findUnique({
       where: { id: personId },
-      select: { id: true },
+      select: { id: true, isActive: true },
     });
 
-    return Boolean(person);
+    return Boolean(person?.isActive);
   }
 
   async insurerIsActive(insurerId: string): Promise<boolean> {

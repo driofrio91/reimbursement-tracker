@@ -74,6 +74,7 @@ model Person {
   firstName      String
   lastName       String
   displayName    String                 @unique
+  isActive       Boolean                @default(true)
   documentNumber String?
   notes          String?
   createdAt      DateTime               @default(now())

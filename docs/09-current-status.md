@@ -52,6 +52,30 @@
   - `Sync` historico visible para todos: habilitado en `ADMIN`, bloqueado en `USER` con tooltip desktop y bottom sheet mobile
   - `Suspense` independiente para bloque historico y estado vacio `Sin datos para {ano}`
 - siguiente bloque: ejecutar `P4`/`P5` segun prioridad de sprint
+- `P4` completado
+- panel privado de cuenta operativo en `/account` (con layout privado) y `/change-password` reservado para flujo obligatorio de primer inicio
+- gestion admin implementada en rutas privadas:
+  - `/admin/users`: alta, edicion, rol (`ADMIN`/`USER`), activacion/desactivacion y reseteo de contrasena temporal
+  - `/admin/people`: alta, edicion y activacion/desactivacion
+  - `/admin/insurers`: alta, edicion y activacion/desactivacion con bloqueo si esta en uso
+- UX de administracion refinada en `users`/`people`/`insurers`:
+  - listados compactos con acciones por fila (`Editar`, `Activar/Desactivar`)
+  - edicion en modal con error inline (no cierra si hay error)
+  - confirmacion en modal para activar/desactivar con cierre solo en exito
+  - feedback de exito con notificacion global
+- navegacion privada actualizada por rol:
+  - `Mi cuenta` apunta a `/account`
+  - seccion `Administracion` visible solo para `ADMIN`
+- borrado logico de `Person` implementado con `isActive` en esquema:
+  - personas inactivas quedan fuera de referencias operativas nuevas
+  - historico existente permanece visible
+- convencion tecnica aplicada en server actions:
+  - archivos con `"use server"` exportan solo funciones `async`
+  - tipos/estado auxiliares movidos a archivos dedicados de estado
+- migraciones Prisma estabilizadas para entorno local:
+  - restaurado `migration.sql` faltante en `20260513120000_add_service_and_invoice_user_relation`
+  - aplicada migracion `20260513173000_add_person_is_active`
+- siguiente bloque sugerido: ejecutar `P5`
 
 ## Pipeline de release a produccion
 

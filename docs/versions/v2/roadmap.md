@@ -94,9 +94,9 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 - La accion `Sync` usa estado propio de accion y no bloquea la pantalla completa.
 
 ### P4 - Gestion operativa (usuarios y catalogos)
-- [ ] gestion de usuarios (admin crea usuarios, activacion/desactivacion)
-- [ ] gestion de aseguradoras (alta/baja con bloqueo si esta en uso)
-- [ ] mensajes de permiso especificos por accion
+- [x] gestion de usuarios (admin crea usuarios, activacion/desactivacion)
+- [x] gestion de aseguradoras (alta/baja con bloqueo si esta en uso)
+- [x] mensajes de permiso especificos por accion
 
 **Depende de:** P0.
 **Puede ir en paralelo con:** P2/P3.

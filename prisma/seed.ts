@@ -102,20 +102,20 @@ async function main() {
 
   await prisma.person.upsert({
     where: { displayName: "Ana Perez" },
-    update: { firstName: "Ana", lastName: "Perez" },
-    create: { firstName: "Ana", lastName: "Perez", displayName: "Ana Perez" },
+    update: { firstName: "Ana", lastName: "Perez", isActive: true },
+    create: { firstName: "Ana", lastName: "Perez", displayName: "Ana Perez", isActive: true },
   });
 
   await prisma.person.upsert({
     where: { displayName: "Luis Garcia" },
-    update: { firstName: "Luis", lastName: "Garcia" },
-    create: { firstName: "Luis", lastName: "Garcia", displayName: "Luis Garcia" },
+    update: { firstName: "Luis", lastName: "Garcia", isActive: true },
+    create: { firstName: "Luis", lastName: "Garcia", displayName: "Luis Garcia", isActive: true },
   });
 
   await prisma.person.upsert({
     where: { displayName: "Marta Lopez" },
-    update: { firstName: "Marta", lastName: "Lopez" },
-    create: { firstName: "Marta", lastName: "Lopez", displayName: "Marta Lopez" },
+    update: { firstName: "Marta", lastName: "Lopez", isActive: true },
+    create: { firstName: "Marta", lastName: "Lopez", displayName: "Marta Lopez", isActive: true },
   });
 
 }
