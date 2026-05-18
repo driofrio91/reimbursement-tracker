@@ -86,7 +86,7 @@
   - boton deshabilitado cuando no hay facturas `CREATED` con motivo visible
   - formato cerrado: BOM UTF-8, separador `;`, decimal con coma
   - nombre de archivo: `facturas-{nombre-servicio}-{yyyyMMdd-HHmm}.csv`
-  - columnas pactadas: `TRATAMIENTO`, `IMPORTE EN LA FACTURA`, `TITULAR`, `FECHA FACTURA`, `SOLICITADA`
+- columnas pactadas: `TRATAMIENTO`, `IMPORTE DE LA FACTURA`, `TITULAR`, `FECHA FACTURA`, `SOLICITADA`
 
 ## Pipeline de release a produccion
 

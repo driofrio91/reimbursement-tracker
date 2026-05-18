@@ -43,6 +43,7 @@ Campos clave:
 - `correctedFromStatus` (nullable)
 - `correctedByUserId` (nullable)
 - `correctedByUserName` (nullable)
+- `createdManually` (bool, `false` en autogeneradas, `true` en anadidas manualmente)
 
 ## Estados de Invoice
 
@@ -61,3 +62,20 @@ Campos clave:
 
 - `invoiceCount = ceil(actualAmount / invoiceExpectedAmount)`
 - siempre igualar o superar
+
+## Origen de facturas
+
+- al crear servicio, las facturas autogeneradas nacen con `createdManually=false`
+- al usar `Anadir factura` en detalle de servicio, la factura nace con `createdManually=true`
+- la gestion estructural se limita por estado:
+  - `Anadir factura` permitido en `REGISTERED` y `SUBMITTED`, bloqueado en `REIMBURSED`
+  - `Eliminar factura` permitido solo en estado `CREATED`
+
+## Exportacion CSV del servicio
+
+- exporta unicamente facturas en estado `CREATED`
+- formato operativo vigente:
+  - separador `;`
+  - decimal con coma
+  - BOM UTF-8
+  - columnas: `TRATAMIENTO`, `IMPORTE DE LA FACTURA`, `TITULAR`, `FECHA FACTURA`, `SOLICITADA`

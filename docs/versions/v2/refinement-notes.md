@@ -59,29 +59,29 @@
 - Al ejecutar `Sync`, no se bloquea toda la home; solo se actualizan/revalidan los bloques afectados.
 
 ### 4) Gestion de facturas desde el detalle de servicio
-- [ ] Boton `Anadir factura` a nivel de servicio.
-- [ ] Icono papelera por cada factura para eliminacion.
-- [ ] Papelera visible siempre, pero deshabilitada cuando no se pueda eliminar.
-- [ ] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
+- [x] Boton `Anadir factura` a nivel de servicio.
+- [x] Icono papelera por cada factura para eliminacion.
+- [x] Papelera visible siempre, pero deshabilitada cuando no se pueda eliminar.
+- [x] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
 
 ### 5) Exportacion de facturas por servicio
-- [ ] Anadir opcion `Extraer facturas` en el detalle de servicio.
-- [ ] Exportar unicamente facturas en estado `CREATED`.
-- [ ] Si no hay facturas `CREATED`, boton de exportar deshabilitado.
-- [ ] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
-- [ ] Generar archivo CSV con BOM UTF-8 para compatibilidad.
-- [ ] Separador CSV: `;`.
-- [ ] Formato decimal: coma (ej: `55,00`).
-- [ ] Nombre archivo: `facturas-{nombre-servicio}-{yyyyMMdd-HHmm}.csv`.
-- [ ] Orden de columnas igual a la captura:
+- [x] Anadir opcion `Extraer facturas` en el detalle de servicio.
+- [x] Exportar unicamente facturas en estado `CREATED`.
+- [x] Si no hay facturas `CREATED`, boton de exportar deshabilitado.
+- [x] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
+- [x] Generar archivo CSV con BOM UTF-8 para compatibilidad.
+- [x] Separador CSV: `;`.
+- [x] Formato decimal: coma (ej: `55,00`).
+- [x] Nombre archivo: `facturas-{nombre-servicio}-{yyyyMMdd-HHmm}.csv`.
+- [x] Orden de columnas igual a la captura:
   1. `TRATAMIENTO`
-  2. `IMPORTE EN LA FACTURA`
+  2. `IMPORTE DE LA FACTURA`
   3. `TITULAR`
   4. `FECHA FACTURA`
   5. `SOLICITADA`
-- [ ] Mapeo de columnas:
+- [x] Mapeo de columnas:
   - `TRATAMIENTO`: fijo `FISIOTERAPIA - CERVICAL`
-  - `IMPORTE EN LA FACTURA`: `invoiceBilledAmount`
+  - `IMPORTE DE LA FACTURA`: `invoiceBilledAmount`
   - `TITULAR`: vacio
   - `FECHA FACTURA`: vacio
   - `SOLICITADA`: vacio
