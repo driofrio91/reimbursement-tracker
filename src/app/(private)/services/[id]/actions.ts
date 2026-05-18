@@ -24,6 +24,14 @@ import {
   AssignInvoicePersonUseCaseError,
   assignInvoicePersonUseCase,
 } from "@/modules/reimbursement/application/AssignInvoicePersonUseCase";
+import {
+  AddInvoiceToServiceUseCaseError,
+  addInvoiceToServiceUseCase,
+} from "@/modules/reimbursement/application/AddInvoiceToServiceUseCase";
+import {
+  DeleteCreatedInvoiceUseCaseError,
+  deleteCreatedInvoiceUseCase,
+} from "@/modules/reimbursement/application/DeleteCreatedInvoiceUseCase";
 import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
@@ -375,6 +383,73 @@ export async function correctInvoiceResolutionAction(
   return buildActionResult("success", "Estado final de factura corregido.");
 }
 
+export async function addInvoiceAction(
+  serviceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    const result = await addInvoiceToServiceUseCase(serviceId, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
+    await syncServiceStatusForInvoiceFlow(serviceId);
+
+    return buildActionResult("success", "Factura anadida manualmente. La encontraras al final del listado.", {
+      createdInvoiceId: result.createdInvoiceId,
+    });
+  } catch (error) {
+    if (error instanceof AddInvoiceToServiceUseCaseError) {
+      return buildActionResult("error", toAddInvoiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo anadir la factura al servicio.");
+  }
+}
+
+export async function deleteInvoiceAction(
+  serviceId: string,
+  invoiceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    await deleteCreatedInvoiceUseCase(invoiceId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+      serviceRepository: new PrismaServiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof DeleteCreatedInvoiceUseCaseError) {
+      return buildActionResult("error", toDeleteInvoiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo eliminar la factura seleccionada.");
+  }
+
+  await syncServiceStatusForInvoiceFlow(serviceId);
+
+  return buildActionResult("success", "Factura eliminada.");
+}
+
 async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void> {
   await syncServiceStatusFromInvoicesUseCase(serviceId, {
     serviceRepository: new PrismaServiceRepository(prisma),
@@ -436,11 +511,16 @@ function getString(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
-function buildActionResult(status: "success" | "error", message: string): InvoiceActionResult {
+function buildActionResult(
+  status: "success" | "error",
+  message: string,
+  extra: Partial<InvoiceActionResult> = {},
+): InvoiceActionResult {
   return {
     status,
     message,
     token: Date.now(),
+    ...extra,
   };
 }
 
@@ -511,5 +591,29 @@ function toCorrectResolutionErrorMessage(error: CorrectInvoiceResolutionUseCaseE
       return "Para corregir a pagada debes indicar importe y fecha de pago.";
     case "INVALID_PAID_AMOUNT":
       return "El importe pagado debe ser mayor que cero.";
+  }
+}
+
+function toAddInvoiceErrorMessage(error: AddInvoiceToServiceUseCaseError): string {
+  switch (error.code) {
+    case "SERVICE_NOT_FOUND":
+      return "El servicio seleccionado no existe.";
+    case "SERVICE_ALREADY_CLOSED":
+      return "Este servicio ya esta cerrado. No se pueden anadir mas facturas.";
+  }
+}
+
+function toDeleteInvoiceErrorMessage(error: DeleteCreatedInvoiceUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura ya no existe o fue eliminada.";
+    case "SERVICE_NOT_FOUND":
+      return "El servicio asociado ya no existe.";
+    case "SERVICE_ALREADY_CLOSED":
+      return "Este servicio ya esta cerrado. No se puede modificar su estructura de facturas.";
+    case "INVOICE_NOT_DELETABLE":
+      return "Solo se pueden eliminar facturas en estado Created.";
+    case "INVOICE_STATE_CHANGED":
+      return "La factura ya cambio de estado y no se puede eliminar.";
   }
 }

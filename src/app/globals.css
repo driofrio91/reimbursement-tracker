@@ -24,3 +24,24 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+.invoice-new-highlight {
+  animation: invoice-new-highlight-fade 10s ease-out forwards;
+}
+
+@keyframes invoice-new-highlight-fade {
+  0% {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.45);
+    background-color: rgba(236, 253, 245, 0.95);
+  }
+
+  35% {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.28);
+    background-color: rgba(236, 253, 245, 0.62);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    background-color: rgba(248, 250, 252, 1);
+  }
+}

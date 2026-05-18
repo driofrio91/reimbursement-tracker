@@ -133,6 +133,7 @@ model Invoice {
   correctedByUserId     String?             @db.Uuid
   correctedByUserName   String?
   notes                 String?
+  createdManually       Boolean             @default(false)
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   service               ReimbursableService @relation(fields: [serviceId], references: [id])

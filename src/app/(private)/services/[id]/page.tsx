@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import {
+  addInvoiceAction,
   completeInvoiceInformationAction,
   correctInvoiceResolutionAction,
+  deleteInvoiceAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
@@ -75,6 +77,9 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}
           markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
           correctInvoiceResolutionAction={correctInvoiceResolutionAction}
+          addInvoiceAction={addInvoiceAction}
+          deleteInvoiceAction={deleteInvoiceAction}
+          exportCreatedInvoicesHref={`/services/${id}/export`}
         />
       </div>
     </main>

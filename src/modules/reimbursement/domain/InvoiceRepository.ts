@@ -23,6 +23,7 @@ export interface InvoiceRepository {
   search(filters: SearchInvoicesFilters): Promise<Invoice[]>;
   create(invoice: NewInvoice): Promise<Invoice>;
   createMany(invoices: NewInvoice[]): Promise<Invoice[]>;
+  deleteCreated(invoiceId: string): Promise<boolean>;
   listByServiceId(serviceId: string): Promise<Invoice[]>;
   completeInformation(invoiceId: string, input: CompleteInvoiceInformationInput): Promise<Invoice | null>;
   setClaimReference(invoiceId: string, claimReference: string): Promise<Invoice | null>;

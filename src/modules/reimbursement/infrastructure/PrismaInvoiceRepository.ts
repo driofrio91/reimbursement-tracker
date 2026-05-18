@@ -60,6 +60,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         paidAt: invoice.paidAt ?? null,
         rejectionReason: invoice.rejectionReason ?? null,
         notes: invoice.notes ?? null,
+        createdManually: invoice.createdManually ?? false,
       },
     });
 
@@ -91,12 +92,24 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
             paidAt: invoice.paidAt ?? null,
             rejectionReason: invoice.rejectionReason ?? null,
             notes: invoice.notes ?? null,
+            createdManually: invoice.createdManually ?? false,
           },
         }),
       ),
     );
 
     return createdInvoices.map((invoice) => this.mapInvoice(invoice));
+  }
+
+  async deleteCreated(invoiceId: string): Promise<boolean> {
+    const deleteResult = await this.prisma.invoice.deleteMany({
+      where: {
+        id: invoiceId,
+        status: PrismaInvoiceStatus.CREATED,
+      },
+    });
+
+    return deleteResult.count > 0;
   }
 
   async listByServiceId(serviceId: string): Promise<Invoice[]> {
@@ -330,6 +343,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     correctedByUserId: string | null;
     correctedByUserName: string | null;
     notes: string | null;
+    createdManually: boolean;
     createdAt: Date;
     updatedAt: Date;
   }): Invoice {
@@ -356,6 +370,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       correctedByUserId: invoice.correctedByUserId,
       correctedByUserName: invoice.correctedByUserName,
       notes: invoice.notes,
+      createdManually: invoice.createdManually,
       createdAt: invoice.createdAt,
       updatedAt: invoice.updatedAt,
     };

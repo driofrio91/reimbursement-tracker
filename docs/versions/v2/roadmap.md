@@ -102,8 +102,8 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 **Puede ir en paralelo con:** P2/P3.
 
 ### P5 - Flujo de facturas y exportacion
-- [ ] anadir/eliminar facturas segun reglas de estado cerradas
-- [ ] exportacion CSV solo `CREATED`:
+- [x] anadir/eliminar facturas segun reglas de estado cerradas
+- [x] exportacion CSV solo `CREATED`:
   - `;`
   - decimal con coma
   - BOM UTF-8

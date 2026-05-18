@@ -28,6 +28,7 @@ export interface Invoice {
   correctedByUserId: string | null;
   correctedByUserName: string | null;
   notes: string | null;
+  createdManually: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +50,7 @@ export interface NewInvoice {
   paidAt?: Date | null;
   rejectionReason?: string | null;
   notes?: string | null;
+  createdManually?: boolean;
 }
 
 export interface CompleteInvoiceInformationInput {

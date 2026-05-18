@@ -1,0 +1,2 @@
+ALTER TABLE "Invoice"
+ADD COLUMN "createdManually" BOOLEAN NOT NULL DEFAULT false;

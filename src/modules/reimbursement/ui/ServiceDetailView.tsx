@@ -1,19 +1,14 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
-
-interface InvoiceActionResult {
-  status: "idle" | "success" | "error";
-  message: string;
-  token: number;
-}
 
 const initialInvoiceActionResult: InvoiceActionResult = {
   status: "idle",
@@ -78,6 +73,18 @@ interface ServiceDetailViewProps {
     previousState: InvoiceActionResult,
     formData: FormData,
   ) => Promise<InvoiceActionResult>;
+  addInvoiceAction: (
+    serviceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
+  deleteInvoiceAction: (
+    serviceId: string,
+    invoiceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
+  exportCreatedInvoicesHref: string;
 }
 
 export function ServiceDetailView({
@@ -98,7 +105,75 @@ export function ServiceDetailView({
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   correctInvoiceResolutionAction,
+  addInvoiceAction,
+  deleteInvoiceAction,
+  exportCreatedInvoicesHref,
 }: ServiceDetailViewProps) {
+  const router = useRouter();
+  const orderedInvoices = useMemo(() => {
+    const automaticInvoices = invoices.filter((invoice) => !invoice.createdManually);
+    const manualInvoices = invoices
+      .filter((invoice) => invoice.createdManually)
+      .sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime());
+
+    return [...automaticInvoices, ...manualInvoices];
+  }, [invoices]);
+  const createdInvoicesCount = orderedInvoices.filter((invoice) => invoice.status === "CREATED").length;
+  const canAddInvoice = service.status !== "REIMBURSED";
+  const canExportInvoices = createdInvoicesCount > 0;
+  const addBoundAction = addInvoiceAction.bind(null, service.id);
+  const [addInvoiceState, addInvoiceFormAction, isAddingInvoice] = useActionState(addBoundAction, initialInvoiceActionResult);
+  const [highlightedInvoiceIds, setHighlightedInvoiceIds] = useState<string[]>([]);
+  const lastHandledCreatedInvoiceIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (addInvoiceState.status === "idle" || addInvoiceState.token === 0) {
+      return;
+    }
+
+    if (addInvoiceState.status === "error") {
+      toast.error(addInvoiceState.message, { duration: 9000 });
+      return;
+    }
+
+    toast.success(addInvoiceState.message, { duration: 5000 });
+    router.refresh();
+  }, [addInvoiceState, router]);
+
+  useEffect(() => {
+    const createdInvoiceId = addInvoiceState.createdInvoiceId;
+
+    if (!createdInvoiceId || addInvoiceState.status !== "success") {
+      return;
+    }
+
+    if (lastHandledCreatedInvoiceIdRef.current === createdInvoiceId) {
+      return;
+    }
+
+    const createdInvoice = orderedInvoices.find((invoice) => invoice.id === createdInvoiceId);
+
+    if (createdInvoice) {
+      lastHandledCreatedInvoiceIdRef.current = createdInvoiceId;
+      const markTimer = window.setTimeout(() => {
+        setHighlightedInvoiceIds((current) => (current.includes(createdInvoiceId) ? current : [...current, createdInvoiceId]));
+      }, 0);
+      const animationTimer = window.setTimeout(() => {
+        const element = document.getElementById(`invoice-card-${createdInvoiceId}`);
+        element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 80);
+      const clearTimer = window.setTimeout(() => {
+        setHighlightedInvoiceIds((current) => current.filter((id) => id !== createdInvoiceId));
+      }, 10000);
+
+      return () => {
+        window.clearTimeout(markTimer);
+        window.clearTimeout(animationTimer);
+        window.clearTimeout(clearTimer);
+      };
+    }
+  }, [addInvoiceState.createdInvoiceId, addInvoiceState.status, orderedInvoices]);
+
   return (
     <div className="space-y-5 sm:space-y-6">
       <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
@@ -162,11 +237,35 @@ export function ServiceDetailView({
       </section>
 
       <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">Facturas autogeneradas</h2>
-          <p className="text-sm text-slate-600">
-            Cada factura avanza por etapas. En cada tarjeta veras primero la siguiente accion operativa.
-          </p>
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">Facturas autogeneradas</h2>
+              <p className="text-sm text-slate-600">
+                Cada factura avanza por etapas. En cada tarjeta veras primero la siguiente accion operativa.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+              <form action={addInvoiceFormAction}>
+                <ActionLockButton
+                  label="Anadir factura"
+                  isDisabled={!canAddInvoice || isAddingInvoice}
+                  disabledReason="Este servicio ya esta cerrado. No se pueden anadir mas facturas."
+                  isLoading={isAddingInvoice}
+                />
+              </form>
+
+              <ActionLockLink
+                href={exportCreatedInvoicesHref}
+                label="Extraer facturas"
+                isDisabled={!canExportInvoices}
+                disabledReason="No hay facturas en estado Created para exportar."
+              />
+            </div>
+          </div>
+
+          {addInvoiceState.status === "error" && addInvoiceState.token > 0 ? <ActionFeedback result={addInvoiceState} /> : null}
         </div>
 
         {invoices.length === 0 ? (
@@ -174,13 +273,14 @@ export function ServiceDetailView({
             Aun no hay facturas registradas para este servicio.
           </div>
         ) : (
-          <div className="space-y-4">
-            {invoices.map((invoice, index) => (
+          <div>
+            {orderedInvoices.map((invoice, index) => (
               <InvoiceStageCard
                 key={invoice.id}
                 serviceId={service.id}
                 invoice={invoice}
                 index={index}
+                isNewInvoice={highlightedInvoiceIds.includes(invoice.id)}
                 people={people}
                 servicePersonId={service.personId}
                 serviceInsurerName={service.insurerName}
@@ -189,6 +289,8 @@ export function ServiceDetailView({
                 markInvoiceAsPaidAction={markInvoiceAsPaidAction}
                 markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
                 correctInvoiceResolutionAction={correctInvoiceResolutionAction}
+                deleteInvoiceAction={deleteInvoiceAction}
+                serviceStatus={service.status}
               />
             ))}
           </div>
@@ -202,28 +304,34 @@ interface InvoiceStageCardProps {
   serviceId: string;
   invoice: Invoice;
   index: number;
+  isNewInvoice: boolean;
   people: ReferencePerson[];
   servicePersonId: string;
   serviceInsurerName: string;
+  serviceStatus: Service["status"];
   completeInvoiceInformationAction: ServiceDetailViewProps["completeInvoiceInformationAction"];
   registerInvoiceClaimReferenceAction: ServiceDetailViewProps["registerInvoiceClaimReferenceAction"];
   markInvoiceAsPaidAction: ServiceDetailViewProps["markInvoiceAsPaidAction"];
   markInvoiceAsRejectedAction: ServiceDetailViewProps["markInvoiceAsRejectedAction"];
   correctInvoiceResolutionAction: ServiceDetailViewProps["correctInvoiceResolutionAction"];
+  deleteInvoiceAction: ServiceDetailViewProps["deleteInvoiceAction"];
 }
 
 function InvoiceStageCard({
   serviceId,
   invoice,
   index,
+  isNewInvoice,
   people,
   servicePersonId,
   serviceInsurerName,
+  serviceStatus,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   correctInvoiceResolutionAction,
+  deleteInvoiceAction,
 }: InvoiceStageCardProps) {
   const router = useRouter();
   const defaultPaidDate = new Date().toISOString().slice(0, 10);
@@ -233,12 +341,14 @@ function InvoiceStageCard({
   const paidAction = markInvoiceAsPaidAction.bind(null, serviceId, invoice.id);
   const rejectedAction = markInvoiceAsRejectedAction.bind(null, serviceId, invoice.id);
   const correctionAction = correctInvoiceResolutionAction.bind(null, serviceId, invoice.id);
+  const deleteAction = deleteInvoiceAction.bind(null, serviceId, invoice.id);
 
   const [completeState, completeFormAction, isCompleting] = useActionState(completeAction, initialInvoiceActionResult);
   const [claimState, claimFormAction, isClaiming] = useActionState(claimAction, initialInvoiceActionResult);
   const [paidState, paidFormAction, isMarkingPaid] = useActionState(paidAction, initialInvoiceActionResult);
   const [rejectedState, rejectedFormAction, isMarkingRejected] = useActionState(rejectedAction, initialInvoiceActionResult);
   const [correctionState, correctionFormAction, isCorrectingResolution] = useActionState(correctionAction, initialInvoiceActionResult);
+  const [deleteState, deleteFormAction, isDeleting] = useActionState(deleteAction, initialInvoiceActionResult);
   const correctionFormRef = useRef<HTMLFormElement>(null);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
@@ -288,19 +398,68 @@ function InvoiceStageCard({
     notifyActionResult(correctionState, router);
   }, [correctionState, router]);
 
+  useEffect(() => {
+    if (deleteState.status === "idle" || deleteState.token === 0) {
+      return;
+    }
+
+    if (deleteState.status === "success") {
+      toast.success(deleteState.message, { duration: 5000 });
+      const refreshTimer = window.setTimeout(() => {
+        router.refresh();
+      }, 560);
+
+      return () => {
+        window.clearTimeout(refreshTimer);
+      };
+    }
+
+    toast.error(deleteState.message, { duration: 9000 });
+  }, [deleteState, router]);
+
+  const canDelete = serviceStatus !== "REIMBURSED" && invoice.status === "CREATED";
+  const isRemoving = deleteState.status === "success" && deleteState.token > 0;
+  const deleteBlockedReason =
+    serviceStatus === "REIMBURSED"
+      ? "Este servicio ya esta cerrado. No se puede modificar su estructura de facturas."
+      : "Solo se pueden eliminar facturas en estado Created.";
+
   return (
-    <article className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div
+      className={`overflow-hidden transition-all duration-450 ${
+        isRemoving ? "mb-0 max-h-0 scale-[0.99] opacity-0" : "mb-4 max-h-[2200px] opacity-100 last:mb-0"
+      }`}
+    >
+      <article
+        className={`space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 ${isDeleting ? "opacity-65" : ""} ${
+          isNewInvoice ? "invoice-new-highlight" : ""
+        }`}
+        id={`invoice-card-${invoice.id}`}
+      >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-base font-semibold text-slate-950">Factura #{index + 1}</p>
-          <p className="text-sm text-slate-600">{invoice.invoiceNumber ?? "Sin numero asignado"}</p>
+          <p className="text-base font-semibold text-slate-950">{invoice.invoiceNumber ?? "Factura pendiente"}</p>
+          <p className="text-sm text-slate-600">
+            {invoice.invoiceNumber ? `Factura ${index + 1}` : "Sin numero asignado"}
+          </p>
+          {isDeleting ? <p className="text-xs font-medium text-rose-700">Eliminando...</p> : null}
         </div>
 
-        <span
-          className={`inline-flex rounded-full border px-2.5 py-1 text-sm font-medium ${toInvoiceStatusBadgeClass(invoice.status)}`}
-        >
-          {toDisplayInvoiceStatus(invoice.status)}
-        </span>
+        <div className="flex items-center gap-2">
+          {invoice.createdManually ? (
+            <span className="inline-flex rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700">
+              Manual
+            </span>
+          ) : null}
+          <span
+            className={`inline-flex rounded-full border px-2.5 py-1 text-sm font-medium ${toInvoiceStatusBadgeClass(invoice.status)}`}
+          >
+            {toDisplayInvoiceStatus(invoice.status)}
+          </span>
+          <form action={deleteFormAction}>
+            <DeleteInvoiceButton isDisabled={!canDelete} disabledReason={deleteBlockedReason} isLoading={isDeleting} />
+          </form>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 sm:grid-cols-4">
@@ -687,7 +846,8 @@ function InvoiceStageCard({
           </div>
         </div>
       ) : null}
-    </article>
+      </article>
+    </div>
   );
 }
 
@@ -697,13 +857,252 @@ function notifyActionResult(result: InvoiceActionResult, router: ReturnType<type
   }
 
   if (result.status === "success") {
-    toast.success(result.message);
+    toast.success(result.message, { duration: 5000 });
     router.refresh();
 
     return;
   }
 
-  toast.error(result.message);
+  toast.error(result.message, { duration: 9000 });
+}
+
+function ActionLockButton({
+  label,
+  isDisabled,
+  disabledReason,
+  isLoading,
+}: {
+  label: string;
+  isDisabled: boolean;
+  disabledReason: string;
+  isLoading: boolean;
+}) {
+  const [isBlockedSheetOpen, setIsBlockedSheetOpen] = useState(false);
+
+  if (!isDisabled) {
+    return (
+      <button
+        className="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+        type="submit"
+        disabled={isLoading}
+      >
+        {isLoading ? "Anadiendo..." : label}
+      </button>
+    );
+  }
+
+  return (
+    <>
+      <div className="relative hidden sm:block group">
+        <button
+          className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm font-medium text-slate-500"
+          type="button"
+          onClick={() => setIsBlockedSheetOpen(true)}
+        >
+          {label}
+        </button>
+        <div className="pointer-events-none absolute right-0 top-12 w-64 rounded-lg border border-slate-200 bg-slate-950 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+          {disabledReason}
+        </div>
+      </div>
+
+      <button
+        className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm font-medium text-slate-500 sm:hidden"
+        type="button"
+        onClick={() => setIsBlockedSheetOpen(true)}
+      >
+        {label}
+      </button>
+
+      <BlockedReasonOverlay
+        isOpen={isBlockedSheetOpen}
+        title="Accion no disponible"
+        message={disabledReason}
+        onClose={() => setIsBlockedSheetOpen(false)}
+      />
+    </>
+  );
+}
+
+function ActionLockLink({
+  href,
+  label,
+  isDisabled,
+  disabledReason,
+}: {
+  href: string;
+  label: string;
+  isDisabled: boolean;
+  disabledReason: string;
+}) {
+  const [isBlockedSheetOpen, setIsBlockedSheetOpen] = useState(false);
+
+  if (!isDisabled) {
+    return (
+      <a
+        className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 transition hover:bg-slate-100"
+        href={href}
+      >
+        {label}
+      </a>
+    );
+  }
+
+  return (
+    <>
+      <div className="relative hidden sm:block group">
+        <button
+          className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm font-medium text-slate-500"
+          type="button"
+          onClick={() => setIsBlockedSheetOpen(true)}
+        >
+          {label}
+        </button>
+        <div className="pointer-events-none absolute right-0 top-12 w-64 rounded-lg border border-slate-200 bg-slate-950 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+          {disabledReason}
+        </div>
+      </div>
+
+      <button
+        className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-3 py-2.5 text-sm font-medium text-slate-500 sm:hidden"
+        type="button"
+        onClick={() => setIsBlockedSheetOpen(true)}
+      >
+        {label}
+      </button>
+
+      <BlockedReasonOverlay
+        isOpen={isBlockedSheetOpen}
+        title="Accion no disponible"
+        message={disabledReason}
+        onClose={() => setIsBlockedSheetOpen(false)}
+      />
+    </>
+  );
+}
+
+function DeleteInvoiceButton({
+  isDisabled,
+  disabledReason,
+  isLoading,
+}: {
+  isDisabled: boolean;
+  disabledReason: string;
+  isLoading: boolean;
+}) {
+  const [isBlockedSheetOpen, setIsBlockedSheetOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <button
+        aria-label="Eliminando factura"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 bg-white text-rose-700"
+        type="button"
+        disabled
+      >
+        <SpinnerIcon className="h-4 w-4" />
+      </button>
+    );
+  }
+
+  if (!isDisabled) {
+    return (
+      <button
+        aria-label="Eliminar factura"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 bg-white text-rose-700 transition hover:bg-rose-50"
+        type="submit"
+      >
+        <TrashIcon className="h-4 w-4" />
+      </button>
+    );
+  }
+
+  return (
+    <>
+      <div className="relative hidden sm:block group">
+        <button
+          aria-label="Eliminar factura no disponible"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 text-slate-400"
+          type="button"
+          onClick={() => setIsBlockedSheetOpen(true)}
+        >
+          <TrashIcon className="h-4 w-4" />
+        </button>
+        <div className="pointer-events-none absolute right-0 top-11 w-64 rounded-lg border border-slate-200 bg-slate-950 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+          {disabledReason}
+        </div>
+      </div>
+
+      <button
+        aria-label="Eliminar factura no disponible"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 text-slate-400 sm:hidden"
+        type="button"
+        onClick={() => setIsBlockedSheetOpen(true)}
+      >
+        <TrashIcon className="h-4 w-4" />
+      </button>
+
+      <BlockedReasonOverlay
+        isOpen={isBlockedSheetOpen}
+        title="Accion no disponible"
+        message={disabledReason}
+        onClose={() => setIsBlockedSheetOpen(false)}
+      />
+    </>
+  );
+}
+
+function BlockedReasonOverlay({
+  isOpen,
+  title,
+  message,
+  onClose,
+}: {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onClose: () => void;
+}) {
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/35 p-4 sm:hidden" role="dialog" aria-modal="true">
+      <button className="absolute inset-0" aria-label="Cerrar" type="button" onClick={onClose} />
+      <section className="relative z-10 w-full rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+        <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
+        <p className="mt-1 text-sm text-slate-600">{message}</p>
+        <button
+          className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-800"
+          type="button"
+          onClick={onClose}
+        >
+          Entendido
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function TrashIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 7h16" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      <path d="M9.5 4h5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      <path d="M8 7v12a1 1 0 001 1h6a1 1 0 001-1V7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function SpinnerIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={`${className} animate-spin`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2" />
+      <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+    </svg>
+  );
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {

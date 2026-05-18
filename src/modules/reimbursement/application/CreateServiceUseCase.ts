@@ -89,6 +89,7 @@ export async function createServiceUseCase(
     paidAt: null,
     rejectionReason: null,
     notes: null,
+    createdManually: false,
   }));
 
   await dependencies.invoiceRepository.createMany(generatedInvoices);

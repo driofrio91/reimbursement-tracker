@@ -51,7 +51,6 @@
   - `Sync` historico con icono en esquina superior derecha del bloque
   - `Sync` historico visible para todos: habilitado en `ADMIN`, bloqueado en `USER` con tooltip desktop y bottom sheet mobile
   - `Suspense` independiente para bloque historico y estado vacio `Sin datos para {ano}`
-- siguiente bloque: ejecutar `P4`/`P5` segun prioridad de sprint
 - `P4` completado
 - panel privado de cuenta operativo en `/account` (con layout privado) y `/change-password` reservado para flujo obligatorio de primer inicio
 - gestion admin implementada en rutas privadas:
@@ -75,7 +74,19 @@
 - migraciones Prisma estabilizadas para entorno local:
   - restaurado `migration.sql` faltante en `20260513120000_add_service_and_invoice_user_relation`
   - aplicada migracion `20260513173000_add_person_is_active`
-- siguiente bloque sugerido: ejecutar `P5`
+- `P5` completado
+- gestion de facturas ampliada en `/services/[id]`:
+  - accion `Anadir factura` habilitada en `REGISTERED` y `SUBMITTED`, bloqueada en `REIMBURSED`
+  - eliminacion por factura con icono de papelera visible siempre
+  - eliminacion permitida solo para facturas `CREATED`
+  - acciones bloqueadas con motivo obligatorio: tooltip desktop y bottom sheet mobile
+- exportacion CSV por servicio disponible en `/services/[id]`:
+  - accion `Extraer facturas`
+  - exporta unicamente facturas `CREATED`
+  - boton deshabilitado cuando no hay facturas `CREATED` con motivo visible
+  - formato cerrado: BOM UTF-8, separador `;`, decimal con coma
+  - nombre de archivo: `facturas-{nombre-servicio}-{yyyyMMdd-HHmm}.csv`
+  - columnas pactadas: `TRATAMIENTO`, `IMPORTE EN LA FACTURA`, `TITULAR`, `FECHA FACTURA`, `SOLICITADA`
 
 ## Pipeline de release a produccion
 
