@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
+import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifecycleStepper";
 import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
@@ -37,7 +38,6 @@ interface ServiceDetailViewProps {
   totalBilledAmount: number;
   totalExpectedAmount: number;
   totalPaidAmount: number;
-  pendingExpectedAmount: number;
   overBilledAmount: number;
   overExpectedAmount: number;
   paidInvoicesCount: number;
@@ -94,7 +94,6 @@ export function ServiceDetailView({
   totalBilledAmount,
   totalExpectedAmount,
   totalPaidAmount,
-  pendingExpectedAmount,
   overBilledAmount,
   overExpectedAmount,
   paidInvoicesCount,
@@ -125,6 +124,14 @@ export function ServiceDetailView({
   const [addInvoiceState, addInvoiceFormAction, isAddingInvoice] = useActionState(addBoundAction, initialInvoiceActionResult);
   const [highlightedInvoiceIds, setHighlightedInvoiceIds] = useState<string[]>([]);
   const lastHandledCreatedInvoiceIdRef = useRef<string | null>(null);
+  const alerts = [
+    overBilledAmount > 0
+      ? `El total facturado supera el servicio en ${formatCurrency(overBilledAmount, service.currency)}.`
+      : null,
+    overExpectedAmount > 0
+      ? `El total esperado supera el servicio en ${formatCurrency(overExpectedAmount, service.currency)}.`
+      : null,
+  ].filter((item): item is string => item !== null);
 
   useEffect(() => {
     if (addInvoiceState.status === "idle" || addInvoiceState.token === 0) {
@@ -191,49 +198,39 @@ export function ServiceDetailView({
           </div>
         </div>
 
+        {alerts.length > 0 ? <ServiceAlerts alerts={alerts} /> : null}
+
         <div className="space-y-3">
           <p className="text-sm font-medium text-slate-700">Resumen operativo</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <MetricCard label="Total facturado" value={formatCurrency(totalBilledAmount, service.currency)} />
             <MetricCard label="Total esperado" value={formatCurrency(totalExpectedAmount, service.currency)} />
             <MetricCard label="Total pagado" value={formatCurrency(totalPaidAmount, service.currency)} />
-            <MetricCard label="Pendiente esperado" value={formatCurrency(pendingExpectedAmount, service.currency)} />
           </div>
         </div>
 
         <div className="space-y-3">
           <p className="text-sm font-medium text-slate-700">Datos del servicio</p>
-          <dl className="grid gap-3 sm:grid-cols-2">
-            <InfoCard label="Fecha del servicio" value={formatDate(service.serviceDate)} />
-            <InfoCard label="Persona" value={service.personName} />
-            <InfoCard label="Aseguradora" value={service.insurerName} />
-            <InfoCard label="Titular" value={service.policyHolderName} />
-            <InfoCard label="Facturado por factura" value={formatCurrency(service.invoiceBilledAmount, service.currency)} />
-            <InfoCard label="Esperado por factura" value={formatCurrency(service.invoiceExpectedAmount, service.currency)} />
+          <dl className="grid gap-x-4 gap-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2">
+            <InfoRow label="Fecha del servicio" value={formatDate(service.serviceDate)} />
+            <InfoRow label="Persona" value={service.personName} />
+            <InfoRow label="Aseguradora" value={service.insurerName} />
+            <InfoRow label="Titular" value={service.policyHolderName} />
+            <InfoRow label="Facturado por factura" value={formatCurrency(service.invoiceBilledAmount, service.currency)} />
+            <InfoRow label="Esperado por factura" value={formatCurrency(service.invoiceExpectedAmount, service.currency)} />
           </dl>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <p className="text-sm font-medium text-slate-700">Metricas complementarias</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <SecondaryMetricCard label="Facturas" value={String(invoices.length)} />
-            <SecondaryMetricCard label="Pagadas" value={String(paidInvoicesCount)} />
-            <SecondaryMetricCard label="Rechazadas" value={String(rejectedInvoicesCount)} />
-            <SecondaryMetricCard label="Resultado" value={toDisplayReimbursementOutcome(reimbursementOutcome, service.status)} />
-            <SecondaryMetricCard label="Asistencia" value={service.attended ? "Si" : "No"} />
-          </div>
+          <dl className="flex flex-wrap gap-2">
+            <CompactMetricChip label="Facturas" value={String(invoices.length)} />
+            <CompactMetricChip label="Pagadas" value={String(paidInvoicesCount)} />
+            <CompactMetricChip label="Rechazadas" value={String(rejectedInvoicesCount)} />
+            <CompactMetricChip label="Resultado" value={toDisplayReimbursementOutcome(reimbursementOutcome, service.status)} emphasized />
+            <CompactMetricChip label="Asistencia" value={service.attended ? "Si" : "No"} />
+          </dl>
         </div>
-
-        {overBilledAmount > 0 ? (
-          <AlertBox title="Aviso de sobrefacturacion" text={`El total facturado supera el servicio en ${formatCurrency(overBilledAmount, service.currency)}.`} />
-        ) : null}
-
-        {overExpectedAmount > 0 ? (
-          <AlertBox
-            title="Aviso de sobrecobertura esperada"
-            text={`El total esperado supera el servicio en ${formatCurrency(overExpectedAmount, service.currency)}.`}
-          />
-        ) : null}
       </section>
 
       <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
@@ -436,8 +433,8 @@ function InvoiceStageCard({
         }`}
         id={`invoice-card-${invoice.id}`}
       >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
           <p className="text-base font-semibold text-slate-950">{invoice.invoiceNumber ?? "Factura pendiente"}</p>
           <p className="text-sm text-slate-600">
             {invoice.invoiceNumber ? `Factura ${index + 1}` : "Sin numero asignado"}
@@ -445,7 +442,7 @@ function InvoiceStageCard({
           {isDeleting ? <p className="text-xs font-medium text-rose-700">Eliminando...</p> : null}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           {invoice.createdManually ? (
             <span className="inline-flex rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700">
               Manual
@@ -462,7 +459,7 @@ function InvoiceStageCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm text-slate-700 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-2 text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-5">
         <p>
           <span className="font-medium text-slate-900">Facturado:</span> {formatCurrency(invoice.invoiceBilledAmount, invoice.currency)}
         </p>
@@ -476,18 +473,17 @@ function InvoiceStageCard({
           <span className="font-medium text-slate-900">Pagado:</span>{" "}
           {invoice.paidAmount ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
         </p>
-        <p>
+        <p className="truncate">
           <span className="font-medium text-slate-900">Persona:</span>{" "}
-          {people.find((person) => person.id === invoice.personId)?.displayName ?? "Sin asignar"}
+          <span className="inline-block max-w-[18rem] truncate align-bottom">{people.find((person) => person.id === invoice.personId)?.displayName ?? "Sin asignar"}</span>
         </p>
       </div>
 
       <div className="space-y-3 border-t border-slate-200 pt-3 sm:space-y-4 sm:pt-4">
-        <StageHint status={invoice.status} />
+        <InvoiceLifecycleStepper status={invoice.status} />
 
         {invoice.status === "CREATED" ? (
-          <form action={completeFormAction} className="space-y-3 pt-1 sm:space-y-3.5">
-            <p className="text-sm font-medium text-slate-900">Completar informacion de factura</p>
+          <form action={completeFormAction} className="grid gap-3 pt-1 sm:grid-cols-2">
             <Field
               label="Persona imputada"
               htmlFor={`invoice-person-created-${invoice.id}`}
@@ -547,7 +543,7 @@ function InvoiceStageCard({
                 defaultValue={invoice.issuerTaxId ?? ""}
               />
             </Field>
-            <Field label="Notas operativas" htmlFor={`notes-${invoice.id}`}>
+            <Field label="Notas operativas" htmlFor={`notes-${invoice.id}`} className="sm:col-span-2">
               <textarea
                 id={`notes-${invoice.id}`}
                 className={`${inputBaseClassName} min-h-20`}
@@ -555,10 +551,12 @@ function InvoiceStageCard({
                 defaultValue={invoice.notes ?? ""}
               />
             </Field>
-            <button className={primaryButtonClassName} type="submit" disabled={isCompleting}>
+            <button className={`${primaryButtonClassName} sm:col-span-2`} type="submit" disabled={isCompleting}>
               {isCompleting ? "Guardando..." : "Guardar informacion"}
             </button>
-            <ActionFeedback result={completeState} />
+            <div className="sm:col-span-2">
+              <ActionFeedback result={completeState} />
+            </div>
           </form>
         ) : null}
 
@@ -1114,59 +1112,31 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SecondaryMetricCard({ label, value }: { label: string; value: string }) {
+function CompactMetricChip({ label, value, emphasized = false }: { label: string; value: string; emphasized?: boolean }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+    <div className={emphasized ? "inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-3 py-1.5" : "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5"}>
+      <dt className="text-[11px] font-medium text-slate-500">{label}</dt>
+      <dd className={emphasized ? "text-xs font-semibold text-slate-950" : "text-xs font-semibold text-slate-800"}>{value}</dd>
     </div>
   );
 }
 
-function StageHint({ status }: { status: Invoice["status"] }) {
-  const currentStep = toStageStep(status);
-  const accent = toStepperAccent(status);
-  const showNextAction = status !== "PAID" && status !== "REJECTED";
-
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700">
-      <div className="grid grid-cols-[auto_1fr_auto_1fr_auto_1fr_auto] items-center gap-1.5">
-        {STAGE_STEPS.map((step, index) => (
-          <div className="contents" key={step.label}>
-            <span className={toStepperCircleClass(step.value, currentStep, accent)} />
-            {index < STAGE_STEPS.length - 1 ? <span className={toStepperLineClass(step.value, currentStep)} /> : null}
-          </div>
-        ))}
-      </div>
-      <div className="mt-2 grid grid-cols-4 text-[11px] font-medium text-slate-500">
-        {STAGE_STEPS.map((step) => (
-          <p className="text-left" key={`label-${step.label}`}>
-            {step.label}
-          </p>
-        ))}
-      </div>
-      {showNextAction ? (
-        <p className="mt-2">
-          <span className="font-medium text-slate-900">Siguiente accion:</span> {toNextActionLabel(status)}
-        </p>
-      ) : null}
-    </div>
-  );
-}
 
 function Field({
   children,
   label,
   htmlFor,
   helper,
+  className,
 }: {
   children: React.ReactNode;
   label: string;
   htmlFor: string;
   helper?: string;
+  className?: string;
 }) {
   return (
-    <div className="space-y-1.5 sm:space-y-2">
+    <div className={`space-y-1.5 sm:space-y-2 ${className ?? ""}`}>
       <label className="text-sm font-medium text-slate-800" htmlFor={htmlFor}>
         {label}
       </label>
@@ -1196,76 +1166,6 @@ function ActionFeedback({ result }: { result: InvoiceActionResult }) {
   );
 }
 
-const STAGE_STEPS = [
-  { label: "Creada", value: 1 },
-  { label: "Info", value: 2 },
-  { label: "Ref", value: 3 },
-  { label: "Resuelta", value: 4 },
-] as const;
-
-function toStageStep(status: Invoice["status"]): number {
-  switch (status) {
-    case "CREATED":
-      return 1;
-    case "INFORMATION_COMPLETED":
-      return 2;
-    case "CLAIM_REFERENCE_COMPLETED":
-      return 3;
-    case "PAID":
-    case "REJECTED":
-      return 4;
-  }
-}
-
-function toStepperAccent(status: Invoice["status"]) {
-  if (status === "PAID") {
-    return {
-      solid: "bg-emerald-600 border-emerald-600",
-      glow: "shadow-[0_0_0_4px_rgba(16,185,129,0.18)]",
-    };
-  }
-
-  if (status === "REJECTED") {
-    return {
-      solid: "bg-rose-600 border-rose-600",
-      glow: "shadow-[0_0_0_4px_rgba(244,63,94,0.18)]",
-    };
-  }
-
-  return {
-    solid: "bg-slate-900 border-slate-900",
-    glow: "shadow-[0_0_0_4px_rgba(51,65,85,0.16)]",
-  };
-}
-
-function toStepperCircleClass(
-  step: number,
-  currentStep: number,
-  accent: { solid: string; glow: string },
-): string {
-  const baseClassName = "h-3 w-3 rounded-full border";
-
-  if (step < currentStep) {
-    return `${baseClassName} border-slate-400 bg-slate-400`;
-  }
-
-  if (step === currentStep) {
-    return `${baseClassName} ${accent.solid} ${accent.glow}`;
-  }
-
-  return `${baseClassName} border-slate-300 bg-white`;
-}
-
-function toStepperLineClass(step: number, currentStep: number): string {
-  const baseClassName = "h-0.5 w-full rounded-full";
-
-  if (step < currentStep) {
-    return `${baseClassName} bg-slate-300`;
-  }
-
-  return `${baseClassName} bg-slate-200`;
-}
-
 function toInvoiceStatusBadgeClass(status: Invoice["status"]) {
   switch (status) {
     case "PAID":
@@ -1281,20 +1181,24 @@ function toInvoiceStatusBadgeClass(status: Invoice["status"]) {
   }
 }
 
-function InfoCard({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 p-5">
-      <dt className="text-sm font-medium text-slate-500">{label}</dt>
-      <dd className="mt-2 text-base font-medium text-slate-950">{value}</dd>
+    <div className="flex items-baseline justify-between gap-3 border-b border-slate-200/80 pb-2 last:border-b-0 last:pb-0">
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd className="text-right text-sm font-semibold text-slate-900">{value}</dd>
     </div>
   );
 }
 
-function AlertBox({ title, text }: { title: string; text: string }) {
+function ServiceAlerts({ alerts }: { alerts: string[] }) {
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-      <p className="font-medium">{title}</p>
-      <p className="mt-1">{text}</p>
+      <p className="font-medium">Avisos operativos</p>
+      <ul className="mt-1 space-y-1">
+        {alerts.map((alert) => (
+          <li key={alert}>- {alert}</li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -1366,21 +1270,6 @@ function toDisplayInvoiceStatus(status: Invoice["status"]) {
 
 function toCorrectionTargetStatus(status: Invoice["status"]): Extract<Invoice["status"], "PAID" | "REJECTED"> {
   return status === "PAID" ? "REJECTED" : "PAID";
-}
-
-function toNextActionLabel(status: Invoice["status"]) {
-  switch (status) {
-    case "CREATED":
-      return "completar informacion de factura";
-    case "INFORMATION_COMPLETED":
-      return "registrar referencia de reembolso";
-    case "CLAIM_REFERENCE_COMPLETED":
-      return "resolver como pagada o rechazada";
-    case "PAID":
-      return "sin acciones pendientes";
-    case "REJECTED":
-      return "sin acciones pendientes";
-  }
 }
 
 function toDisplayReimbursementOutcome(outcome: ReimbursementOutcome, serviceStatus: Service["status"]) {

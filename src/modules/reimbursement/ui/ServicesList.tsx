@@ -25,37 +25,38 @@ export function ServicesList({ services }: ServicesListProps) {
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50 text-left text-slate-500">
-            <tr>
-              <th className="px-6 py-4 font-medium">Fecha</th>
-              <th className="px-6 py-4 font-medium">Concepto</th>
-              <th className="px-6 py-4 font-medium">Persona</th>
-              <th className="px-6 py-4 font-medium">Aseguradora</th>
-              <th className="px-6 py-4 font-medium">Importe</th>
-              <th className="px-6 py-4 font-medium">Estado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 bg-white text-slate-700">
-            {services.map((service) => (
-              <tr key={service.id}>
-                <td className="whitespace-nowrap px-6 py-4">{formatDate(service.serviceDate)}</td>
-                <td className="px-6 py-4">
-                  <Link className="font-medium text-slate-950 hover:underline" href={`/services/${service.id}`}>
-                    {service.description}
-                  </Link>
-                </td>
-                <td className="px-6 py-4">{service.personName}</td>
-                <td className="px-6 py-4">{service.insurerName}</td>
-                <td className="whitespace-nowrap px-6 py-4">{formatCurrency(service.actualAmount, service.currency)}</td>
-                <td className="px-6 py-4">{toDisplayStatus(service.status)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <section className="space-y-3">
+      {services.map((service) => (
+        <Link
+          key={service.id}
+          href={`/services/${service.id}`}
+          className="group block cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm transition hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          aria-label={`Ver servicio ${service.description}`}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{formatDate(service.serviceDate)}</p>
+              <p className="mt-1 text-base font-semibold text-slate-950">{service.description}</p>
+            </div>
+            <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${toStatusClassName(service.status)}`}>
+              {toDisplayStatus(service.status)}
+            </span>
+          </div>
+
+          <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+            <p>
+              <span className="font-medium text-slate-900">Persona:</span> {service.personName}
+            </p>
+            <p>
+              <span className="font-medium text-slate-900">Aseguradora:</span> {service.insurerName}
+            </p>
+            <p>
+              <span className="font-medium text-slate-900">Importe:</span> {formatCurrency(service.actualAmount, service.currency)}
+            </p>
+          </div>
+
+        </Link>
+      ))}
     </section>
   );
 }
@@ -83,5 +84,16 @@ function toDisplayStatus(status: Service["status"]) {
       return "Enviado";
     case "REIMBURSED":
       return "Reembolsado";
+  }
+}
+
+function toStatusClassName(status: Service["status"]) {
+  switch (status) {
+    case "REGISTERED":
+      return "border-slate-300 bg-slate-100 text-slate-700";
+    case "SUBMITTED":
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case "REIMBURSED":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 }

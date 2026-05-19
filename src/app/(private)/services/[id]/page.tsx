@@ -65,7 +65,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           totalBilledAmount={summary.totalBilledAmount}
           totalExpectedAmount={summary.totalExpectedAmount}
           totalPaidAmount={summary.totalPaidAmount}
-          pendingExpectedAmount={summary.pendingExpectedAmount}
           overBilledAmount={summary.overBilledAmount}
           overExpectedAmount={summary.overExpectedAmount}
           paidInvoicesCount={summary.paidInvoicesCount}
