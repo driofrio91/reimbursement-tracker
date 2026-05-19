@@ -12,6 +12,7 @@ Este documento es el punto de entrada de la documentacion del proyecto.
 
 - Estado ejecutable actual: `docs/09-current-status.md`
 - Planificacion y alcance de ejecucion activos: `docs/versions/v2/roadmap.md`
+- Backlog de mejoras fuera de alcance activo: `docs/backlog.md`
 - Alcance y cierre historico de V1: `docs/versions/v1/`
 - Referencias transversales entre versiones: `docs/shared/`
 

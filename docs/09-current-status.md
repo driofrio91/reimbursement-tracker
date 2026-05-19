@@ -23,6 +23,9 @@
   - filtros combinados con AND
   - orden por `updatedAt` descendente
   - sin paginacion en esta iteracion
+- detalle de servicio estabilizado para facturas:
+  - posicion fija en listado por orden de creacion (sin movimiento por cambio de estado)
+  - etiquetas de pago ajustadas: facturas `REJECTED` muestran `Pagado: Rechazada`
 - autorizacion backend centralizada con `requireAuth` y `requireRole` aplicada en server actions privadas vigentes
 - flujo obligatorio de cambio de contrasena en primer inicio implementado:
   - bloqueo de area privada mientras `mustChangePasswordOnFirstLogin=true`
@@ -41,6 +44,9 @@
   - bloques existentes de home conservados como secciones secundarias (`Accesos rapidos` antes de `Ya disponible`)
 
 ## Siguiente foco propuesto
+
+- V2 cerrada funcionalmente con alcance `P0-P5`.
+- iniciativas fuera de alcance movidas a `docs/backlog.md` para V3 o posterior.
 
 - `P0` y `P1` de V2 completados
 - `P2` completado

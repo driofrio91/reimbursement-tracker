@@ -1,5 +1,10 @@
 # V2 Refinement Notes
 
+> Nota de vigencia:
+> - Este documento conserva propuestas de refinamiento historicas.
+> - El cierre operativo de V2 se define en `docs/versions/v2/roadmap.md` con alcance `P0-P5`.
+> - Todo item no incluido en `P0-P5` se gestiona desde `docs/backlog.md`.
+
 ## Nuevas funcionalidades propuestas
 
 ### 1) Gestion de usuarios y seguridad de acceso

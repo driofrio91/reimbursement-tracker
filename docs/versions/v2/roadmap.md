@@ -9,6 +9,12 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 - version activa: `v2`
 - baseline funcional previa: `docs/versions/v1/`
 
+## Cierre V2
+
+- V2 se considera cerrada con el alcance ejecutado `P0-P5`.
+- Los elementos fuera de alcance de `P0-P5` pasan a `docs/backlog.md` para planificacion de V3 o posterior.
+- El objetivo de trazabilidad historica completa de correcciones se mantiene como evolucion posterior (no bloqueante del cierre V2).
+
 ## Documentos de refinamiento V2
 
 - refinamiento funcional consolidado: `docs/versions/v2/refinement-notes.md`
