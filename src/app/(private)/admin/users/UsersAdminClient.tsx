@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { PasswordInput } from "@/app/_components/PasswordInput";
 import {
   createUserAction,
   toggleUserActiveAction,
@@ -49,7 +50,14 @@ export function UsersAdminClient({ users, actorId }: { users: AdminUserRecord[];
             <option value={USER_ROLES.USER}>USER</option>
             <option value={USER_ROLES.ADMIN}>ADMIN</option>
           </select>
-          <input name="temporaryPassword" type="password" minLength={8} placeholder="Contrasena temporal" className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm" required />
+          <PasswordInput
+            name="temporaryPassword"
+            label="Contrasena temporal"
+            minLength={8}
+            required
+            placeholder="Contrasena temporal"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-12 text-sm text-slate-950 placeholder:text-slate-400 outline-none transition focus:border-slate-400"
+          />
           {createState.status === "error" ? <p className="text-sm text-rose-600 sm:col-span-2">{createState.message}</p> : null}
           <div className="sm:col-span-2">
             <button className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white" type="submit">Crear usuario</button>
@@ -105,7 +113,15 @@ export function UsersAdminClient({ users, actorId }: { users: AdminUserRecord[];
                 <option value="true">Activo</option>
                 <option value="false">Inactivo</option>
               </select>
-              <input name="temporaryPassword" type="password" minLength={8} placeholder="Nueva temporal (opcional)" className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm sm:col-span-2" />
+              <div className="sm:col-span-2">
+                <PasswordInput
+                  name="temporaryPassword"
+                  label="Nueva temporal (opcional)"
+                  minLength={8}
+                  placeholder="Nueva temporal (opcional)"
+                  className="w-full rounded-xl border border-slate-300 px-3 py-2.5 pr-12 text-sm text-slate-950 placeholder:text-slate-400 outline-none transition focus:border-slate-400"
+                />
+              </div>
               <p className="text-xs text-slate-500 sm:col-span-2">Si defines una nueva contrasena temporal, el usuario debera cambiarla en su siguiente inicio de sesion.</p>
               {updateState.status === "error" ? <p className="text-sm text-rose-600 sm:col-span-2">{updateState.message}</p> : null}
               <div className="grid gap-2 sm:col-span-2 sm:grid-cols-2">

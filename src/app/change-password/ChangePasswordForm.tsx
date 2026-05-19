@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 
+import { PasswordInput } from "@/app/_components/PasswordInput";
 import { changeOwnPasswordAction } from "@/app/change-password/actions";
 import {
   ChangePasswordFormState,
@@ -34,9 +35,9 @@ export function ChangePasswordForm({ mustChangePasswordOnFirstLogin, embedded = 
         </div>
 
         <form action={action} className="mt-8 space-y-5">
-          <Field label="Contrasena actual" name="currentPassword" />
-          <Field label="Nueva contrasena" name="newPassword" />
-          <Field label="Confirmar nueva contrasena" name="confirmNewPassword" />
+          <PasswordInput name="currentPassword" label="Contrasena actual" required />
+          <PasswordInput name="newPassword" label="Nueva contrasena" required />
+          <PasswordInput name="confirmNewPassword" label="Confirmar nueva contrasena" required />
 
           {state.status === "error" ? <p className="text-sm text-red-600">{state.message}</p> : null}
 
@@ -59,19 +60,5 @@ export function ChangePasswordForm({ mustChangePasswordOnFirstLogin, embedded = 
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
       {content}
     </main>
-  );
-}
-
-function Field({ label, name }: { label: string; name: string }) {
-  return (
-    <label className="block space-y-2">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
-      <input
-        className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 placeholder:text-slate-400 outline-none transition focus:border-slate-400"
-        type="password"
-        name={name}
-        required
-      />
-    </label>
   );
 }
