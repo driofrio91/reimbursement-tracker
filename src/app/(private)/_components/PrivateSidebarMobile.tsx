@@ -29,7 +29,7 @@ export function PrivateSidebarMobile({ logoutAction, userName, role }: PrivateSi
           }
         }}
       >
-        <div className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
+        <div className="fixed inset-x-0 top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur">
           <div>
             <p className="text-xs font-medium text-slate-500">Backoffice</p>
             <p className="text-sm font-semibold text-slate-900">Reimbursement Tracker</p>
@@ -50,27 +50,29 @@ export function PrivateSidebarMobile({ logoutAction, userName, role }: PrivateSi
           </SheetTrigger>
         </div>
 
-        <SheetContent side="left" className="h-dvh overflow-y-auto" id="private-mobile-menu">
+        <SheetContent side="left" open={isOpen} className="h-dvh overflow-y-auto pb-4 pt-5" id="private-mobile-menu">
           <SheetTitle className="sr-only">Menu de navegacion privada</SheetTitle>
-          <PrivateSidebarNav onNavigate={() => setIsOpen(false)} role={role} />
+          <div className="flex min-h-full flex-col">
+            <PrivateSidebarNav onNavigate={() => setIsOpen(false)} role={role} />
 
-          <div className="mt-auto space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm text-slate-600">
-              Usuario actual: <span className="font-medium text-slate-900">{userName || "Sin nombre"}</span>
-            </p>
-            <p className="text-sm text-slate-600">
-              Rol: <span className="font-medium text-slate-900">{role}</span>
-            </p>
+            <div className="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">
+                Usuario actual: <span className="font-medium text-slate-900">{userName || "Sin nombre"}</span>
+              </p>
+              <p className="text-sm text-slate-600">
+                Rol: <span className="font-medium text-slate-900">{role}</span>
+              </p>
 
-            <form action={logoutAction}>
-              <button
-                className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-white"
-                onClick={() => setIsOpen(false)}
-                type="submit"
-              >
-                Cerrar sesion
-              </button>
-            </form>
+              <form action={logoutAction}>
+                <button
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-white"
+                  onClick={() => setIsOpen(false)}
+                  type="submit"
+                >
+                  Cerrar sesion
+                </button>
+              </form>
+            </div>
           </div>
         </SheetContent>
       </Sheet>

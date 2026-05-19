@@ -45,3 +45,63 @@ body {
     background-color: rgba(248, 250, 252, 1);
   }
 }
+
+.sheet-overlay[data-state="open"] {
+  animation: sheet-overlay-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sheet-overlay[data-state="closed"] {
+  animation: sheet-overlay-out 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sheet-content[data-state="open"] {
+  animation: sheet-content-in 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sheet-content[data-state="closed"] {
+  animation: sheet-content-out 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes sheet-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-overlay-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-content-in {
+  from {
+    transform: translateX(-105%);
+    opacity: 0.96;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-content-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(-105%);
+    opacity: 0.96;
+  }
+}
