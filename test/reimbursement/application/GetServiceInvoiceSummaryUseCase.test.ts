@@ -45,7 +45,6 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
       invoices,
       totalBilledAmount: 110,
       totalExpectedAmount: 99,
-      pendingExpectedAmount: 101,
       overBilledAmount: 0,
       overExpectedAmount: 0,
       reimbursementOutcome: "PARTIAL",
@@ -72,7 +71,6 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
     expect(result).toMatchObject({
       totalBilledAmount: 220,
       totalExpectedAmount: 210,
-      pendingExpectedAmount: 0,
       overBilledAmount: 20,
       overExpectedAmount: 10,
       reimbursementOutcome: "PARTIAL",
