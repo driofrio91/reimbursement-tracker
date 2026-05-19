@@ -110,10 +110,10 @@ export function ServiceDetailView({
 }: ServiceDetailViewProps) {
   const router = useRouter();
   const orderedInvoices = useMemo(() => {
-    const automaticInvoices = invoices.filter((invoice) => !invoice.createdManually);
+    const automaticInvoices = invoices.filter((invoice) => !invoice.createdManually).sort(compareByCreatedAt);
     const manualInvoices = invoices
       .filter((invoice) => invoice.createdManually)
-      .sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime());
+      .sort(compareByCreatedAt);
 
     return [...automaticInvoices, ...manualInvoices];
   }, [invoices]);
@@ -471,7 +471,7 @@ function InvoiceStageCard({
         </p>
         <p>
           <span className="font-medium text-slate-900">Pagado:</span>{" "}
-          {invoice.paidAmount ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
+          {toDisplayPaidStatus(invoice)}
         </p>
         <p className="truncate">
           <span className="font-medium text-slate-900">Persona:</span>{" "}
@@ -1266,6 +1266,28 @@ function toDisplayInvoiceStatus(status: Invoice["status"]) {
     case "REJECTED":
       return "Rechazada";
   }
+}
+
+function toDisplayPaidStatus(invoice: Invoice) {
+  if (invoice.status === "REJECTED") {
+    return "Rechazada";
+  }
+
+  if (typeof invoice.paidAmount === "number") {
+    return formatCurrency(invoice.paidAmount, invoice.currency);
+  }
+
+  return "Pendiente";
+}
+
+function compareByCreatedAt(left: Invoice, right: Invoice) {
+  const createdAtDifference = left.createdAt.getTime() - right.createdAt.getTime();
+
+  if (createdAtDifference !== 0) {
+    return createdAtDifference;
+  }
+
+  return left.id.localeCompare(right.id);
 }
 
 function toCorrectionTargetStatus(status: Invoice["status"]): Extract<Invoice["status"], "PAID" | "REJECTED"> {
