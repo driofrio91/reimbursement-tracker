@@ -29,7 +29,7 @@ export default async function PrivateLayout({ children }: { children: ReactNode 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 md:grid md:grid-cols-[260px_1fr]">
       <PrivateSidebar userName={actor.name} role={actor.role} />
-      <div>{children}</div>
+      <div className="pt-16 md:pt-0">{children}</div>
       <PrivateToaster />
     </div>
   );
