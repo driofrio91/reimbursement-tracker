@@ -25,7 +25,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-6 sm:gap-6 sm:px-6 sm:py-8">
         <Suspense fallback={<AnnualLimitsDashboardSkeleton compact={false} />}>
           <AnnualLimitsDashboardSection
             year={currentYear}
@@ -45,7 +45,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </Suspense>
 
         <section className="grid gap-4 md:grid-cols-2">
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold">Accesos rápidos</h2>
             <div className="mt-4 flex flex-col gap-3 text-sm">
               <Link
@@ -63,7 +63,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           </article>
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold">Acciones frecuentes</h2>
             <div className="mt-4 flex flex-col gap-3 text-sm">
               <Link
@@ -115,7 +115,7 @@ async function AnnualLimitsHistoricalSection({
       description="Consulta años pasados sin bloquear el bloque principal del año actual."
       compact={true}
       navSlot={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
           <Link
             aria-label={`Ir al año ${previousYear}`}
             className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
