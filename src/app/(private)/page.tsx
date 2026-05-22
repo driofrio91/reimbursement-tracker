@@ -21,25 +21,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const currentYear = new Date().getUTCFullYear();
   const resolvedParams = (await searchParams) ?? {};
   const selectedHistoryYear = normalizeHistoryYear(resolvedParams.historyYear, currentYear);
+  const canManageCatalogs = actor.role === USER_ROLES.ADMIN;
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Home operativa</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">Topes anuales {currentYear}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Visibilidad global del consumo anual por persona y aseguradora.</p>
-          <p className="mt-2 text-sm text-slate-500">
-            Usuario actual: <span className="font-medium text-slate-900">{actor.name}</span>
-          </p>
-        </section>
-
         <Suspense fallback={<AnnualLimitsDashboardSkeleton compact={false} />}>
           <AnnualLimitsDashboardSection
             year={currentYear}
             canSync={actor.role === USER_ROLES.ADMIN}
             title="Consumo anual actual"
-            description="Barras por persona y aseguradora con semaforo de consumo."
+            description="Barras por persona y aseguradora con semáforo de consumo para el año en curso."
             compact={false}
           />
         </Suspense>
@@ -54,7 +46,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
         <section className="grid gap-4 md:grid-cols-2">
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Accesos rapidos</h2>
+            <h2 className="text-lg font-semibold">Accesos rápidos</h2>
             <div className="mt-4 flex flex-col gap-3 text-sm">
               <Link
                 className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-medium text-white transition hover:bg-slate-800"
@@ -72,15 +64,29 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </article>
 
           <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Ya disponible</h2>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
-              <li>Conexion real a PostgreSQL en Neon.</li>
-              <li>Schema Prisma de la V1.</li>
-              <li>Seed con usuarios, aseguradoras y personas.</li>
-              <li>Login con `email + password` y rutas protegidas.</li>
-              <li>Alta de servicio reembolsable con validacion en servidor.</li>
-              <li>Listado y detalle inicial de servicios.</li>
-            </ul>
+            <h2 className="text-lg font-semibold">Acciones frecuentes</h2>
+            <div className="mt-4 flex flex-col gap-3 text-sm">
+              <Link
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+                href="/invoices"
+              >
+                Buscar facturas
+              </Link>
+              <Link
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+                href="/account"
+              >
+                Revisar mi cuenta
+              </Link>
+              {canManageCatalogs ? (
+                <Link
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50"
+                  href="/admin/users"
+                >
+                  Gestionar usuarios
+                </Link>
+              ) : null}
+            </div>
           </article>
         </section>
       </div>
@@ -105,36 +111,38 @@ async function AnnualLimitsHistoricalSection({
     <AnnualLimitsDashboardSection
       year={year}
       canSync={canSync}
-      title={`Historico anual ${year}`}
-      description="Consulta anos pasados sin bloquear el bloque principal del ano actual."
+      title={`Histórico anual ${year}`}
+      description="Consulta años pasados sin bloquear el bloque principal del año actual."
       compact={true}
       navSlot={
         <div className="flex items-center gap-2">
           <Link
-            aria-label={`Ir al ano ${previousYear}`}
+            aria-label={`Ir al año ${previousYear}`}
             className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             href={`/?historyYear=${previousYear}`}
+            scroll={false}
           >
             {`← ${previousYear}`}
           </Link>
           <span
-            aria-label={`Ano seleccionado ${year}`}
+            aria-label={`Año seleccionado ${year}`}
             className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-3 text-sm font-semibold text-slate-700"
           >
             {year}
           </span>
           {isNextDisabled ? (
             <span
-              aria-label={`Ano ${nextYear} no disponible`}
+              aria-label={`Año ${nextYear} no disponible`}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-3 text-sm font-medium text-slate-400"
             >
               {`${nextYear} →`}
             </span>
           ) : (
             <Link
-              aria-label={`Ir al ano ${nextYear}`}
+              aria-label={`Ir al año ${nextYear}`}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               href={`/?historyYear=${nextYear}`}
+              scroll={false}
             >
               {`${nextYear} →`}
             </Link>
