@@ -440,6 +440,18 @@ function InvoiceStageCard({
   }, [correctionState, router]);
 
   useEffect(() => {
+    if (correctionState.status === "success" && correctionState.token > 0) {
+      const closeModalTimer = window.setTimeout(() => {
+        setIsCorrectionModalOpen(false);
+      }, 0);
+
+      return () => {
+        window.clearTimeout(closeModalTimer);
+      };
+    }
+  }, [correctionState]);
+
+  useEffect(() => {
     if (deleteState.status === "idle" || deleteState.token === 0) {
       return;
     }
