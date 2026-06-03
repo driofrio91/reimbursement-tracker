@@ -155,6 +155,12 @@
 
 ### Reglas para anadir o eliminar facturas
 - `Anadir factura`: habilitado en `REGISTERED` y `SUBMITTED`; deshabilitado en `REIMBURSED`.
-- `Eliminar factura`: permitido solo si la factura esta en `CREATED`.
-- No eliminar en `INFORMATION_COMPLETED`, `CLAIM_REFERENCE_COMPLETED`, `PAID`, `REJECTED`.
+- `Eliminar factura`: permitido en `CREATED` y `INFORMATION_COMPLETED` (confirmacion obligatoria en `INFORMATION_COMPLETED`).
+- No eliminar en `CLAIM_REFERENCE_COMPLETED`, `PAID`, `REJECTED`.
 - En `REIMBURSED`, bloqueadas todas las modificaciones de estructura de facturas.
+- `Eliminar servicio`: permitido solo cuando todas sus facturas estan en `CREATED`.
+
+### Feedback global post-redirect
+- El area privada usa un sistema unificado de notificaciones con `GlobalToastListener` como punto unico de render.
+- Acciones locales usan transporte `immediate` en memoria y no deben invocar `toast.*` directamente desde features.
+- Acciones que finalizan con `redirect()` usan transporte `after-redirect` mediante flash temporal consumido en destino.

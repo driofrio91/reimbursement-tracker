@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
@@ -32,6 +33,10 @@ import {
   DeleteCreatedInvoiceUseCaseError,
   deleteCreatedInvoiceUseCase,
 } from "@/modules/reimbursement/application/DeleteCreatedInvoiceUseCase";
+import {
+  DeleteServiceWithCreatedInvoicesUseCaseError,
+  deleteServiceWithCreatedInvoicesUseCase,
+} from "@/modules/reimbursement/application/DeleteServiceWithCreatedInvoicesUseCase";
 import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
@@ -39,6 +44,7 @@ import { PrismaPersonAnnualReimbursementLimitRepository } from "@/modules/reimbu
 import { AuthorizationError, requireRole, type AuthenticatedActor } from "@/lib/auth/authorization";
 import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
+import { setFlashToast } from "@/lib/ui/flash-toast";
 import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -450,6 +456,74 @@ export async function deleteInvoiceAction(
   return buildActionResult("success", "Factura eliminada.");
 }
 
+export async function deleteServiceAction(
+  serviceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    await deleteServiceWithCreatedInvoicesUseCase(serviceId, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof DeleteServiceWithCreatedInvoicesUseCaseError) {
+      return buildActionResult("error", toDeleteServiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo eliminar el servicio seleccionado.");
+  }
+
+  revalidatePath("/services");
+  revalidatePath(`/services/${serviceId}`);
+
+  return buildActionResult("success", "Servicio eliminado con todas sus facturas en estado Creada.");
+}
+
+export async function deleteServiceAndRedirectAction(
+  serviceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    await deleteServiceWithCreatedInvoicesUseCase(serviceId, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof DeleteServiceWithCreatedInvoicesUseCaseError) {
+      return buildActionResult("error", toDeleteServiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo eliminar el servicio seleccionado.");
+  }
+
+  revalidatePath("/services");
+  await setFlashToast({
+    type: "success",
+    message: "Servicio eliminado con todas sus facturas en estado Creada.",
+  });
+  redirect("/services");
+}
+
 async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void> {
   await syncServiceStatusFromInvoicesUseCase(serviceId, {
     serviceRepository: new PrismaServiceRepository(prisma),
@@ -612,8 +686,19 @@ function toDeleteInvoiceErrorMessage(error: DeleteCreatedInvoiceUseCaseError): s
     case "SERVICE_ALREADY_CLOSED":
       return "Este servicio ya esta cerrado. No se puede modificar su estructura de facturas.";
     case "INVOICE_NOT_DELETABLE":
-      return "Solo se pueden eliminar facturas en estado Created.";
+      return "Solo se pueden eliminar facturas en estado Creada o Informacion completada.";
     case "INVOICE_STATE_CHANGED":
       return "La factura ya cambio de estado y no se puede eliminar.";
+  }
+}
+
+function toDeleteServiceErrorMessage(error: DeleteServiceWithCreatedInvoicesUseCaseError): string {
+  switch (error.code) {
+    case "SERVICE_NOT_FOUND":
+      return "El servicio ya no existe o fue eliminado.";
+    case "SERVICE_NOT_DELETABLE":
+      return "Solo se puede eliminar un servicio si todas sus facturas estan en estado Creada.";
+    case "SERVICE_STATE_CHANGED":
+      return "La accion ya no esta disponible porque el estado ha cambiado.";
   }
 }

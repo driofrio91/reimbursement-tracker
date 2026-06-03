@@ -64,14 +64,14 @@ describe("P5 invoice flow use cases", () => {
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "CREATED" }));
     serviceRepository.getById.mockResolvedValue(buildService({ status: "REGISTERED" }));
-    invoiceRepository.deleteCreated.mockResolvedValue(true);
+    invoiceRepository.deleteDraftOrInformationCompleted.mockResolvedValue(true);
 
     await deleteCreatedInvoiceUseCase("invoice-1", {
       invoiceRepository,
       serviceRepository,
     });
 
-    expect(invoiceRepository.deleteCreated).toHaveBeenCalledWith("invoice-1");
+    expect(invoiceRepository.deleteDraftOrInformationCompleted).toHaveBeenCalledWith("invoice-1");
   });
 
   it("rejects deleting invoice outside created status", async () => {
@@ -84,6 +84,22 @@ describe("P5 invoice flow use cases", () => {
     await expect(deleteCreatedInvoiceUseCase("invoice-1", { invoiceRepository, serviceRepository })).rejects.toBeInstanceOf(
       DeleteCreatedInvoiceUseCaseError,
     );
+  });
+
+  it("allows deleting invoice in information completed status", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "INFORMATION_COMPLETED" }));
+    serviceRepository.getById.mockResolvedValue(buildService({ status: "REGISTERED" }));
+    invoiceRepository.deleteDraftOrInformationCompleted.mockResolvedValue(true);
+
+    await deleteCreatedInvoiceUseCase("invoice-1", {
+      invoiceRepository,
+      serviceRepository,
+    });
+
+    expect(invoiceRepository.deleteDraftOrInformationCompleted).toHaveBeenCalledWith("invoice-1");
   });
 
   it("builds csv with bom, semicolon separator, and decimal comma", async () => {

@@ -16,6 +16,7 @@ import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/
 import { AuthorizationError, requireRole } from "@/lib/auth/authorization";
 import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
+import { setFlashToast } from "@/lib/ui/flash-toast";
 
 export async function createServiceAction(
   _previousState: CreateServiceFormState,
@@ -79,6 +80,10 @@ export async function createServiceAction(
       },
     );
 
+    await setFlashToast({
+      type: "success",
+      message: "Servicio creado correctamente.",
+    });
     redirect(`/services/${result.id}`);
   } catch (error) {
     if (error instanceof CreateServiceUseCaseError) {

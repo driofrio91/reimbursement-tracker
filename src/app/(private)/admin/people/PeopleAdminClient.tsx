@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import {
   createPersonAction,
@@ -10,6 +9,7 @@ import {
 } from "@/app/(private)/admin/people/actions";
 import { initialAdminMutationState } from "@/app/(private)/admin/people/action-state";
 import { PersonAdminRecord } from "@/modules/reimbursement/application/AdminCatalogUseCases";
+import { notifySuccess } from "@/lib/ui/notifications";
 
 export function PeopleAdminClient({ people }: { people: PersonAdminRecord[] }) {
   const [editing, setEditing] = useState<PersonAdminRecord | null>(null);
@@ -21,20 +21,20 @@ export function PeopleAdminClient({ people }: { people: PersonAdminRecord[] }) {
 
   useEffect(() => {
     if (createState.status === "success") {
-      toast.success(createState.message);
+      notifySuccess(createState.message);
     }
   }, [createState]);
 
   useEffect(() => {
     if (updateState.status === "success") {
-      toast.success(updateState.message);
+      notifySuccess(updateState.message);
       setTimeout(() => setEditing(null), 0);
     }
   }, [updateState]);
 
   useEffect(() => {
     if (toggleState.status === "success") {
-      toast.success(toggleState.message);
+      notifySuccess(toggleState.message);
       setTimeout(() => setConfirming(null), 0);
     }
   }, [toggleState]);

@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import { PasswordInput } from "@/app/_components/PasswordInput";
 import {
@@ -12,6 +11,7 @@ import {
 import { initialAdminMutationState } from "@/app/(private)/admin/users/action-state";
 import { AdminUserRecord } from "@/lib/auth/application/AdminUserManagementUseCases";
 import { USER_ROLES } from "@/lib/auth/roles";
+import { notifySuccess } from "@/lib/ui/notifications";
 
 export function UsersAdminClient({ users, actorId }: { users: AdminUserRecord[]; actorId: string }) {
   const [editing, setEditing] = useState<AdminUserRecord | null>(null);
@@ -22,19 +22,19 @@ export function UsersAdminClient({ users, actorId }: { users: AdminUserRecord[];
   const [toggleState, toggleAction] = useActionState(toggleUserActiveAction, initialAdminMutationState);
 
   useEffect(() => {
-    if (createState.status === "success") toast.success(createState.message);
+    if (createState.status === "success") notifySuccess(createState.message);
   }, [createState]);
 
   useEffect(() => {
     if (updateState.status === "success") {
-      toast.success(updateState.message);
+      notifySuccess(updateState.message);
       setTimeout(() => setEditing(null), 0);
     }
   }, [updateState]);
 
   useEffect(() => {
     if (toggleState.status === "success") {
-      toast.success(toggleState.message);
+      notifySuccess(toggleState.message);
       setTimeout(() => setConfirming(null), 0);
     }
   }, [toggleState]);

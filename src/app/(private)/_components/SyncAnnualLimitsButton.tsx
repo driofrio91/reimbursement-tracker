@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 import { syncAnnualLimitsAction } from "@/app/(private)/actions";
 import {
   initialSyncAnnualLimitsActionResult,
   type SyncAnnualLimitsActionResult,
 } from "@/app/(private)/sync-annual-limits-state";
+import { notifyError, notifySuccess } from "@/lib/ui/notifications";
 
 export function SyncAnnualLimitsButton() {
   return <SyncAnnualLimitsButtonBase canSync={true} />;
@@ -31,11 +31,11 @@ export function SyncAnnualLimitsButtonBase({ canSync, year }: SyncAnnualLimitsBu
     }
 
     if (state.status === "success") {
-      toast.success(state.message);
+      notifySuccess(state.message);
     }
 
     if (state.status === "error") {
-      toast.error(state.message);
+      notifyError(state.message);
     }
   }, [canSync, state]);
 

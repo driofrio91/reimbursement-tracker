@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
+import { GlobalToastListener } from "@/app/(private)/_components/GlobalToastListener";
 import { PrivateSidebar } from "@/app/(private)/_components/PrivateSidebar";
 import { PrivateToaster } from "@/app/(private)/_components/PrivateToaster";
 import { AuthorizationError, requireAuth } from "@/lib/auth/authorization";
@@ -31,6 +32,7 @@ export default async function PrivateLayout({ children }: { children: ReactNode 
       <PrivateSidebar userName={actor.name} role={actor.role} />
       <div className="pt-16 md:pt-0">{children}</div>
       <PrivateToaster />
+      <GlobalToastListener />
     </div>
   );
 }

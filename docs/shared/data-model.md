@@ -69,7 +69,8 @@ Campos clave:
 - al usar `Anadir factura` en detalle de servicio, la factura nace con `createdManually=true`
 - la gestion estructural se limita por estado:
   - `Anadir factura` permitido en `REGISTERED` y `SUBMITTED`, bloqueado en `REIMBURSED`
-  - `Eliminar factura` permitido solo en estado `CREATED`
+  - `Eliminar factura` permitido en `CREATED` y `INFORMATION_COMPLETED` (con confirmacion explicita en `INFORMATION_COMPLETED`)
+  - `Eliminar servicio` permitido solo cuando todas sus facturas estan en `CREATED`
 
 ## Exportacion CSV del servicio
 

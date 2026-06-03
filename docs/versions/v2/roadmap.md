@@ -109,6 +109,8 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 
 ### P5 - Flujo de facturas y exportacion
 - [x] anadir/eliminar facturas segun reglas de estado cerradas
+  - eliminacion por factura permitida en `CREATED` y `INFORMATION_COMPLETED` (con confirmacion en `INFORMATION_COMPLETED`)
+  - eliminacion de servicio permitida solo si todas sus facturas estan en `CREATED`
 - [x] exportacion CSV solo `CREATED`:
   - `;`
   - decimal con coma

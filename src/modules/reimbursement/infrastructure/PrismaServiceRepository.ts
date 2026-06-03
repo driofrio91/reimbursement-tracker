@@ -1,4 +1,4 @@
-import { PrismaClient, ReimbursableServiceStatus } from "@prisma/client";
+import { InvoiceStatus as PrismaInvoiceStatus, PrismaClient, ReimbursableServiceStatus } from "@prisma/client";
 
 import { NewService, Service, ServiceStatus } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
@@ -80,6 +80,44 @@ export class PrismaServiceRepository implements ServiceRepository {
     });
 
     return this.mapService(updatedService);
+  }
+
+  async deleteWithInvoicesInCreatedStatusOnly(serviceId: string): Promise<boolean> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        const existingService = await tx.reimbursableService.findUnique({
+          where: { id: serviceId },
+          select: { id: true },
+        });
+
+        if (!existingService) {
+          throw new Error("SERVICE_NOT_FOUND");
+        }
+
+        const totalInvoicesCount = await tx.invoice.count({
+          where: { serviceId },
+        });
+
+        const deletedDraftInvoices = await tx.invoice.deleteMany({
+          where: {
+            serviceId,
+            status: PrismaInvoiceStatus.CREATED,
+          },
+        });
+
+        if (deletedDraftInvoices.count !== totalInvoicesCount) {
+          throw new Error("INVOICES_NOT_ALL_CREATED");
+        }
+
+        await tx.reimbursableService.delete({
+          where: { id: serviceId },
+        });
+      });
+    } catch {
+      return false;
+    }
+
+    return true;
   }
 
   async personExists(personId: string): Promise<boolean> {

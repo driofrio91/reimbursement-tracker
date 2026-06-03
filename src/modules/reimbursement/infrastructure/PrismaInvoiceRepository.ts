@@ -101,11 +101,13 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return createdInvoices.map((invoice) => this.mapInvoice(invoice));
   }
 
-  async deleteCreated(invoiceId: string): Promise<boolean> {
+  async deleteDraftOrInformationCompleted(invoiceId: string): Promise<boolean> {
     const deleteResult = await this.prisma.invoice.deleteMany({
       where: {
         id: invoiceId,
-        status: PrismaInvoiceStatus.CREATED,
+        status: {
+          in: [PrismaInvoiceStatus.CREATED, PrismaInvoiceStatus.INFORMATION_COMPLETED],
+        },
       },
     });
 

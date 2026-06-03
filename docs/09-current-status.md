@@ -84,8 +84,23 @@
 - gestion de facturas ampliada en `/services/[id]`:
   - accion `Anadir factura` habilitada en `REGISTERED` y `SUBMITTED`, bloqueada en `REIMBURSED`
   - eliminacion por factura con icono de papelera visible siempre
-  - eliminacion permitida solo para facturas `CREATED`
+  - eliminacion permitida para facturas `CREATED` y `INFORMATION_COMPLETED` (confirmacion adicional en `INFORMATION_COMPLETED`)
   - acciones bloqueadas con motivo obligatorio: tooltip desktop y bottom sheet mobile
+- eliminacion de servicio habilitada en `/services` y `/services/[id]`:
+  - permitida solo si todas las facturas del servicio estan en `CREATED`
+  - al eliminar servicio se eliminan sus facturas asociadas
+  - bloqueada con motivo si existe alguna factura en `INFORMATION_COMPLETED` o estados posteriores
+  - feedback unificado en area privada:
+    - acciones locales usan notificacion inmediata a traves del listener global
+    - `/services/[id]` (detalle) usa `redirect` server-side a `/services` + flash toast global en destino
+- creacion de servicio en `/services/new`:
+  - `redirect` al detalle del servicio creado
+  - feedback de exito post-redirect a traves del listener global
+- infraestructura privada de notificaciones unificada:
+  - `PrivateToaster` global en layout privado
+  - `GlobalToastListener` como punto unico de render
+  - transporte interno `immediate` en memoria para acciones locales
+  - transporte interno `after-redirect` mediante flash temporal para redirects privados
 - exportacion CSV por servicio disponible en `/services/[id]`:
   - accion `Extraer facturas`
   - exporta unicamente facturas `CREATED`

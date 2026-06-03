@@ -16,7 +16,7 @@ export class DeleteCreatedInvoiceUseCaseError extends Error {
 }
 
 interface DeleteCreatedInvoiceUseCaseDependencies {
-  invoiceRepository: Pick<InvoiceRepository, "getById" | "deleteCreated">;
+  invoiceRepository: Pick<InvoiceRepository, "getById" | "deleteDraftOrInformationCompleted">;
   serviceRepository: Pick<ServiceRepository, "getById">;
 }
 
@@ -43,14 +43,14 @@ export async function deleteCreatedInvoiceUseCase(
     );
   }
 
-  if (invoice.status !== "CREATED") {
+  if (invoice.status !== "CREATED" && invoice.status !== "INFORMATION_COMPLETED") {
     throw new DeleteCreatedInvoiceUseCaseError(
       "INVOICE_NOT_DELETABLE",
-      "Solo se pueden eliminar facturas en estado Created.",
+      "Solo se pueden eliminar facturas en estado Creada o Informacion completada.",
     );
   }
 
-  const deleted = await dependencies.invoiceRepository.deleteCreated(invoiceId);
+  const deleted = await dependencies.invoiceRepository.deleteDraftOrInformationCompleted(invoiceId);
 
   if (!deleted) {
     throw new DeleteCreatedInvoiceUseCaseError(

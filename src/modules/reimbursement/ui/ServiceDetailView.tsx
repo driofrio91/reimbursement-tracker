@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifecycleStepper";
@@ -10,6 +9,7 @@ import { type ReimbursementOutcome } from "@/modules/reimbursement/application/G
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
+import { notifyError, notifySuccess } from "@/lib/ui/notifications";
 
 const initialInvoiceActionResult: InvoiceActionResult = {
   status: "idle",
@@ -84,6 +84,11 @@ interface ServiceDetailViewProps {
     previousState: InvoiceActionResult,
     formData: FormData,
   ) => Promise<InvoiceActionResult>;
+  deleteServiceAction: (
+    serviceId: string,
+    previousState: InvoiceActionResult,
+    formData: FormData,
+  ) => Promise<InvoiceActionResult>;
   exportCreatedInvoicesHref: string;
 }
 
@@ -106,6 +111,7 @@ export function ServiceDetailView({
   correctInvoiceResolutionAction,
   addInvoiceAction,
   deleteInvoiceAction,
+  deleteServiceAction,
   exportCreatedInvoicesHref,
 }: ServiceDetailViewProps) {
   const router = useRouter();
@@ -120,8 +126,14 @@ export function ServiceDetailView({
   const createdInvoicesCount = orderedInvoices.filter((invoice) => invoice.status === "CREATED").length;
   const canAddInvoice = service.status !== "REIMBURSED";
   const canExportInvoices = createdInvoicesCount > 0;
+  const serviceDeleteState = getServiceDeleteState(orderedInvoices);
   const addBoundAction = addInvoiceAction.bind(null, service.id);
+  const deleteServiceBoundAction = deleteServiceAction.bind(null, service.id);
   const [addInvoiceState, addInvoiceFormAction, isAddingInvoice] = useActionState(addBoundAction, initialInvoiceActionResult);
+  const [deleteServiceResult, deleteServiceFormAction, isDeletingService] = useActionState(
+    deleteServiceBoundAction,
+    initialInvoiceActionResult,
+  );
   const [highlightedInvoiceIds, setHighlightedInvoiceIds] = useState<string[]>([]);
   const lastHandledCreatedInvoiceIdRef = useRef<string | null>(null);
   const alerts = [
@@ -139,11 +151,11 @@ export function ServiceDetailView({
     }
 
     if (addInvoiceState.status === "error") {
-      toast.error(addInvoiceState.message, { duration: 9000 });
+      notifyError(addInvoiceState.message);
       return;
     }
 
-    toast.success(addInvoiceState.message, { duration: 5000 });
+    notifySuccess(addInvoiceState.message);
     router.refresh();
   }, [addInvoiceState, router]);
 
@@ -181,21 +193,49 @@ export function ServiceDetailView({
     }
   }, [addInvoiceState.createdInvoiceId, addInvoiceState.status, orderedInvoices]);
 
+  useEffect(() => {
+    if (deleteServiceResult.status === "idle" || deleteServiceResult.token === 0) {
+      return;
+    }
+
+    if (deleteServiceResult.status === "error") {
+      notifyError(deleteServiceResult.message);
+    }
+  }, [deleteServiceResult, router]);
+
   return (
     <div className="space-y-5 sm:space-y-6">
-      <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-              {toDisplayStatus(service.status)}
-            </span>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">{service.description}</h1>
-          </div>
+      <section className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:space-y-6 sm:p-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+            <div className="flex-1 space-y-1.5 sm:space-y-2">
+              <div className="flex items-start justify-between gap-3 sm:block">
+                <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                  {toDisplayStatus(service.status)}
+                </span>
+                <form action={deleteServiceFormAction} className="sm:hidden">
+                  <ServiceActionsMenu
+                    isDeleteDisabled={!serviceDeleteState.canDelete || isDeletingService}
+                    deleteDisabledReason={serviceDeleteState.blockedReason}
+                    isDeleting={isDeletingService}
+                  />
+                </form>
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">{service.description}</h1>
+            </div>
 
-          <div className="rounded-2xl bg-slate-50 px-4 py-3 sm:px-5 sm:py-4 sm:text-right">
-            <p className="text-sm text-slate-500">Importe real del servicio</p>
-            <p className="text-2xl font-semibold text-slate-950">{formatCurrency(service.actualAmount, service.currency)}</p>
-          </div>
+            <div className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end sm:gap-2">
+              <form action={deleteServiceFormAction} className="hidden sm:block">
+                <ServiceActionsMenu
+                  isDeleteDisabled={!serviceDeleteState.canDelete || isDeletingService}
+                  deleteDisabledReason={serviceDeleteState.blockedReason}
+                  isDeleting={isDeletingService}
+                />
+              </form>
+              <div className="rounded-2xl bg-slate-50 px-3.5 py-2.5 sm:px-5 sm:py-4 sm:text-right">
+                <p className="text-sm text-slate-500">Importe real del servicio</p>
+                <p className="text-2xl font-semibold text-slate-950">{formatCurrency(service.actualAmount, service.currency)}</p>
+              </div>
+            </div>
         </div>
 
         {alerts.length > 0 ? <ServiceAlerts alerts={alerts} /> : null}
@@ -257,7 +297,7 @@ export function ServiceDetailView({
                 href={exportCreatedInvoicesHref}
                 label="Extraer facturas"
                 isDisabled={!canExportInvoices}
-                disabledReason="No hay facturas en estado Created para exportar."
+                disabledReason="No hay facturas en estado Creada para exportar."
               />
             </div>
           </div>
@@ -287,6 +327,7 @@ export function ServiceDetailView({
                 markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
                 correctInvoiceResolutionAction={correctInvoiceResolutionAction}
                 deleteInvoiceAction={deleteInvoiceAction}
+                serviceDescription={service.description}
                 serviceStatus={service.status}
               />
             ))}
@@ -299,6 +340,7 @@ export function ServiceDetailView({
 
 interface InvoiceStageCardProps {
   serviceId: string;
+  serviceDescription: string;
   invoice: Invoice;
   index: number;
   isNewInvoice: boolean;
@@ -316,6 +358,7 @@ interface InvoiceStageCardProps {
 
 function InvoiceStageCard({
   serviceId,
+  serviceDescription,
   invoice,
   index,
   isNewInvoice,
@@ -350,6 +393,7 @@ function InvoiceStageCard({
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+  const [isDeleteInformationModalOpen, setIsDeleteInformationModalOpen] = useState(false);
 
   useEffect(() => {
     notifyActionResult(completeState, router);
@@ -401,7 +445,7 @@ function InvoiceStageCard({
     }
 
     if (deleteState.status === "success") {
-      toast.success(deleteState.message, { duration: 5000 });
+      notifySuccess(deleteState.message);
       const refreshTimer = window.setTimeout(() => {
         router.refresh();
       }, 560);
@@ -411,15 +455,29 @@ function InvoiceStageCard({
       };
     }
 
-    toast.error(deleteState.message, { duration: 9000 });
+    notifyError(deleteState.message);
   }, [deleteState, router]);
 
-  const canDelete = serviceStatus !== "REIMBURSED" && invoice.status === "CREATED";
+  useEffect(() => {
+    if (deleteState.status === "success" && deleteState.token > 0) {
+      const closeModalTimer = window.setTimeout(() => {
+        setIsDeleteInformationModalOpen(false);
+      }, 0);
+
+      return () => {
+        window.clearTimeout(closeModalTimer);
+      };
+    }
+  }, [deleteState]);
+
+  const canDelete =
+    serviceStatus !== "REIMBURSED" && (invoice.status === "CREATED" || invoice.status === "INFORMATION_COMPLETED");
+  const requiresDeleteConfirmation = invoice.status === "INFORMATION_COMPLETED";
   const isRemoving = deleteState.status === "success" && deleteState.token > 0;
   const deleteBlockedReason =
     serviceStatus === "REIMBURSED"
       ? "Este servicio ya esta cerrado. No se puede modificar su estructura de facturas."
-      : "Solo se pueden eliminar facturas en estado Created.";
+      : "Solo se pueden eliminar facturas en estado Creada o Informacion completada.";
 
   return (
     <div
@@ -453,9 +511,18 @@ function InvoiceStageCard({
           >
             {toDisplayInvoiceStatus(invoice.status)}
           </span>
-          <form action={deleteFormAction}>
-            <DeleteInvoiceButton isDisabled={!canDelete} disabledReason={deleteBlockedReason} isLoading={isDeleting} />
-          </form>
+          {requiresDeleteConfirmation ? (
+            <DeleteInvoiceButton
+              isDisabled={!canDelete}
+              disabledReason={deleteBlockedReason}
+              isLoading={isDeleting}
+              onConfirmRequest={() => setIsDeleteInformationModalOpen(true)}
+            />
+          ) : (
+            <form action={deleteFormAction}>
+              <DeleteInvoiceButton isDisabled={!canDelete} disabledReason={deleteBlockedReason} isLoading={isDeleting} />
+            </form>
+          )}
         </div>
       </div>
 
@@ -844,6 +911,41 @@ function InvoiceStageCard({
           </div>
         </div>
       ) : null}
+      {isDeleteInformationModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby={`delete-information-title-${invoice.id}`}>
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+            <h3 className="text-base font-semibold text-slate-950" id={`delete-information-title-${invoice.id}`}>
+              Eliminar factura
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Esta factura ya tiene informacion registrada. Si la eliminas, perderas esos datos.
+            </p>
+            <dl className="mt-3 grid gap-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+              <CompactInfoRow label="Servicio" value={serviceDescription} />
+              <CompactInfoRow label="Factura" value={invoice.invoiceNumber ?? "Sin numero"} />
+              <CompactInfoRow label="Fecha" value={invoice.invoiceDate ? formatDate(invoice.invoiceDate) : "Sin fecha"} />
+              <CompactInfoRow label="Importe" value={formatCurrency(invoice.invoiceBilledAmount, invoice.currency)} />
+            </dl>
+            <form action={deleteFormAction} className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                type="button"
+                onClick={() => setIsDeleteInformationModalOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </button>
+              <button
+                className="inline-flex w-full items-center justify-center rounded-lg bg-rose-700 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+                type="submit"
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Eliminando..." : "Eliminar factura"}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
       </article>
     </div>
   );
@@ -855,13 +957,13 @@ function notifyActionResult(result: InvoiceActionResult, router: ReturnType<type
   }
 
   if (result.status === "success") {
-    toast.success(result.message, { duration: 5000 });
+    notifySuccess(result.message);
     router.refresh();
 
     return;
   }
 
-  toast.error(result.message, { duration: 9000 });
+  notifyError(result.message);
 }
 
 function ActionLockButton({
@@ -983,10 +1085,12 @@ function DeleteInvoiceButton({
   isDisabled,
   disabledReason,
   isLoading,
+  onConfirmRequest,
 }: {
   isDisabled: boolean;
   disabledReason: string;
   isLoading: boolean;
+  onConfirmRequest?: () => void;
 }) {
   const [isBlockedSheetOpen, setIsBlockedSheetOpen] = useState(false);
 
@@ -1008,7 +1112,8 @@ function DeleteInvoiceButton({
       <button
         aria-label="Eliminar factura"
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-300 bg-white text-rose-700 transition hover:bg-rose-50"
-        type="submit"
+        type={onConfirmRequest ? "button" : "submit"}
+        onClick={onConfirmRequest}
       >
         <TrashIcon className="h-4 w-4" />
       </button>
@@ -1044,6 +1149,87 @@ function DeleteInvoiceButton({
         isOpen={isBlockedSheetOpen}
         title="Accion no disponible"
         message={disabledReason}
+        onClose={() => setIsBlockedSheetOpen(false)}
+      />
+    </>
+  );
+}
+
+function ServiceActionsMenu({
+  isDeleteDisabled,
+  deleteDisabledReason,
+  isDeleting,
+}: {
+  isDeleteDisabled: boolean;
+  deleteDisabledReason: string;
+  isDeleting: boolean;
+}) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBlockedSheetOpen, setIsBlockedSheetOpen] = useState(false);
+
+  return (
+    <>
+      <div className="relative">
+        <button
+          aria-label={isDeleting ? "Eliminando servicio" : "Acciones del servicio"}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+          type="button"
+          disabled={isDeleting}
+          onClick={() => setIsMenuOpen((current) => !current)}
+        >
+          {isDeleting ? <SpinnerIcon className="h-5 w-5" /> : <KebabIcon className="h-5 w-5" />}
+        </button>
+
+        {isMenuOpen ? (
+          <div className="absolute right-0 top-11 z-20 min-w-64 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+            {isDeleteDisabled ? (
+              <>
+                <button
+                  className="hidden w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-400 sm:flex"
+                  type="button"
+                  onClick={() => setIsBlockedSheetOpen(true)}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  Eliminar servicio
+                </button>
+                <div className="pointer-events-none hidden max-w-80 whitespace-normal rounded-lg bg-slate-950 px-3 py-2 text-xs leading-5 text-white sm:block">
+                  {deleteDisabledReason}
+                </div>
+                <button
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-400 sm:hidden"
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setIsBlockedSheetOpen(true);
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  Eliminar servicio
+                </button>
+              </>
+            ) : (
+              <button
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-rose-700 transition hover:bg-rose-50 disabled:opacity-60"
+                type="submit"
+                disabled={isDeleting}
+                onClick={() => {
+                  window.setTimeout(() => {
+                    setIsMenuOpen(false);
+                  }, 0);
+                }}
+              >
+                {isDeleting ? <SpinnerIcon className="h-4 w-4" /> : <TrashIcon className="h-4 w-4" />}
+                {isDeleting ? "Eliminando servicio..." : "Eliminar servicio"}
+              </button>
+            )}
+          </div>
+        ) : null}
+      </div>
+
+      <BlockedReasonOverlay
+        isOpen={isBlockedSheetOpen}
+        title="Accion no disponible"
+        message={deleteDisabledReason}
         onClose={() => setIsBlockedSheetOpen(false)}
       />
     </>
@@ -1101,6 +1287,55 @@ function SpinnerIcon({ className }: { className?: string }) {
       <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
     </svg>
   );
+}
+
+function KebabIcon({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="5.5" r="1.6" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" />
+      <circle cx="12" cy="18.5" r="1.6" fill="currentColor" />
+    </svg>
+  );
+}
+
+function CompactInfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[4.5rem_1fr] items-start gap-2">
+      <dt className="text-slate-500">{label}</dt>
+      <dd className="truncate font-medium text-slate-900" title={value}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function getServiceDeleteState(invoices: Invoice[]): { canDelete: boolean; blockedReason: string } {
+  const hasInformationCompleted = invoices.some((invoice) => invoice.status === "INFORMATION_COMPLETED");
+  const hasAdvancedStatus = invoices.some(
+    (invoice) =>
+      invoice.status === "CLAIM_REFERENCE_COMPLETED" || invoice.status === "PAID" || invoice.status === "REJECTED",
+  );
+
+  if (hasAdvancedStatus) {
+    return {
+      canDelete: false,
+      blockedReason: "Este servicio ya tiene facturas tramitadas o resueltas y no se puede eliminar.",
+    };
+  }
+
+  if (hasInformationCompleted) {
+    return {
+      canDelete: false,
+      blockedReason:
+        "Para eliminar este servicio, primero revisa y borra una a una las facturas en estado Informacion completada.",
+    };
+  }
+
+  return {
+    canDelete: true,
+    blockedReason: "",
+  };
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {

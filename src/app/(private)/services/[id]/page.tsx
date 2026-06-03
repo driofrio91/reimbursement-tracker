@@ -7,6 +7,7 @@ import {
   completeInvoiceInformationAction,
   correctInvoiceResolutionAction,
   deleteInvoiceAction,
+  deleteServiceAndRedirectAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
@@ -78,6 +79,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           correctInvoiceResolutionAction={correctInvoiceResolutionAction}
           addInvoiceAction={addInvoiceAction}
           deleteInvoiceAction={deleteInvoiceAction}
+          deleteServiceAction={deleteServiceAndRedirectAction}
           exportCreatedInvoicesHref={`/services/${id}/export`}
         />
       </div>

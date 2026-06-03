@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { addInvoiceAction, deleteInvoiceAction, markInvoiceAsPaidAction } from "@/app/(private)/services/[id]/actions";
+import { addInvoiceAction, deleteInvoiceAction, deleteServiceAction, markInvoiceAsPaidAction } from "@/app/(private)/services/[id]/actions";
 
 vi.mock("@/lib/auth/authorization", () => {
   class MockAuthorizationError extends Error {
@@ -46,6 +46,15 @@ describe("invoice actions authorization", () => {
 
   it("returns auth error when deleting invoice without session", async () => {
     const result = await deleteInvoiceAction("service-1", "invoice-1", { status: "idle", message: "", token: 0 }, new FormData());
+
+    expect(result).toMatchObject({
+      status: "error",
+      message: "Debes iniciar sesion para completar esta accion.",
+    });
+  });
+
+  it("returns auth error when deleting service without session", async () => {
+    const result = await deleteServiceAction("service-1", { status: "idle", message: "", token: 0 }, new FormData());
 
     expect(result).toMatchObject({
       status: "error",
