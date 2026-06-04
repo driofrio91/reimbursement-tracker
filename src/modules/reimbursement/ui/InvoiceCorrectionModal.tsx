@@ -3,8 +3,11 @@
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 
+type CorrectionSourceStatus = Extract<Invoice["status"], "PAID" | "REJECTED">;
+
 interface InvoiceCorrectionModalProps {
   invoice: Invoice;
+  sourceStatus: CorrectionSourceStatus;
   isOpen: boolean;
   defaultPaidDate: string;
   correctionState: InvoiceActionResult;
@@ -17,6 +20,7 @@ interface InvoiceCorrectionModalProps {
 
 export function InvoiceCorrectionModal({
   invoice,
+  sourceStatus,
   isOpen,
   defaultPaidDate,
   correctionState,
@@ -42,12 +46,12 @@ export function InvoiceCorrectionModal({
           Corregir estado final de reembolso
         </h3>
         <p className="mt-1 text-sm text-slate-600">
-          Vas a cambiar la factura de <strong>{toDisplayInvoiceStatus(invoice.status)}</strong> a{" "}
-          <strong>{toDisplayInvoiceStatus(toCorrectionTargetStatus(invoice.status))}</strong>.
+          Vas a cambiar la factura de <strong>{toDisplayInvoiceStatus(sourceStatus)}</strong> a{" "}
+          <strong>{toDisplayInvoiceStatus(toCorrectionTargetStatus(sourceStatus))}</strong>.
         </p>
 
         <form action={correctionFormAction} className="mt-4 space-y-3">
-          <input type="hidden" name="toStatus" value={toCorrectionTargetStatus(invoice.status)} />
+          <input type="hidden" name="toStatus" value={toCorrectionTargetStatus(sourceStatus)} />
           <Field label="Motivo de correccion" htmlFor={`correctionReason-${invoice.id}`} helper="Obligatorio. Describe por que corriges el estado final.">
             <textarea
               id={`correctionReason-${invoice.id}`}
@@ -57,7 +61,7 @@ export function InvoiceCorrectionModal({
             />
           </Field>
 
-          {invoice.status === "REJECTED" ? (
+          {sourceStatus === "REJECTED" ? (
             <>
               <Field label="Importe pagado" htmlFor={`correctionPaidAmount-${invoice.id}`} helper="Importe final reembolsado.">
                 <input
@@ -159,7 +163,7 @@ function toInputDate(value: Date): string {
   return value.toISOString().slice(0, 10);
 }
 
-function toCorrectionTargetStatus(status: Invoice["status"]): Extract<Invoice["status"], "PAID" | "REJECTED"> {
+function toCorrectionTargetStatus(status: CorrectionSourceStatus): CorrectionSourceStatus {
   return status === "PAID" ? "REJECTED" : "PAID";
 }
 

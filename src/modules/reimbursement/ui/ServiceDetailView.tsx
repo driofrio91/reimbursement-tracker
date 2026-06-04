@@ -390,9 +390,11 @@ function InvoiceStageCard({
   const [rejectedState, rejectedFormAction, isMarkingRejected] = useActionState(rejectedAction, initialInvoiceActionResult);
   const [correctionState, correctionFormAction, isCorrectingResolution] = useActionState(correctionAction, initialInvoiceActionResult);
   const [deleteState, deleteFormAction, isDeleting] = useActionState(deleteAction, initialInvoiceActionResult);
+  const shouldRefreshAfterCorrectionRef = useRef(false);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
+  const [correctionSourceStatus, setCorrectionSourceStatus] = useState<Extract<Invoice["status"], "PAID" | "REJECTED"> | null>(null);
   const [isDeleteInformationModalOpen, setIsDeleteInformationModalOpen] = useState(false);
 
   useEffect(() => {
@@ -436,8 +438,35 @@ function InvoiceStageCard({
   }, [rejectedState]);
 
   useEffect(() => {
-    notifyActionResult(correctionState, router);
-  }, [correctionState, router]);
+    if (correctionState.status === "idle" || correctionState.token === 0) {
+      return;
+    }
+
+    if (correctionState.status === "error") {
+      notifyError(correctionState.message);
+      return;
+    }
+
+    notifySuccess(correctionState.message);
+    shouldRefreshAfterCorrectionRef.current = true;
+
+    const closeModalTimer = window.setTimeout(() => {
+      setIsCorrectionModalOpen(false);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(closeModalTimer);
+    };
+  }, [correctionState]);
+
+  useEffect(() => {
+    if (!shouldRefreshAfterCorrectionRef.current || isCorrectionModalOpen) {
+      return;
+    }
+
+    router.refresh();
+    shouldRefreshAfterCorrectionRef.current = false;
+  }, [isCorrectionModalOpen, router]);
 
   useEffect(() => {
     if (deleteState.status === "idle" || deleteState.token === 0) {
@@ -692,7 +721,10 @@ function InvoiceStageCard({
             <button
               className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
               type="button"
-              onClick={() => setIsCorrectionModalOpen(true)}
+              onClick={() => {
+                setCorrectionSourceStatus(invoice.status as Extract<Invoice["status"], "PAID" | "REJECTED">);
+                setIsCorrectionModalOpen(true);
+              }}
             >
               Corregir estado final
             </button>
@@ -832,6 +864,7 @@ function InvoiceStageCard({
 
       <InvoiceCorrectionModal
         invoice={invoice}
+        sourceStatus={correctionSourceStatus ?? (invoice.status as Extract<Invoice["status"], "PAID" | "REJECTED">)}
         isOpen={isCorrectionModalOpen}
         defaultPaidDate={defaultPaidDate}
         correctionState={correctionState}
@@ -839,7 +872,10 @@ function InvoiceStageCard({
         isCorrectingResolution={isCorrectingResolution}
         inputBaseClassName={inputBaseClassName}
         primaryButtonClassName={primaryButtonClassName}
-        onClose={() => setIsCorrectionModalOpen(false)}
+        onClose={() => {
+          setIsCorrectionModalOpen(false);
+          setCorrectionSourceStatus(null);
+        }}
       />
       {isDeleteInformationModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby={`delete-information-title-${invoice.id}`}>
