@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifecycleStepper";
+import { InvoiceCorrectionModal } from "@/modules/reimbursement/ui/InvoiceCorrectionModal";
 import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
@@ -389,7 +390,6 @@ function InvoiceStageCard({
   const [rejectedState, rejectedFormAction, isMarkingRejected] = useActionState(rejectedAction, initialInvoiceActionResult);
   const [correctionState, correctionFormAction, isCorrectingResolution] = useActionState(correctionAction, initialInvoiceActionResult);
   const [deleteState, deleteFormAction, isDeleting] = useActionState(deleteAction, initialInvoiceActionResult);
-  const correctionFormRef = useRef<HTMLFormElement>(null);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [isRejectedModalOpen, setIsRejectedModalOpen] = useState(false);
   const [isCorrectionModalOpen, setIsCorrectionModalOpen] = useState(false);
@@ -830,87 +830,17 @@ function InvoiceStageCard({
         </div>
       ) : null}
 
-      {isCorrectionModalOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-4 sm:items-center"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={`correction-title-${invoice.id}`}
-        >
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:p-5">
-            <h3 className="text-base font-semibold text-slate-950" id={`correction-title-${invoice.id}`}>
-              Corregir estado final de reembolso
-            </h3>
-            <p className="mt-1 text-sm text-slate-600">
-              Vas a cambiar la factura de <strong>{toDisplayInvoiceStatus(invoice.status)}</strong> a{" "}
-              <strong>{toDisplayInvoiceStatus(toCorrectionTargetStatus(invoice.status))}</strong>.
-            </p>
-
-            <form ref={correctionFormRef} action={correctionFormAction} className="mt-4 space-y-3">
-              <input type="hidden" name="toStatus" value={toCorrectionTargetStatus(invoice.status)} />
-              <Field label="Motivo de correccion" htmlFor={`correctionReason-${invoice.id}`} helper="Obligatorio. Describe por que corriges el estado final.">
-                <textarea
-                  id={`correctionReason-${invoice.id}`}
-                  className={`${inputBaseClassName} min-h-24`}
-                  name="correctionReason"
-                  required
-                />
-              </Field>
-
-              {invoice.status === "REJECTED" ? (
-                <>
-                  <Field label="Importe pagado" htmlFor={`correctionPaidAmount-${invoice.id}`} helper="Importe final reembolsado.">
-                    <input
-                      id={`correctionPaidAmount-${invoice.id}`}
-                      className={inputBaseClassName}
-                      type="text"
-                      inputMode="decimal"
-                      name="paidAmount"
-                      defaultValue={String(invoice.paidAmount ?? invoice.invoiceExpectedAmount)}
-                      required
-                    />
-                  </Field>
-                  <Field label="Fecha de pago" htmlFor={`correctionPaidAt-${invoice.id}`}>
-                    <input
-                      id={`correctionPaidAt-${invoice.id}`}
-                      className={inputBaseClassName}
-                      type="date"
-                      name="paidAt"
-                      defaultValue={invoice.paidAt ? toInputDate(invoice.paidAt) : defaultPaidDate}
-                      required
-                    />
-                  </Field>
-                </>
-              ) : (
-                <Field label="Motivo de rechazo (opcional)" htmlFor={`correctionRejectionReason-${invoice.id}`}>
-                  <input
-                    id={`correctionRejectionReason-${invoice.id}`}
-                    className={inputBaseClassName}
-                    type="text"
-                    name="rejectionReason"
-                    defaultValue={invoice.rejectionReason ?? ""}
-                  />
-                </Field>
-              )}
-
-              <ActionFeedback result={correctionState} />
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <button
-                  className="inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-                  type="button"
-                  onClick={() => setIsCorrectionModalOpen(false)}
-                  disabled={isCorrectingResolution}
-                >
-                  Cancelar
-                </button>
-                <button className={primaryButtonClassName} type="submit" disabled={isCorrectingResolution}>
-                  {isCorrectingResolution ? "Guardando..." : "Confirmar correccion"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+      <InvoiceCorrectionModal
+        invoice={invoice}
+        isOpen={isCorrectionModalOpen}
+        defaultPaidDate={defaultPaidDate}
+        correctionState={correctionState}
+        correctionFormAction={correctionFormAction}
+        isCorrectingResolution={isCorrectingResolution}
+        inputBaseClassName={inputBaseClassName}
+        primaryButtonClassName={primaryButtonClassName}
+        onClose={() => setIsCorrectionModalOpen(false)}
+      />
       {isDeleteInformationModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby={`delete-information-title-${invoice.id}`}>
           <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
@@ -1523,10 +1453,6 @@ function compareByCreatedAt(left: Invoice, right: Invoice) {
   }
 
   return left.id.localeCompare(right.id);
-}
-
-function toCorrectionTargetStatus(status: Invoice["status"]): Extract<Invoice["status"], "PAID" | "REJECTED"> {
-  return status === "PAID" ? "REJECTED" : "PAID";
 }
 
 function toDisplayReimbursementOutcome(outcome: ReimbursementOutcome, serviceStatus: Service["status"]) {
