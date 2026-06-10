@@ -151,6 +151,7 @@
 - el nombre libre del servicio identifica a la persona que recibe el servicio y puede ser distinta del titular
 - cada factura tiene `personId` imputado al titular del seguro para consumo anual de topes
 - el consumo anual se calcula por combinacion `personId + insurerId + year(invoiceDate)`
+- naming interno de app/dominio alineado a semantica de titular y receptor; el schema fisico mantiene nombres legacy en esta fase
 - `paidAmount` se autocompleta con esperado y es editable
 - en correccion de estado final se guarda solo la ultima correccion (sin historial completo)
 

@@ -6,6 +6,6 @@ export interface ServiceRepository {
   list(): Promise<Service[]>;
   updateStatus(serviceId: string, status: Service["status"]): Promise<Service | null>;
   deleteWithInvoicesInCreatedStatusOnly(serviceId: string): Promise<boolean>;
-  personExists(personId: string): Promise<boolean>;
+  insuranceHolderExists(insuranceHolderPersonId: string): Promise<boolean>;
   insurerIsActive(insurerId: string): Promise<boolean>;
 }

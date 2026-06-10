@@ -191,7 +191,7 @@ async function AnnualLimitsDashboardSection({
       ) : (
         <div className={compact ? "mt-4 space-y-2" : "mt-5 space-y-3"}>
           {rows.map((row) => (
-            <AnnualLimitRow key={`${row.personId}:${row.insurerId}`} row={row} compact={compact} />
+            <AnnualLimitRow key={`${row.insuranceHolderPersonId}:${row.insurerId}`} row={row} compact={compact} />
           ))}
         </div>
       )}
@@ -204,7 +204,7 @@ function AnnualLimitRow({ row, compact }: { row: AnnualLimitDashboardRow; compac
     <article className={compact ? "rounded-xl border border-slate-200 bg-slate-50 p-3" : "rounded-2xl border border-slate-200 bg-slate-50 p-4"}>
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-semibold text-slate-900">{row.personDisplayName}</p>
+          <p className="text-sm font-semibold text-slate-900">{row.insuranceHolderPersonName}</p>
           <p className="text-xs text-slate-500">{row.insurerName}</p>
         </div>
         <span className={badgeClassName(row.trafficLight)}>{toTrafficLightLabel(row.trafficLight)}</span>

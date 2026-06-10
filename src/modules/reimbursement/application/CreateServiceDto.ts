@@ -4,9 +4,9 @@ export interface CreateServiceInput {
   actualAmount: number;
   invoiceBilledAmount: number;
   invoiceExpectedAmount: number;
-  personId: string;
+  insuranceHolderPersonId: string;
   insurerId: string;
-  policyHolderName: string;
+  serviceRecipientName: string;
   attended?: boolean;
   notes?: string;
 }

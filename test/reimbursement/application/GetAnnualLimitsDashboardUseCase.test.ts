@@ -10,8 +10,8 @@ describe("GetAnnualLimitsDashboardUseCase", () => {
 
     repository.listByYear.mockResolvedValue([
       {
-        personId: "p-1",
-        personDisplayName: "Ana",
+        insuranceHolderPersonId: "p-1",
+        insuranceHolderPersonName: "Ana",
         insurerId: "i-1",
         insurerName: "Aseguradora Uno",
         annualLimitAmount: 1500,
@@ -19,8 +19,8 @@ describe("GetAnnualLimitsDashboardUseCase", () => {
         currency: "EUR",
       },
       {
-        personId: "p-2",
-        personDisplayName: "Bruno",
+        insuranceHolderPersonId: "p-2",
+        insuranceHolderPersonName: "Bruno",
         insurerId: "i-2",
         insurerName: "Aseguradora Dos",
         annualLimitAmount: 1500,
@@ -34,7 +34,7 @@ describe("GetAnnualLimitsDashboardUseCase", () => {
     });
 
     expect(result[0]).toMatchObject({
-      personId: "p-2",
+      insuranceHolderPersonId: "p-2",
       percentageUsed: 80,
       trafficLight: "amber",
       remainingAmount: 300,
@@ -43,7 +43,7 @@ describe("GetAnnualLimitsDashboardUseCase", () => {
     });
 
     expect(result[1]).toMatchObject({
-      personId: "p-1",
+      insuranceHolderPersonId: "p-1",
       percentageUsed: 40,
       trafficLight: "green",
       remainingAmount: 900,
@@ -57,8 +57,8 @@ describe("GetAnnualLimitsDashboardUseCase", () => {
 
     repository.listByYear.mockResolvedValue([
       {
-        personId: "p-9",
-        personDisplayName: "Carla",
+        insuranceHolderPersonId: "p-9",
+        insuranceHolderPersonName: "Carla",
         insurerId: "i-9",
         insurerName: "Aseguradora Tres",
         annualLimitAmount: 1500,

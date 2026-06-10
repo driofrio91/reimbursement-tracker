@@ -149,8 +149,10 @@ export async function completeInvoiceInformationAction(
     return buildActionResult("error", "Revisa los datos de factura antes de guardar.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
-    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
 
@@ -205,8 +207,10 @@ export async function registerInvoiceClaimReferenceAction(
     return buildActionResult("error", "La referencia de reembolso es obligatoria.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
-    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
 
@@ -252,8 +256,10 @@ export async function markInvoiceAsPaidAction(
     return buildActionResult("error", "El importe pagado y la fecha de pago son obligatorios.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
-    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
 
@@ -304,8 +310,10 @@ export async function markInvoiceAsRejectedAction(
     return buildActionResult("error", "No se pudo validar el motivo de rechazo.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
-    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
 
@@ -551,8 +559,10 @@ export async function assignInvoicePersonAction(
     return buildActionResult("error", "Debes seleccionar el titular imputado de la factura.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
-    await assignInvoicePersonUseCase(invoiceId, parsedInput.data.personId, {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
   } catch (error) {
@@ -564,7 +574,7 @@ export async function assignInvoicePersonAction(
   }
 
   revalidatePath(`/services/${serviceId}`);
-  return buildActionResult("success", "Persona imputada de factura guardada.");
+  return buildActionResult("success", "Titular imputado de factura guardado.");
 }
 
 async function authorizeInvoiceAction(): Promise<AuthenticatedActor | null> {

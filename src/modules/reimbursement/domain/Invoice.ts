@@ -8,7 +8,7 @@ export type InvoiceStatus =
 export interface Invoice {
   id: string;
   serviceId: string;
-  personId: string | null;
+  insuranceHolderPersonId: string | null;
   insurerId: string | null;
   invoiceNumber: string | null;
   invoiceDate: Date | null;
@@ -35,7 +35,7 @@ export interface Invoice {
 
 export interface NewInvoice {
   serviceId: string;
-  personId?: string | null;
+  insuranceHolderPersonId?: string | null;
   insurerId?: string | null;
   invoiceNumber?: string | null;
   invoiceDate?: Date | null;

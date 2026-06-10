@@ -11,7 +11,7 @@ describe("CreateServiceUseCase", () => {
     const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({ attended: undefined });
 
-    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insuranceHolderExists.mockResolvedValue(true);
     serviceRepository.insurerIsActive.mockResolvedValue(true);
     serviceRepository.create.mockResolvedValue(buildService());
     invoiceRepository.createMany.mockResolvedValue([]);
@@ -29,9 +29,9 @@ describe("CreateServiceUseCase", () => {
       invoiceBilledAmount: 55,
       invoiceExpectedAmount: 49.5,
       currency: "EUR",
-      personId: "person-1",
+      insuranceHolderPersonId: "person-1",
       insurerId: "insurer-1",
-      policyHolderName: "Ana Perez",
+      serviceRecipientName: "Ana Perez",
       attended: true,
       status: "REGISTERED",
       notes: "Sin incidencias",
@@ -41,7 +41,7 @@ describe("CreateServiceUseCase", () => {
       expect.arrayContaining([
         expect.objectContaining({
           serviceId: "service-1",
-          personId: "person-1",
+          insuranceHolderPersonId: "person-1",
           insurerId: "insurer-1",
           invoiceBilledAmount: 55,
           invoiceExpectedAmount: 49.5,
@@ -56,11 +56,11 @@ describe("CreateServiceUseCase", () => {
     const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({
       description: "  Consulta de rehabilitacion  ",
-      policyHolderName: "  Luis Garcia  ",
+      serviceRecipientName: "  Luis Garcia  ",
       notes: "  Nota interna  ",
     });
 
-    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insuranceHolderExists.mockResolvedValue(true);
     serviceRepository.insurerIsActive.mockResolvedValue(true);
     serviceRepository.create.mockResolvedValue(buildService());
     invoiceRepository.createMany.mockResolvedValue([]);
@@ -73,7 +73,7 @@ describe("CreateServiceUseCase", () => {
     expect(serviceRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         description: "Consulta de rehabilitacion",
-        policyHolderName: "Luis Garcia",
+        serviceRecipientName: "Luis Garcia",
         notes: "Nota interna",
       }),
     );
@@ -84,7 +84,7 @@ describe("CreateServiceUseCase", () => {
     const invoiceRepository = createInvoiceRepositoryMock();
     const input = buildCreateServiceInput({ notes: "   " });
 
-    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insuranceHolderExists.mockResolvedValue(true);
     serviceRepository.insurerIsActive.mockResolvedValue(true);
     serviceRepository.create.mockResolvedValue(buildService({ notes: null }));
     invoiceRepository.createMany.mockResolvedValue([]);
@@ -115,7 +115,7 @@ describe("CreateServiceUseCase", () => {
       code: "INVALID_AMOUNT",
     });
 
-    expect(serviceRepository.personExists).not.toHaveBeenCalled();
+    expect(serviceRepository.insuranceHolderExists).not.toHaveBeenCalled();
     expect(serviceRepository.create).not.toHaveBeenCalled();
     expect(invoiceRepository.createMany).not.toHaveBeenCalled();
   });
@@ -124,7 +124,7 @@ describe("CreateServiceUseCase", () => {
     const serviceRepository = createServiceRepositoryMock();
     const invoiceRepository = createInvoiceRepositoryMock();
 
-    serviceRepository.personExists.mockResolvedValue(false);
+    serviceRepository.insuranceHolderExists.mockResolvedValue(false);
     serviceRepository.insurerIsActive.mockResolvedValue(true);
 
     await expect(
@@ -143,7 +143,7 @@ describe("CreateServiceUseCase", () => {
     const serviceRepository = createServiceRepositoryMock();
     const invoiceRepository = createInvoiceRepositoryMock();
 
-    serviceRepository.personExists.mockResolvedValue(true);
+    serviceRepository.insuranceHolderExists.mockResolvedValue(true);
     serviceRepository.insurerIsActive.mockResolvedValue(false);
 
     await expect(

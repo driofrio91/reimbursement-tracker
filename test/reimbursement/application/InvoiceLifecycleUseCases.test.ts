@@ -121,10 +121,10 @@ describe("Invoice lifecycle use cases", () => {
     const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(
-      buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED", personId: "person-1", insurerId: "insurer-1" }),
+      buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED", insuranceHolderPersonId: "person-1", insurerId: "insurer-1" }),
     );
     invoiceRepository.markAsPaid.mockResolvedValue(
-      buildInvoice({ status: "PAID", paidAmount: 49.5, personId: "person-1", insurerId: "insurer-1", invoiceDate: new Date("2026-04-25T00:00:00.000Z") }),
+      buildInvoice({ status: "PAID", paidAmount: 49.5, insuranceHolderPersonId: "person-1", insurerId: "insurer-1", invoiceDate: new Date("2026-04-25T00:00:00.000Z") }),
     );
 
     await markInvoiceAsPaidUseCase("invoice-1", 49.5, new Date("2026-04-25T00:00:00.000Z"), {

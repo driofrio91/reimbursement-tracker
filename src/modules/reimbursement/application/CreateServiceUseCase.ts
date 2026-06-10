@@ -25,7 +25,7 @@ export async function createServiceUseCase(
   dependencies: CreateServiceUseCaseDependencies,
 ): Promise<CreateServiceResult> {
   const description = input.description.trim();
-  const policyHolderName = input.policyHolderName.trim();
+  const serviceRecipientName = input.serviceRecipientName.trim();
   const notes = input.notes?.trim() || undefined;
 
   if (input.actualAmount <= 0) {
@@ -39,13 +39,13 @@ export async function createServiceUseCase(
     );
   }
 
-  const [personExists, insurerIsActive] = await Promise.all([
-    dependencies.serviceRepository.personExists(input.personId),
+  const [insuranceHolderExists, insurerIsActive] = await Promise.all([
+    dependencies.serviceRepository.insuranceHolderExists(input.insuranceHolderPersonId),
     dependencies.serviceRepository.insurerIsActive(input.insurerId),
   ]);
 
-  if (!personExists) {
-    throw new CreateServiceUseCaseError("PERSON_NOT_FOUND", "La persona seleccionada no existe.");
+  if (!insuranceHolderExists) {
+    throw new CreateServiceUseCaseError("PERSON_NOT_FOUND", "El titular del seguro seleccionado no existe.");
   }
 
   if (!insurerIsActive) {
@@ -62,9 +62,9 @@ export async function createServiceUseCase(
     invoiceBilledAmount: input.invoiceBilledAmount,
     invoiceExpectedAmount: input.invoiceExpectedAmount,
     currency: "EUR",
-    personId: input.personId,
+    insuranceHolderPersonId: input.insuranceHolderPersonId,
     insurerId: input.insurerId,
-    policyHolderName,
+    serviceRecipientName,
     attended: input.attended ?? true,
     status: "REGISTERED",
     notes,
@@ -82,7 +82,7 @@ export async function createServiceUseCase(
     issuerName: null,
     issuerTaxId: null,
     claimReference: null,
-    personId: input.personId,
+    insuranceHolderPersonId: input.insuranceHolderPersonId,
     insurerId: input.insurerId,
     status: "CREATED" as const,
     paidAmount: null,

@@ -11,16 +11,16 @@ export class AssignInvoicePersonUseCaseError extends Error {
 }
 
 interface AssignInvoicePersonUseCaseDependencies {
-  invoiceRepository: Pick<InvoiceRepository, "getById" | "setPerson">;
+  invoiceRepository: Pick<InvoiceRepository, "getById" | "setInsuranceHolder">;
 }
 
 export async function assignInvoicePersonUseCase(
   invoiceId: string,
-  personId: string,
+  insuranceHolderPersonId: string,
   dependencies: AssignInvoicePersonUseCaseDependencies,
 ): Promise<Invoice> {
-  if (!personId.trim()) {
-    throw new AssignInvoicePersonUseCaseError("INVALID_PERSON", "Debes seleccionar una persona para imputar la factura.");
+  if (!insuranceHolderPersonId.trim()) {
+    throw new AssignInvoicePersonUseCaseError("INVALID_PERSON", "Debes seleccionar un titular para imputar la factura.");
   }
 
   const invoice = await dependencies.invoiceRepository.getById(invoiceId);
@@ -30,10 +30,10 @@ export async function assignInvoicePersonUseCase(
   }
 
   if (invoice.status === "PAID") {
-    throw new AssignInvoicePersonUseCaseError("INVALID_STATUS", "No puedes cambiar la persona de una factura pagada.");
+    throw new AssignInvoicePersonUseCaseError("INVALID_STATUS", "No puedes cambiar el titular de una factura pagada.");
   }
 
-  const updatedInvoice = await dependencies.invoiceRepository.setPerson(invoiceId, personId);
+  const updatedInvoice = await dependencies.invoiceRepository.setInsuranceHolder(invoiceId, insuranceHolderPersonId);
 
   if (!updatedInvoice) {
     throw new AssignInvoicePersonUseCaseError(

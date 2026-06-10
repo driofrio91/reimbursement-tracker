@@ -44,7 +44,7 @@ export async function markInvoiceAsPaidUseCase(
     );
   }
 
-  if (!invoice.personId) {
+  if (!invoice.insuranceHolderPersonId) {
     throw new MarkInvoiceAsPaidUseCaseError(
       "MISSING_INVOICE_PERSON",
       "Debes revisar y guardar la persona imputada antes de marcar la factura como pagada.",

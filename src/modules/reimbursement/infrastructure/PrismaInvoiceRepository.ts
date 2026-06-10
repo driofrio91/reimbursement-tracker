@@ -7,7 +7,11 @@ import {
   InvoiceStatus,
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
-import { InvoiceRepository, PaidAmountByPersonInsurer, SearchInvoicesFilters } from "@/modules/reimbursement/domain/InvoiceRepository";
+import {
+  InvoiceRepository,
+  PaidAmountByInsuranceHolderInsurer,
+  SearchInvoicesFilters,
+} from "@/modules/reimbursement/domain/InvoiceRepository";
 
 export class PrismaInvoiceRepository implements InvoiceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -45,7 +49,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const createdInvoice = await this.prisma.invoice.create({
       data: {
         serviceId: invoice.serviceId,
-        personId: invoice.personId ?? null,
+        personId: invoice.insuranceHolderPersonId ?? null,
         insurerId: invoice.insurerId ?? null,
         invoiceNumber: invoice.invoiceNumber ?? null,
         invoiceDate: invoice.invoiceDate ?? null,
@@ -77,7 +81,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         this.prisma.invoice.create({
           data: {
             serviceId: invoice.serviceId,
-            personId: invoice.personId ?? null,
+            personId: invoice.insuranceHolderPersonId ?? null,
             insurerId: invoice.insurerId ?? null,
             invoiceNumber: invoice.invoiceNumber ?? null,
             invoiceDate: invoice.invoiceDate ?? null,
@@ -165,7 +169,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return this.getById(invoiceId);
   }
 
-  async setPerson(invoiceId: string, personId: string): Promise<Invoice | null> {
+  async setInsuranceHolder(invoiceId: string, insuranceHolderPersonId: string): Promise<Invoice | null> {
     const updateResult = await this.prisma.invoice.updateMany({
       where: {
         id: invoiceId,
@@ -174,7 +178,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         },
       },
       data: {
-        personId,
+        personId: insuranceHolderPersonId,
       },
     });
 
@@ -273,7 +277,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return this.getById(invoiceId);
   }
 
-  async getPaidAmountByPersonInsurerForYear(year: number): Promise<PaidAmountByPersonInsurer[]> {
+  async getPaidAmountByPersonInsurerForYear(year: number): Promise<PaidAmountByInsuranceHolderInsurer[]> {
     const rows = await this.prisma.invoice.findMany({
       select: {
         personId: true,
@@ -296,7 +300,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       },
     });
 
-    const bucket = new Map<string, PaidAmountByPersonInsurer>();
+    const bucket = new Map<string, PaidAmountByInsuranceHolderInsurer>();
 
     for (const row of rows) {
       if (!row.personId) {
@@ -309,7 +313,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
 
       if (!current) {
         bucket.set(key, {
-          personId: row.personId,
+          insuranceHolderPersonId: row.personId,
           insurerId: row.service.insurerId,
           amount,
         });
@@ -352,7 +356,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return {
       id: invoice.id,
       serviceId: invoice.serviceId,
-      personId: invoice.personId,
+      insuranceHolderPersonId: invoice.personId,
       insurerId: invoice.insurerId,
       invoiceNumber: invoice.invoiceNumber,
       invoiceDate: invoice.invoiceDate,

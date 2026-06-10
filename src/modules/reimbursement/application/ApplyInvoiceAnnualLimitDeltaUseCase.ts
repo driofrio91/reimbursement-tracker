@@ -6,7 +6,7 @@ interface ApplyInvoiceAnnualLimitDeltaUseCaseDependencies {
 }
 
 interface AnnualContribution {
-  personId: string;
+  insuranceHolderPersonId: string;
   insurerId: string;
   year: number;
   amount: number;
@@ -22,7 +22,7 @@ export async function applyInvoiceAnnualLimitDeltaUseCase(
 
   if (previousContribution && nextContribution) {
     if (
-      previousContribution.personId === nextContribution.personId &&
+      previousContribution.insuranceHolderPersonId === nextContribution.insuranceHolderPersonId &&
       previousContribution.insurerId === nextContribution.insurerId &&
       previousContribution.year === nextContribution.year
     ) {
@@ -30,7 +30,7 @@ export async function applyInvoiceAnnualLimitDeltaUseCase(
 
       if (delta !== 0) {
         await dependencies.annualLimitRepository.applyDelta(
-          nextContribution.personId,
+          nextContribution.insuranceHolderPersonId,
           nextContribution.insurerId,
           nextContribution.year,
           delta,
@@ -41,13 +41,13 @@ export async function applyInvoiceAnnualLimitDeltaUseCase(
     }
 
     await dependencies.annualLimitRepository.applyDelta(
-      previousContribution.personId,
+      previousContribution.insuranceHolderPersonId,
       previousContribution.insurerId,
       previousContribution.year,
       roundToTwoDecimals(-previousContribution.amount),
     );
     await dependencies.annualLimitRepository.applyDelta(
-      nextContribution.personId,
+      nextContribution.insuranceHolderPersonId,
       nextContribution.insurerId,
       nextContribution.year,
       nextContribution.amount,
@@ -57,7 +57,7 @@ export async function applyInvoiceAnnualLimitDeltaUseCase(
 
   if (previousContribution) {
     await dependencies.annualLimitRepository.applyDelta(
-      previousContribution.personId,
+      previousContribution.insuranceHolderPersonId,
       previousContribution.insurerId,
       previousContribution.year,
       roundToTwoDecimals(-previousContribution.amount),
@@ -66,7 +66,7 @@ export async function applyInvoiceAnnualLimitDeltaUseCase(
 
   if (nextContribution) {
     await dependencies.annualLimitRepository.applyDelta(
-      nextContribution.personId,
+      nextContribution.insuranceHolderPersonId,
       nextContribution.insurerId,
       nextContribution.year,
       nextContribution.amount,
@@ -77,7 +77,7 @@ export async function applyInvoiceAnnualLimitDeltaUseCase(
 function getContribution(invoice: Invoice): AnnualContribution | null {
   if (
     invoice.status !== "PAID" ||
-    !invoice.personId ||
+    !invoice.insuranceHolderPersonId ||
     !invoice.insurerId ||
     !invoice.invoiceDate ||
     typeof invoice.paidAmount !== "number"
@@ -86,7 +86,7 @@ function getContribution(invoice: Invoice): AnnualContribution | null {
   }
 
   return {
-    personId: invoice.personId,
+    insuranceHolderPersonId: invoice.insuranceHolderPersonId,
     insurerId: invoice.insurerId,
     year: invoice.invoiceDate.getUTCFullYear(),
     amount: roundToTwoDecimals(invoice.paidAmount),

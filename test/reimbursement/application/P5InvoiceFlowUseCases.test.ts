@@ -33,7 +33,7 @@ describe("P5 invoice flow use cases", () => {
     expect(invoiceRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         serviceId: "service-1",
-        personId: "person-1",
+        insuranceHolderPersonId: "person-1",
         insurerId: "insurer-1",
         invoiceBilledAmount: 55,
         invoiceExpectedAmount: 49.5,

@@ -30,7 +30,7 @@ export async function syncAnnualReimbursementLimitsUseCase(
   for (const row of paidAmountByCombination) {
     try {
       const existing = await dependencies.annualLimitRepository.upsertForPersonInsurerYear(
-        row.personId,
+        row.insuranceHolderPersonId,
         row.insurerId,
         year,
       );
@@ -41,7 +41,7 @@ export async function syncAnnualReimbursementLimitsUseCase(
         continue;
       }
 
-      await dependencies.annualLimitRepository.setAccumulated(row.personId, row.insurerId, year, target);
+      await dependencies.annualLimitRepository.setAccumulated(row.insuranceHolderPersonId, row.insurerId, year, target);
       adjusted += 1;
     } catch {
       errors += 1;

@@ -254,9 +254,9 @@ export function ServiceDetailView({
           <p className="text-sm font-medium text-slate-700">Datos del servicio</p>
           <dl className="grid gap-x-4 gap-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2">
             <InfoRow label="Fecha del servicio" value={formatDate(service.serviceDate)} />
-            <InfoRow label="Titular del seguro" value={service.personName} />
+            <InfoRow label="Titular del seguro" value={service.insuranceHolderPersonName} />
             <InfoRow label="Aseguradora" value={service.insurerName} />
-            <InfoRow label="Persona que recibe el servicio" value={service.policyHolderName} />
+            <InfoRow label="Persona que recibe el servicio" value={service.serviceRecipientName} />
             <InfoRow label="Facturado por factura" value={formatCurrency(service.invoiceBilledAmount, service.currency)} />
             <InfoRow label="Esperado por factura" value={formatCurrency(service.invoiceExpectedAmount, service.currency)} />
           </dl>
@@ -320,7 +320,7 @@ export function ServiceDetailView({
                 index={index}
                 isNewInvoice={highlightedInvoiceIds.includes(invoice.id)}
                 people={people}
-                servicePersonId={service.personId}
+                serviceInsuranceHolderPersonId={service.insuranceHolderPersonId}
                 serviceInsurerName={service.insurerName}
                 completeInvoiceInformationAction={completeInvoiceInformationAction}
                 registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
@@ -346,7 +346,7 @@ interface InvoiceStageCardProps {
   index: number;
   isNewInvoice: boolean;
   people: ReferencePerson[];
-  servicePersonId: string;
+  serviceInsuranceHolderPersonId: string;
   serviceInsurerName: string;
   serviceStatus: Service["status"];
   completeInvoiceInformationAction: ServiceDetailViewProps["completeInvoiceInformationAction"];
@@ -364,7 +364,7 @@ function InvoiceStageCard({
   index,
   isNewInvoice,
   people,
-  servicePersonId,
+  serviceInsuranceHolderPersonId,
   serviceInsurerName,
   serviceStatus,
   completeInvoiceInformationAction,
@@ -571,7 +571,7 @@ function InvoiceStageCard({
         </p>
         <p className="truncate">
           <span className="font-medium text-slate-900">Titular imputado:</span>{" "}
-          <span className="inline-block max-w-[18rem] truncate align-bottom">{people.find((person) => person.id === invoice.personId)?.displayName ?? "Sin asignar"}</span>
+          <span className="inline-block max-w-[18rem] truncate align-bottom">{people.find((person) => person.id === invoice.insuranceHolderPersonId)?.displayName ?? "Sin asignar"}</span>
         </p>
       </div>
 
@@ -589,7 +589,7 @@ function InvoiceStageCard({
                 id={`invoice-person-created-${invoice.id}`}
                 className={inputBaseClassName}
                 name="personId"
-                defaultValue={invoice.personId ?? servicePersonId}
+                defaultValue={invoice.insuranceHolderPersonId ?? serviceInsuranceHolderPersonId}
                 required
               >
                 <option value="">Selecciona una persona</option>
@@ -664,7 +664,7 @@ function InvoiceStageCard({
                 id={`invoice-person-claim-${invoice.id}`}
                 className={inputBaseClassName}
                 name="personId"
-                defaultValue={invoice.personId ?? servicePersonId}
+                defaultValue={invoice.insuranceHolderPersonId ?? serviceInsuranceHolderPersonId}
                 required
               >
                 <option value="">Selecciona una persona</option>
@@ -750,7 +750,7 @@ function InvoiceStageCard({
                   id={`invoice-person-paid-${invoice.id}`}
                   className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-200"
                   name="personId"
-                  defaultValue={invoice.personId ?? servicePersonId}
+                  defaultValue={invoice.insuranceHolderPersonId ?? serviceInsuranceHolderPersonId}
                   required
                 >
                   <option value="">Selecciona una persona</option>
@@ -764,7 +764,7 @@ function InvoiceStageCard({
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
                 <p className="font-semibold">Confirmacion de imputacion anual</p>
                 <p className="mt-1">
-                  Se imputara al titular <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "seleccionado"}</strong> con aseguradora <strong>{serviceInsurerName}</strong>.
+                  Se imputara al titular <strong>{people.find((person) => person.id === (invoice.insuranceHolderPersonId ?? serviceInsuranceHolderPersonId))?.displayName ?? "seleccionado"}</strong> con aseguradora <strong>{serviceInsurerName}</strong>.
                 </p>
               </div>
               <Field label="Importe pagado" htmlFor={`paidAmount-${invoice.id}`} helper="Puedes ajustar el importe final recibido.">
@@ -820,7 +820,7 @@ function InvoiceStageCard({
                   id={`invoice-person-rejected-${invoice.id}`}
                   className="w-full rounded-lg border border-rose-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-rose-500 focus-visible:ring-2 focus-visible:ring-rose-200"
                   name="personId"
-                  defaultValue={invoice.personId ?? servicePersonId}
+                  defaultValue={invoice.insuranceHolderPersonId ?? serviceInsuranceHolderPersonId}
                   required
                 >
                   <option value="">Selecciona una persona</option>
@@ -841,7 +841,7 @@ function InvoiceStageCard({
                 />
               </Field>
               <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                Titular imputado actual: <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "sin asignar"}</strong>.
+                Titular imputado actual: <strong>{people.find((person) => person.id === (invoice.insuranceHolderPersonId ?? serviceInsuranceHolderPersonId))?.displayName ?? "sin asignar"}</strong>.
               </p>
               <ActionFeedback result={rejectedState} />
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

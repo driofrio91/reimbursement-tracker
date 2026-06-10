@@ -68,6 +68,11 @@ Campos clave:
 - La persona que recibe el servicio puede ser distinta del titular del seguro.
 - El consumo anual se sigue calculando sobre el titular del seguro imputado en factura.
 
+## Nota de naming interno
+
+- En la app y el dominio se prioriza naming semantico como `insuranceHolderPersonId`, `insuranceHolderPersonName` y `serviceRecipientName`.
+- El schema fisico de Prisma mantiene por ahora nombres legacy como `personId` y `policyHolderName` para evitar migraciones en esta fase.
+
 ## Regla de cantidad de facturas
 
 - `invoiceCount = ceil(actualAmount / invoiceExpectedAmount)`

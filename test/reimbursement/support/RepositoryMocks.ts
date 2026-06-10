@@ -17,7 +17,7 @@ export interface ServiceRepositoryMock extends ServiceRepository {
   list: Mock<() => Promise<Service[]>>;
   updateStatus: Mock<(serviceId: string, status: Service["status"]) => Promise<Service | null>>;
   deleteWithInvoicesInCreatedStatusOnly: Mock<(serviceId: string) => Promise<boolean>>;
-  personExists: Mock<(personId: string) => Promise<boolean>>;
+  insuranceHolderExists: Mock<(insuranceHolderPersonId: string) => Promise<boolean>>;
   insurerIsActive: Mock<(insurerId: string) => Promise<boolean>>;
 }
 
@@ -28,7 +28,7 @@ export function createServiceRepositoryMock(): ServiceRepositoryMock {
     list: vi.fn(),
     updateStatus: vi.fn(),
     deleteWithInvoicesInCreatedStatusOnly: vi.fn(),
-    personExists: vi.fn(),
+    insuranceHolderExists: vi.fn(),
     insurerIsActive: vi.fn(),
   };
 }
@@ -42,12 +42,12 @@ export interface InvoiceRepositoryMock extends InvoiceRepository {
   listByServiceId: Mock<(serviceId: string) => Promise<Invoice[]>>;
   completeInformation: Mock<(invoiceId: string, input: CompleteInvoiceInformationInput) => Promise<Invoice | null>>;
   setClaimReference: Mock<(invoiceId: string, claimReference: string) => Promise<Invoice | null>>;
-  setPerson: Mock<(invoiceId: string, personId: string) => Promise<Invoice | null>>;
+  setInsuranceHolder: Mock<(invoiceId: string, insuranceHolderPersonId: string) => Promise<Invoice | null>>;
   markAsPaid: Mock<(invoiceId: string, paidAmount: number, paidAt: Date) => Promise<Invoice | null>>;
   markAsRejected: Mock<(invoiceId: string, rejectionReason?: string) => Promise<Invoice | null>>;
   correctResolution: Mock<(invoiceId: string, input: CorrectInvoiceResolutionInput) => Promise<Invoice | null>>;
   getPaidAmountByPersonInsurerForYear: Mock<
-    (year: number) => Promise<Array<{ personId: string; insurerId: string; amount: number }>>
+    (year: number) => Promise<Array<{ insuranceHolderPersonId: string; insurerId: string; amount: number }>>
   >;
 }
 
@@ -61,7 +61,7 @@ export function createInvoiceRepositoryMock(): InvoiceRepositoryMock {
     listByServiceId: vi.fn(),
     completeInformation: vi.fn(),
     setClaimReference: vi.fn(),
-    setPerson: vi.fn(),
+    setInsuranceHolder: vi.fn(),
     markAsPaid: vi.fn(),
     markAsRejected: vi.fn(),
     correctResolution: vi.fn(),

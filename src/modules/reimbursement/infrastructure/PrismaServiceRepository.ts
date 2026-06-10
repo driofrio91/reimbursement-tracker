@@ -15,9 +15,9 @@ export class PrismaServiceRepository implements ServiceRepository {
         invoiceBilledAmount: service.invoiceBilledAmount,
         invoiceExpectedAmount: service.invoiceExpectedAmount,
         currency: service.currency,
-        personId: service.personId,
+        personId: service.insuranceHolderPersonId,
         insurerId: service.insurerId,
-        policyHolderName: service.policyHolderName,
+        policyHolderName: service.serviceRecipientName,
         attended: service.attended,
         status: this.toPrismaStatus(service.status),
         notes: service.notes ?? null,
@@ -120,9 +120,9 @@ export class PrismaServiceRepository implements ServiceRepository {
     return true;
   }
 
-  async personExists(personId: string): Promise<boolean> {
+  async insuranceHolderExists(insuranceHolderPersonId: string): Promise<boolean> {
     const person = await this.prisma.person.findUnique({
-      where: { id: personId },
+      where: { id: insuranceHolderPersonId },
       select: { id: true, isActive: true },
     });
 
@@ -165,11 +165,11 @@ export class PrismaServiceRepository implements ServiceRepository {
       invoiceBilledAmount: service.invoiceBilledAmount.toNumber(),
       invoiceExpectedAmount: service.invoiceExpectedAmount.toNumber(),
       currency: service.currency,
-      personId: service.personId,
-      personName: service.person.displayName,
+      insuranceHolderPersonId: service.personId,
+      insuranceHolderPersonName: service.person.displayName,
       insurerId: service.insurerId,
       insurerName: service.insurer.name,
-      policyHolderName: service.policyHolderName,
+      serviceRecipientName: service.policyHolderName,
       attended: service.attended,
       status: service.status,
       notes: service.notes,

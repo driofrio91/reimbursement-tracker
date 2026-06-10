@@ -22,21 +22,21 @@ interface CreateServiceFormProps {
 
 export function CreateServiceForm({ action, insurers, people }: CreateServiceFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialCreateServiceFormState);
-  const [selectedPolicyHolderId, setSelectedPolicyHolderId] = useState(state.values.personId);
+  const [selectedInsuranceHolderId, setSelectedInsuranceHolderId] = useState(state.values.personId);
   const [serviceRecipientName, setServiceRecipientName] = useState(state.values.policyHolderName);
 
-  function handlePolicyHolderChange(nextPolicyHolderId: string) {
-    setSelectedPolicyHolderId(nextPolicyHolderId);
+  function handleInsuranceHolderChange(nextInsuranceHolderPersonId: string) {
+    setSelectedInsuranceHolderId(nextInsuranceHolderPersonId);
 
-    const selectedPolicyHolder = people.find((person) => person.id === nextPolicyHolderId);
+    const selectedInsuranceHolder = people.find((person) => person.id === nextInsuranceHolderPersonId);
 
-    if (!selectedPolicyHolder) {
+    if (!selectedInsuranceHolder) {
       setServiceRecipientName("");
 
       return;
     }
 
-    setServiceRecipientName(selectedPolicyHolder.displayName);
+    setServiceRecipientName(selectedInsuranceHolder.displayName);
   }
 
   return (
@@ -102,8 +102,8 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
           <select
             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             name="personId"
-            value={selectedPolicyHolderId}
-            onChange={(event) => handlePolicyHolderChange(event.target.value)}
+            value={selectedInsuranceHolderId}
+            onChange={(event) => handleInsuranceHolderChange(event.target.value)}
             required
           >
             <option value="">Selecciona un titular</option>

@@ -1,6 +1,6 @@
 export interface PersonAnnualReimbursementLimit {
   id: string;
-  personId: string;
+  insuranceHolderPersonId: string;
   insurerId: string;
   year: number;
   annualLimitAmount: number;
@@ -11,7 +11,7 @@ export interface PersonAnnualReimbursementLimit {
 }
 
 export interface NewPersonAnnualReimbursementLimit {
-  personId: string;
+  insuranceHolderPersonId: string;
   insurerId: string;
   year: number;
   annualLimitAmount: number;

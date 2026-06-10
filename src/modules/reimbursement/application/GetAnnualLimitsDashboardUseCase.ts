@@ -6,8 +6,8 @@ import {
 export type AnnualLimitTrafficLight = "green" | "amber" | "red";
 
 export interface AnnualLimitDashboardRow {
-  personId: string;
-  personDisplayName: string;
+  insuranceHolderPersonId: string;
+  insuranceHolderPersonName: string;
   insurerId: string;
   insurerName: string;
   annualLimitAmount: number;
@@ -37,8 +37,8 @@ export async function getAnnualLimitsDashboardUseCase(
         return b.percentageUsed - a.percentageUsed;
       }
 
-      if (a.personDisplayName !== b.personDisplayName) {
-        return a.personDisplayName.localeCompare(b.personDisplayName, "es");
+      if (a.insuranceHolderPersonName !== b.insuranceHolderPersonName) {
+        return a.insuranceHolderPersonName.localeCompare(b.insuranceHolderPersonName, "es");
       }
 
       return a.insurerName.localeCompare(b.insurerName, "es");
@@ -54,8 +54,8 @@ function mapRow(row: PersonAnnualLimitYearRow): AnnualLimitDashboardRow {
   const excessAmount = Math.max(consumed - limit, 0);
 
   return {
-    personId: row.personId,
-    personDisplayName: row.personDisplayName,
+    insuranceHolderPersonId: row.insuranceHolderPersonId,
+    insuranceHolderPersonName: row.insuranceHolderPersonName,
     insurerId: row.insurerId,
     insurerName: row.insurerName,
     annualLimitAmount: limit,

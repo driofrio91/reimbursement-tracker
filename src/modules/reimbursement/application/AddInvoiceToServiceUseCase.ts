@@ -38,7 +38,7 @@ export async function addInvoiceToServiceUseCase(
 
   const createdInvoice = await dependencies.invoiceRepository.create({
     serviceId: service.id,
-    personId: service.personId,
+    insuranceHolderPersonId: service.insuranceHolderPersonId,
     insurerId: service.insurerId,
     invoiceNumber: null,
     invoiceDate: null,
