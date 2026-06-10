@@ -31,7 +31,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             year={currentYear}
             canSync={actor.role === USER_ROLES.ADMIN}
             title="Consumo anual actual"
-            description="Barras por persona y aseguradora con semáforo de consumo para el año en curso."
+            description="Barras por titular del seguro y aseguradora con semáforo de consumo para el año en curso."
             compact={false}
           />
         </Suspense>

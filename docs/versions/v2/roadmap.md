@@ -7,6 +7,7 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 ## Estado
 
 - version activa: `v2`
+- la version funcional/documental `v2` se publica como release semantica `v0.2.0`
 - baseline funcional previa: `docs/versions/v1/`
 
 ## Cierre V2
@@ -54,7 +55,7 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 ### P0 - Fundacion tecnica y seguridad (bloqueante)
 - [x] roles MVP (`ADMIN`, `USER`) + autorizacion backend (`requireAuth`, `requireRole`)
 - [x] flujo obligatorio de cambio de contrasena en primer inicio (`mustChangePasswordOnFirstLogin`)
-- [x] modelo anual de topes por persona+aseguradora (`PersonAnnualReimbursementLimit`) con:
+- [x] modelo anual de topes por titular del seguro+aseguradora (`PersonAnnualReimbursementLimit`) con:
   - `annualLimitAmount`
   - `reimbursedAccumulated`
   - unique (`personId`, `insurerId`, `year`)

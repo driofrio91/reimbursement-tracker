@@ -2,6 +2,8 @@
 
 ## Estado implementado
 
+- la version documental activa `v2` corresponde a la release semantica `v0.2.0`
+
 - proyecto `Next.js` con `TypeScript` y App Router
 - autenticacion con `Auth.js` credentials
 - roles `ADMIN` y `USER` propagados a `JWT` y `session.user`
@@ -31,12 +33,12 @@
   - bloqueo de area privada mientras `mustChangePasswordOnFirstLogin=true`
   - ruta dedicada `/change-password` para actualizar credenciales
   - al completar el cambio se limpia el flag y se fuerza nuevo login con la contrasena actualizada
-- modelo anual de topes por persona+aseguradora implementado en persistencia:
+- modelo anual de topes por titular del seguro+aseguradora implementado en persistencia:
   - nueva tabla `PersonAnnualReimbursementLimit`
   - campos `annualLimitAmount`, `reimbursedAccumulated`, `currency`
   - unicidad por (`personId`, `insurerId`, `year`)
 - home privada evolucionada a dashboard operativo del ano actual:
-  - bloque principal con visibilidad global por `persona + aseguradora`
+  - bloque principal con visibilidad global por `titular del seguro + aseguradora`
   - barras con semaforo de consumo (`<75%` verde, `75-100%` ambar, `>100%` rojo)
   - accion `Sync` dentro del contenedor principal en esquina superior derecha con icono
   - `Sync` visible para todos: habilitado en `ADMIN`, bloqueado en `USER` con tooltip desktop y bottom sheet mobile
@@ -145,7 +147,9 @@
 - operativa centrada en `Invoice`
 - `claimReference` vive en factura
 - varias facturas pueden compartir `claimReference`
-- cada factura tiene `personId` imputado para consumo anual de topes
+- `Person` representa al titular del seguro para consumo anual de topes
+- el nombre libre del servicio identifica a la persona que recibe el servicio y puede ser distinta del titular
+- cada factura tiene `personId` imputado al titular del seguro para consumo anual de topes
 - el consumo anual se calcula por combinacion `personId + insurerId + year(invoiceDate)`
 - `paidAmount` se autocompleta con esperado y es editable
 - en correccion de estado final se guarda solo la ultima correccion (sin historial completo)
@@ -154,7 +158,7 @@
 
 - consumo anual por ano natural segun `invoiceDate`
 - solo facturas `PAID` computan y lo hacen con `paidAmount`
-- agrupacion anual por `persona + aseguradora`
+- agrupacion anual por `titular del seguro + aseguradora`
 - ajustes incrementales por delta activos en transiciones finales:
   - `PAID -> REJECTED`: resta aporte previo
   - `REJECTED -> PAID`: suma aporte

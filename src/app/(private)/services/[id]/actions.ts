@@ -548,7 +548,7 @@ export async function assignInvoicePersonAction(
   });
 
   if (!parsedInput.success) {
-    return buildActionResult("error", "Debes seleccionar la persona imputada de la factura.");
+    return buildActionResult("error", "Debes seleccionar el titular imputado de la factura.");
   }
 
   try {
@@ -560,7 +560,7 @@ export async function assignInvoicePersonAction(
       return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
     }
 
-    return buildActionResult("error", "No se pudo guardar la persona imputada de la factura.");
+    return buildActionResult("error", "No se pudo guardar el titular imputado de la factura.");
   }
 
   revalidatePath(`/services/${serviceId}`);
@@ -638,7 +638,7 @@ function toMarkAsPaidErrorMessage(error: MarkInvoiceAsPaidUseCaseError): string 
     case "INVALID_PAID_AMOUNT":
       return "El importe pagado debe ser mayor que cero.";
     case "MISSING_INVOICE_PERSON":
-      return "Debes revisar y guardar la persona imputada antes de marcar la factura como pagada.";
+      return "Debes revisar y guardar el titular imputado antes de marcar la factura como pagada.";
   }
 }
 

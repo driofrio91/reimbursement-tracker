@@ -17,6 +17,8 @@
 
 Campos clave:
 
+- `personId` (titular del seguro)
+- `policyHolderName` (nombre libre de la persona que recibe el servicio)
 - `actualAmount`
 - `invoiceBilledAmount`
 - `invoiceExpectedAmount`
@@ -43,6 +45,7 @@ Campos clave:
 - `correctedFromStatus` (nullable)
 - `correctedByUserId` (nullable)
 - `correctedByUserName` (nullable)
+- `personId` (titular del seguro imputado para topes anuales)
 - `createdManually` (bool, `false` en autogeneradas, `true` en anadidas manualmente)
 
 ## Estados de Invoice
@@ -57,6 +60,13 @@ Campos clave:
 
 - `ReimbursableService 1 -> N Invoice`
 - varias `Invoice` pueden compartir `claimReference`
+
+## Regla funcional de titulares y receptor del servicio
+
+- `Person` representa al titular del seguro a efectos de negocio y consumo anual.
+- El nombre libre guardado en `policyHolderName` representa a la persona que recibe el servicio.
+- La persona que recibe el servicio puede ser distinta del titular del seguro.
+- El consumo anual se sigue calculando sobre el titular del seguro imputado en factura.
 
 ## Regla de cantidad de facturas
 

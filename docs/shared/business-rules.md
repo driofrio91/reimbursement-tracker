@@ -31,6 +31,13 @@ Siempre igualar o superar el importe real.
 - varias facturas pueden compartir la misma `claimReference`
 - `ReimbursementRequest` no es la entidad operativa principal del flujo vigente
 
+## Reglas de titular y receptor del servicio
+
+- `Person` representa al titular del seguro a efectos de topes anuales.
+- La persona que recibe el servicio se guarda como nombre libre en el servicio.
+- La persona que recibe el servicio puede ser distinta del titular del seguro.
+- El consumo anual se imputa siempre al titular del seguro asociado a la factura.
+
 ## Reglas de estados de factura
 
 - `CREATED`: factura autogenerada

@@ -114,7 +114,7 @@ function ServiceListRow({
 
       <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
         <p>
-          <span className="font-medium text-slate-900">Persona:</span> {item.service.personName}
+          <span className="font-medium text-slate-900">Titular del seguro:</span> {item.service.personName}
         </p>
         <p>
           <span className="font-medium text-slate-900">Aseguradora:</span> {item.service.insurerName}

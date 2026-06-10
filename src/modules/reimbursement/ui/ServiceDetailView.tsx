@@ -254,9 +254,9 @@ export function ServiceDetailView({
           <p className="text-sm font-medium text-slate-700">Datos del servicio</p>
           <dl className="grid gap-x-4 gap-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2">
             <InfoRow label="Fecha del servicio" value={formatDate(service.serviceDate)} />
-            <InfoRow label="Persona" value={service.personName} />
+            <InfoRow label="Titular del seguro" value={service.personName} />
             <InfoRow label="Aseguradora" value={service.insurerName} />
-            <InfoRow label="Titular" value={service.policyHolderName} />
+            <InfoRow label="Persona que recibe el servicio" value={service.policyHolderName} />
             <InfoRow label="Facturado por factura" value={formatCurrency(service.invoiceBilledAmount, service.currency)} />
             <InfoRow label="Esperado por factura" value={formatCurrency(service.invoiceExpectedAmount, service.currency)} />
           </dl>
@@ -570,7 +570,7 @@ function InvoiceStageCard({
           {toDisplayPaidStatus(invoice)}
         </p>
         <p className="truncate">
-          <span className="font-medium text-slate-900">Persona:</span>{" "}
+          <span className="font-medium text-slate-900">Titular imputado:</span>{" "}
           <span className="inline-block max-w-[18rem] truncate align-bottom">{people.find((person) => person.id === invoice.personId)?.displayName ?? "Sin asignar"}</span>
         </p>
       </div>
@@ -581,9 +581,9 @@ function InvoiceStageCard({
         {invoice.status === "CREATED" ? (
           <form action={completeFormAction} className="grid gap-3 pt-1 sm:grid-cols-2">
             <Field
-              label="Persona imputada"
+              label="Titular imputado"
               htmlFor={`invoice-person-created-${invoice.id}`}
-              helper="Este pago computara sobre el tope anual de esta persona."
+              helper="Este pago computara sobre el tope anual de este titular del seguro."
             >
               <select
                 id={`invoice-person-created-${invoice.id}`}
@@ -659,7 +659,7 @@ function InvoiceStageCard({
         {invoice.status === "INFORMATION_COMPLETED" ? (
           <form action={claimFormAction} className="space-y-3 pt-1 sm:space-y-3.5">
             <p className="text-sm font-medium text-slate-900">Registrar referencia de reembolso</p>
-            <Field label="Persona imputada" htmlFor={`invoice-person-claim-${invoice.id}`}>
+            <Field label="Titular imputado" htmlFor={`invoice-person-claim-${invoice.id}`}>
               <select
                 id={`invoice-person-claim-${invoice.id}`}
                 className={inputBaseClassName}
@@ -745,7 +745,7 @@ function InvoiceStageCard({
             </h3>
             <p className="mt-1 text-sm text-slate-600">Indica importe y fecha para cerrar la factura como pagada.</p>
             <form action={paidFormAction} className="mt-4 space-y-3">
-              <Field label="Persona imputada" htmlFor={`invoice-person-paid-${invoice.id}`} helper="Confirma la persona antes de cerrar en pagada.">
+              <Field label="Titular imputado" htmlFor={`invoice-person-paid-${invoice.id}`} helper="Confirma el titular antes de cerrar en pagada.">
                 <select
                   id={`invoice-person-paid-${invoice.id}`}
                   className="w-full rounded-lg border border-emerald-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-200"
@@ -764,7 +764,7 @@ function InvoiceStageCard({
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
                 <p className="font-semibold">Confirmacion de imputacion anual</p>
                 <p className="mt-1">
-                  Se imputara a <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "la persona seleccionada"}</strong> con aseguradora <strong>{serviceInsurerName}</strong>.
+                  Se imputara al titular <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "seleccionado"}</strong> con aseguradora <strong>{serviceInsurerName}</strong>.
                 </p>
               </div>
               <Field label="Importe pagado" htmlFor={`paidAmount-${invoice.id}`} helper="Puedes ajustar el importe final recibido.">
@@ -815,7 +815,7 @@ function InvoiceStageCard({
             </h3>
             <p className="mt-1 text-sm text-slate-600">Si lo necesitas, anade un motivo para la trazabilidad operativa.</p>
             <form action={rejectedFormAction} className="mt-4 space-y-3">
-              <Field label="Persona imputada" htmlFor={`invoice-person-rejected-${invoice.id}`} helper="Se conserva para trazabilidad de imputacion.">
+              <Field label="Titular imputado" htmlFor={`invoice-person-rejected-${invoice.id}`} helper="Se conserva para trazabilidad de imputacion.">
                 <select
                   id={`invoice-person-rejected-${invoice.id}`}
                   className="w-full rounded-lg border border-rose-300 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus-visible:border-rose-500 focus-visible:ring-2 focus-visible:ring-rose-200"
@@ -841,7 +841,7 @@ function InvoiceStageCard({
                 />
               </Field>
               <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
-                Persona imputada actual: <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "sin asignar"}</strong>.
+                Titular imputado actual: <strong>{people.find((person) => person.id === (invoice.personId ?? servicePersonId))?.displayName ?? "sin asignar"}</strong>.
               </p>
               <ActionFeedback result={rejectedState} />
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

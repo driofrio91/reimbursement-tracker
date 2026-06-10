@@ -142,6 +142,7 @@
 - El calculo de referencia se obtiene de facturas `PAID` por ano de `invoiceDate`.
 - La accion `Sync` reconcilia cache vs calculo de referencia.
 - `Sync` debe ser idempotente y devolver resumen de resultado.
+- El sujeto funcional del consumo anual es el titular del seguro (`Person`), aunque quien recibe el servicio pueda ser otra persona mostrada como texto libre.
 
 ### Estados de factura (definicion funcional)
 - Fases iniciales: `CREATED`, `INFORMATION_COMPLETED`.
