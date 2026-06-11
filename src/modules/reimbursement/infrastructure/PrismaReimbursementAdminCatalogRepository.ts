@@ -251,7 +251,7 @@ export class PrismaReimbursementAdminCatalogRepository implements ReimbursementA
     const [services, invoices, annualLimits] = await Promise.all([
       this.prisma.reimbursableService.count({ where: { insurerId } }),
       this.prisma.invoice.count({ where: { insurerId } }),
-      this.prisma.personAnnualReimbursementLimit.count({ where: { insurerId } }),
+      this.prisma.insuranceHolderAnnualReimbursementLimit.count({ where: { insurerId } }),
     ]);
 
     return services > 0 || invoices > 0 || annualLimits > 0;

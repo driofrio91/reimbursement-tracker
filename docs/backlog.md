@@ -18,7 +18,7 @@ Centralizar tareas y mejoras fuera del alcance cerrado de V2 (`P0-P5`) para prio
 - Cubrir con tests de regresion para correcciones encadenadas.
 
 ### 2) Modelo de anualidades por usuario (evaluacion)
-- Evaluar si conviene evolucionar de `PersonAnnualReimbursementLimit` a modelo por usuario, segun operativa final del producto.
+- Evaluar si conviene evolucionar de `InsuranceHolderAnnualReimbursementLimit` a modelo por usuario, segun operativa final del producto.
 - Definir estrategia de migracion de datos y compatibilidad retroactiva.
 
 ### 3) Alertas de sobrepaso de limite anual

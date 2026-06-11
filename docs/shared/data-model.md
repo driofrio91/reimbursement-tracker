@@ -17,8 +17,8 @@
 
 Campos clave:
 
-- `personId` (titular del seguro)
-- `policyHolderName` (nombre libre de la persona que recibe el servicio)
+- `insuranceHolderPersonId` (titular del seguro)
+- `serviceRecipientName` (nombre libre de la persona que recibe el servicio)
 - `actualAmount`
 - `invoiceBilledAmount`
 - `invoiceExpectedAmount`
@@ -45,7 +45,7 @@ Campos clave:
 - `correctedFromStatus` (nullable)
 - `correctedByUserId` (nullable)
 - `correctedByUserName` (nullable)
-- `personId` (titular del seguro imputado para topes anuales)
+- `insuranceHolderPersonId` (titular del seguro imputado para topes anuales)
 - `createdManually` (bool, `false` en autogeneradas, `true` en anadidas manualmente)
 
 ## Estados de Invoice
@@ -64,14 +64,13 @@ Campos clave:
 ## Regla funcional de titulares y receptor del servicio
 
 - `Person` representa al titular del seguro a efectos de negocio y consumo anual.
-- El nombre libre guardado en `policyHolderName` representa a la persona que recibe el servicio.
+- El nombre libre guardado en `serviceRecipientName` representa a la persona que recibe el servicio.
 - La persona que recibe el servicio puede ser distinta del titular del seguro.
 - El consumo anual se sigue calculando sobre el titular del seguro imputado en factura.
 
 ## Nota de naming interno
 
-- En la app y el dominio se prioriza naming semantico como `insuranceHolderPersonId`, `insuranceHolderPersonName` y `serviceRecipientName`.
-- El schema fisico de Prisma mantiene por ahora nombres legacy como `personId` y `policyHolderName` para evitar migraciones en esta fase.
+- App, dominio y schema fisico ya estan alineados con naming semantico como `insuranceHolderPersonId`, `insuranceHolderPersonName` y `serviceRecipientName`.
 
 ## Regla de cantidad de facturas
 

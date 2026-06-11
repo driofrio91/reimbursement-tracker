@@ -13,10 +13,10 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   constructor(private readonly prisma: PrismaClient) {}
 
   async getByPersonInsurerYear(insuranceHolderPersonId: string, insurerId: string, year: number): Promise<PersonAnnualReimbursementLimit | null> {
-    const limit = await this.prisma.personAnnualReimbursementLimit.findUnique({
+    const limit = await this.prisma.insuranceHolderAnnualReimbursementLimit.findUnique({
       where: {
-        personId_insurerId_year: {
-          personId: insuranceHolderPersonId,
+        insuranceHolderPersonId_insurerId_year: {
+          insuranceHolderPersonId,
           insurerId,
           year,
         },
@@ -27,9 +27,9 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   }
 
   async create(limit: NewPersonAnnualReimbursementLimit): Promise<PersonAnnualReimbursementLimit> {
-    const createdLimit = await this.prisma.personAnnualReimbursementLimit.create({
+    const createdLimit = await this.prisma.insuranceHolderAnnualReimbursementLimit.create({
       data: {
-        personId: limit.insuranceHolderPersonId,
+        insuranceHolderPersonId: limit.insuranceHolderPersonId,
         insurerId: limit.insurerId,
         year: limit.year,
         annualLimitAmount: limit.annualLimitAmount,
@@ -42,17 +42,17 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   }
 
   async upsertForPersonInsurerYear(insuranceHolderPersonId: string, insurerId: string, year: number): Promise<PersonAnnualReimbursementLimit> {
-    const upsertedLimit = await this.prisma.personAnnualReimbursementLimit.upsert({
+    const upsertedLimit = await this.prisma.insuranceHolderAnnualReimbursementLimit.upsert({
       where: {
-        personId_insurerId_year: {
-          personId: insuranceHolderPersonId,
+        insuranceHolderPersonId_insurerId_year: {
+          insuranceHolderPersonId,
           insurerId,
           year,
         },
       },
       update: {},
       create: {
-        personId: insuranceHolderPersonId,
+        insuranceHolderPersonId,
         insurerId,
         year,
         annualLimitAmount: 1500,
@@ -67,10 +67,10 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   async applyDelta(insuranceHolderPersonId: string, insurerId: string, year: number, delta: number): Promise<PersonAnnualReimbursementLimit> {
     await this.upsertForPersonInsurerYear(insuranceHolderPersonId, insurerId, year);
 
-    const updatedLimit = await this.prisma.personAnnualReimbursementLimit.update({
+    const updatedLimit = await this.prisma.insuranceHolderAnnualReimbursementLimit.update({
       where: {
-        personId_insurerId_year: {
-          personId: insuranceHolderPersonId,
+        insuranceHolderPersonId_insurerId_year: {
+          insuranceHolderPersonId,
           insurerId,
           year,
         },
@@ -88,10 +88,10 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   async setAccumulated(insuranceHolderPersonId: string, insurerId: string, year: number, accumulated: number): Promise<PersonAnnualReimbursementLimit> {
     await this.upsertForPersonInsurerYear(insuranceHolderPersonId, insurerId, year);
 
-    const updatedLimit = await this.prisma.personAnnualReimbursementLimit.update({
+    const updatedLimit = await this.prisma.insuranceHolderAnnualReimbursementLimit.update({
       where: {
-        personId_insurerId_year: {
-          personId: insuranceHolderPersonId,
+        insuranceHolderPersonId_insurerId_year: {
+          insuranceHolderPersonId,
           insurerId,
           year,
         },
@@ -105,15 +105,15 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   }
 
   async listByYear(year: number): Promise<PersonAnnualLimitYearRow[]> {
-    const rows = await this.prisma.personAnnualReimbursementLimit.findMany({
+    const rows = await this.prisma.insuranceHolderAnnualReimbursementLimit.findMany({
       where: { year },
       select: {
-        personId: true,
+        insuranceHolderPersonId: true,
         insurerId: true,
         annualLimitAmount: true,
         reimbursedAccumulated: true,
         currency: true,
-        person: {
+        insuranceHolder: {
           select: {
             displayName: true,
           },
@@ -124,12 +124,12 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
           },
         },
       },
-      orderBy: [{ person: { displayName: "asc" } }, { insurer: { name: "asc" } }],
+      orderBy: [{ insuranceHolder: { displayName: "asc" } }, { insurer: { name: "asc" } }],
     });
 
     return rows.map((row) => ({
-      insuranceHolderPersonId: row.personId,
-      insuranceHolderPersonName: row.person.displayName,
+      insuranceHolderPersonId: row.insuranceHolderPersonId,
+      insuranceHolderPersonName: row.insuranceHolder.displayName,
       insurerId: row.insurerId,
       insurerName: row.insurer.name,
       annualLimitAmount: row.annualLimitAmount.toNumber(),
@@ -140,7 +140,7 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
 
   private map(limit: {
     id: string;
-    personId: string;
+    insuranceHolderPersonId: string;
     insurerId: string;
     year: number;
     annualLimitAmount: { toNumber(): number };
@@ -151,7 +151,7 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
   }): PersonAnnualReimbursementLimit {
     return {
       id: limit.id,
-      insuranceHolderPersonId: limit.personId,
+      insuranceHolderPersonId: limit.insuranceHolderPersonId,
       insurerId: limit.insurerId,
       year: limit.year,
       annualLimitAmount: limit.annualLimitAmount.toNumber(),

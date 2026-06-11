@@ -39,9 +39,9 @@ model User {
   @@index([role])
 }
 
-model PersonAnnualReimbursementLimit {
+model InsuranceHolderAnnualReimbursementLimit {
   id                    String   @id @default(uuid()) @db.Uuid
-  personId              String   @db.Uuid
+  insuranceHolderPersonId String   @db.Uuid
   insurerId             String   @db.Uuid
   year                  Int
   annualLimitAmount     Decimal  @default(1500) @db.Decimal(10, 2)
@@ -49,10 +49,10 @@ model PersonAnnualReimbursementLimit {
   currency              String   @default("EUR")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
-  person                Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  insuranceHolder       Person   @relation(fields: [insuranceHolderPersonId], references: [id], onDelete: Cascade)
   insurer               Insurer  @relation(fields: [insurerId], references: [id], onDelete: Cascade)
 
-  @@unique([personId, insurerId, year])
+  @@unique([insuranceHolderPersonId, insurerId, year])
   @@index([year])
 }
 
@@ -66,7 +66,7 @@ model Insurer {
   updatedAt DateTime             @updatedAt
   services  ReimbursableService[]
   invoices  Invoice[]
-  annualReimbursementLimits PersonAnnualReimbursementLimit[]
+  insuranceHolderAnnualReimbursementLimits InsuranceHolderAnnualReimbursementLimit[]
 }
 
 model Person {
@@ -81,7 +81,7 @@ model Person {
   updatedAt      DateTime               @updatedAt
   services       ReimbursableService[]
   invoices       Invoice[]
-  annualReimbursementLimits PersonAnnualReimbursementLimit[]
+  insuranceHolderAnnualReimbursementLimits InsuranceHolderAnnualReimbursementLimit[]
 }
 
 model ReimbursableService {
@@ -92,19 +92,19 @@ model ReimbursableService {
   invoiceBilledAmount   Decimal              @default(55) @db.Decimal(10, 2)
   invoiceExpectedAmount Decimal              @default(49.5) @db.Decimal(10, 2)
   currency         String                    @default("EUR")
-  personId         String                    @db.Uuid
+  insuranceHolderPersonId String                    @db.Uuid
   insurerId        String                    @db.Uuid
-  policyHolderName String
+  serviceRecipientName String
   attended         Boolean                   @default(true)
   status           ReimbursableServiceStatus @default(REGISTERED)
   notes            String?
   createdAt        DateTime                  @default(now())
   updatedAt        DateTime                  @updatedAt
-  person           Person                    @relation(fields: [personId], references: [id])
+  insuranceHolder  Person                    @relation(fields: [insuranceHolderPersonId], references: [id])
   insurer          Insurer                   @relation(fields: [insurerId], references: [id])
   invoices         Invoice[]
 
-  @@index([personId])
+  @@index([insuranceHolderPersonId])
   @@index([insurerId])
   @@index([status])
   @@index([serviceDate])
@@ -113,7 +113,7 @@ model ReimbursableService {
 model Invoice {
   id                    String              @id @default(uuid()) @db.Uuid
   serviceId             String              @db.Uuid
-  personId              String?             @db.Uuid
+  insuranceHolderPersonId String?             @db.Uuid
   insurerId             String?             @db.Uuid
   invoiceNumber         String?
   invoiceDate           DateTime?           @db.Date
@@ -137,11 +137,11 @@ model Invoice {
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
   service               ReimbursableService @relation(fields: [serviceId], references: [id])
-  person                Person?             @relation(fields: [personId], references: [id])
+  insuranceHolder       Person?             @relation(fields: [insuranceHolderPersonId], references: [id])
   insurer               Insurer?            @relation(fields: [insurerId], references: [id])
 
   @@index([serviceId])
-  @@index([personId])
+  @@index([insuranceHolderPersonId])
   @@index([insurerId])
   @@index([status])
   @@index([invoiceDate])

@@ -55,10 +55,10 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 ### P0 - Fundacion tecnica y seguridad (bloqueante)
 - [x] roles MVP (`ADMIN`, `USER`) + autorizacion backend (`requireAuth`, `requireRole`)
 - [x] flujo obligatorio de cambio de contrasena en primer inicio (`mustChangePasswordOnFirstLogin`)
-- [x] modelo anual de topes por titular del seguro+aseguradora (`PersonAnnualReimbursementLimit`) con:
+- [x] modelo anual de topes por titular del seguro+aseguradora (`InsuranceHolderAnnualReimbursementLimit`) con:
   - `annualLimitAmount`
   - `reimbursedAccumulated`
-  - unique (`personId`, `insurerId`, `year`)
+  - unique (`insuranceHolderPersonId`, `insurerId`, `year`)
 
 **Dependencias:** ninguna (base de todo V2).
 **Desbloquea:** P1, P2, P3, P4.

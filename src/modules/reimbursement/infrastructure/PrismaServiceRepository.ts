@@ -15,16 +15,16 @@ export class PrismaServiceRepository implements ServiceRepository {
         invoiceBilledAmount: service.invoiceBilledAmount,
         invoiceExpectedAmount: service.invoiceExpectedAmount,
         currency: service.currency,
-        personId: service.insuranceHolderPersonId,
+        insuranceHolderPersonId: service.insuranceHolderPersonId,
         insurerId: service.insurerId,
-        policyHolderName: service.serviceRecipientName,
+        serviceRecipientName: service.serviceRecipientName,
         attended: service.attended,
         status: this.toPrismaStatus(service.status),
         notes: service.notes ?? null,
       },
       include: {
         insurer: true,
-        person: true,
+        insuranceHolder: true,
       },
     });
 
@@ -36,7 +36,7 @@ export class PrismaServiceRepository implements ServiceRepository {
       where: { id: serviceId },
       include: {
         insurer: true,
-        person: true,
+        insuranceHolder: true,
       },
     });
 
@@ -47,7 +47,7 @@ export class PrismaServiceRepository implements ServiceRepository {
     const services = await this.prisma.reimbursableService.findMany({
       include: {
         insurer: true,
-        person: true,
+        insuranceHolder: true,
       },
       orderBy: [{ serviceDate: "desc" }, { createdAt: "desc" }],
     });
@@ -60,7 +60,7 @@ export class PrismaServiceRepository implements ServiceRepository {
       where: { id: serviceId },
       include: {
         insurer: true,
-        person: true,
+        insuranceHolder: true,
       },
     });
 
@@ -75,7 +75,7 @@ export class PrismaServiceRepository implements ServiceRepository {
       },
       include: {
         insurer: true,
-        person: true,
+        insuranceHolder: true,
       },
     });
 
@@ -146,16 +146,16 @@ export class PrismaServiceRepository implements ServiceRepository {
     invoiceBilledAmount: { toNumber(): number };
     invoiceExpectedAmount: { toNumber(): number };
     currency: string;
-    personId: string;
+    insuranceHolderPersonId: string;
     insurerId: string;
-    policyHolderName: string;
+    serviceRecipientName: string;
     attended: boolean;
     status: ReimbursableServiceStatus;
     notes: string | null;
     createdAt: Date;
     updatedAt: Date;
     insurer: { name: string };
-    person: { displayName: string };
+    insuranceHolder: { displayName: string };
   }): Service {
     return {
       id: service.id,
@@ -165,11 +165,11 @@ export class PrismaServiceRepository implements ServiceRepository {
       invoiceBilledAmount: service.invoiceBilledAmount.toNumber(),
       invoiceExpectedAmount: service.invoiceExpectedAmount.toNumber(),
       currency: service.currency,
-      insuranceHolderPersonId: service.personId,
-      insuranceHolderPersonName: service.person.displayName,
+      insuranceHolderPersonId: service.insuranceHolderPersonId,
+      insuranceHolderPersonName: service.insuranceHolder.displayName,
       insurerId: service.insurerId,
       insurerName: service.insurer.name,
-      serviceRecipientName: service.policyHolderName,
+      serviceRecipientName: service.serviceRecipientName,
       attended: service.attended,
       status: service.status,
       notes: service.notes,

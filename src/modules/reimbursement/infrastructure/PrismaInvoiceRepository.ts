@@ -49,7 +49,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const createdInvoice = await this.prisma.invoice.create({
       data: {
         serviceId: invoice.serviceId,
-        personId: invoice.insuranceHolderPersonId ?? null,
+        insuranceHolderPersonId: invoice.insuranceHolderPersonId ?? null,
         insurerId: invoice.insurerId ?? null,
         invoiceNumber: invoice.invoiceNumber ?? null,
         invoiceDate: invoice.invoiceDate ?? null,
@@ -81,7 +81,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         this.prisma.invoice.create({
           data: {
             serviceId: invoice.serviceId,
-            personId: invoice.insuranceHolderPersonId ?? null,
+            insuranceHolderPersonId: invoice.insuranceHolderPersonId ?? null,
             insurerId: invoice.insurerId ?? null,
             invoiceNumber: invoice.invoiceNumber ?? null,
             invoiceDate: invoice.invoiceDate ?? null,
@@ -178,7 +178,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
         },
       },
       data: {
-        personId: insuranceHolderPersonId,
+        insuranceHolderPersonId,
       },
     });
 
@@ -280,7 +280,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
   async getPaidAmountByPersonInsurerForYear(year: number): Promise<PaidAmountByInsuranceHolderInsurer[]> {
     const rows = await this.prisma.invoice.findMany({
       select: {
-        personId: true,
+        insuranceHolderPersonId: true,
         paidAmount: true,
         service: {
           select: {
@@ -290,7 +290,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       },
       where: {
         status: PrismaInvoiceStatus.PAID,
-        personId: {
+        insuranceHolderPersonId: {
           not: null,
         },
         invoiceDate: {
@@ -303,17 +303,17 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     const bucket = new Map<string, PaidAmountByInsuranceHolderInsurer>();
 
     for (const row of rows) {
-      if (!row.personId) {
+      if (!row.insuranceHolderPersonId) {
         continue;
       }
 
-      const key = `${row.personId}:${row.service.insurerId}`;
+      const key = `${row.insuranceHolderPersonId}:${row.service.insurerId}`;
       const current = bucket.get(key);
       const amount = row.paidAmount?.toNumber() ?? 0;
 
       if (!current) {
         bucket.set(key, {
-          insuranceHolderPersonId: row.personId,
+          insuranceHolderPersonId: row.insuranceHolderPersonId,
           insurerId: row.service.insurerId,
           amount,
         });
@@ -329,7 +329,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
   private mapInvoice(invoice: {
     id: string;
     serviceId: string;
-    personId: string | null;
+    insuranceHolderPersonId: string | null;
     insurerId: string | null;
     invoiceNumber: string | null;
     invoiceDate: Date | null;
@@ -356,7 +356,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return {
       id: invoice.id,
       serviceId: invoice.serviceId,
-      insuranceHolderPersonId: invoice.personId,
+      insuranceHolderPersonId: invoice.insuranceHolderPersonId,
       insurerId: invoice.insurerId,
       invoiceNumber: invoice.invoiceNumber,
       invoiceDate: invoice.invoiceDate,
