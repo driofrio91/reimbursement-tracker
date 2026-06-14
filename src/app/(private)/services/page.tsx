@@ -1,15 +1,29 @@
 import Link from "next/link";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
+import { deleteServiceAction } from "@/app/(private)/services/[id]/actions";
 import { listServicesUseCase } from "@/modules/reimbursement/application/ListServicesUseCase";
+import { Invoice } from "@/modules/reimbursement/domain/Invoice";
+import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServicesList } from "@/modules/reimbursement/ui/ServicesList";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function ServicesPage() {
+  const invoiceRepository = new PrismaInvoiceRepository(prisma);
   const services = await listServicesUseCase({
     serviceRepository: new PrismaServiceRepository(prisma),
   });
+  const servicesWithDeleteState = await Promise.all(
+    services.map(async (service) => {
+      const invoices = await invoiceRepository.listByServiceId(service.id);
+
+      return {
+        service,
+        ...buildServiceDeleteState(invoices),
+      };
+    }),
+  );
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
@@ -32,8 +46,36 @@ export default async function ServicesPage() {
           </Link>
         </div>
 
-        <ServicesList services={services} />
+        <ServicesList services={servicesWithDeleteState} deleteServiceAction={deleteServiceAction} />
       </div>
     </main>
   );
+}
+
+function buildServiceDeleteState(invoices: Invoice[]): { canDelete: boolean; deleteBlockedReason: string } {
+  const hasInformationCompleted = invoices.some((invoice) => invoice.status === "INFORMATION_COMPLETED");
+  const hasAdvancedStatus = invoices.some(
+    (invoice) =>
+      invoice.status === "CLAIM_REFERENCE_COMPLETED" || invoice.status === "PAID" || invoice.status === "REJECTED",
+  );
+
+  if (hasAdvancedStatus) {
+    return {
+      canDelete: false,
+      deleteBlockedReason: "Este servicio ya tiene facturas tramitadas o resueltas y no se puede eliminar.",
+    };
+  }
+
+  if (hasInformationCompleted) {
+    return {
+      canDelete: false,
+      deleteBlockedReason:
+        "Para eliminar este servicio, primero revisa y borra una a una las facturas en estado Informacion completada.",
+    };
+  }
+
+  return {
+    canDelete: true,
+    deleteBlockedReason: "",
+  };
 }

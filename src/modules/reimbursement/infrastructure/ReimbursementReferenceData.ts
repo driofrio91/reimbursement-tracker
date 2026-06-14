@@ -16,6 +16,7 @@ export async function getReimbursementReferenceData(): Promise<{
 }> {
   const [people, insurers] = await Promise.all([
     prisma.person.findMany({
+      where: { isActive: true },
       select: { id: true, displayName: true },
       orderBy: { displayName: "asc" },
     }),

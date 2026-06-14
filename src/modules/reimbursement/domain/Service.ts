@@ -8,11 +8,11 @@ export interface Service {
   invoiceBilledAmount: number;
   invoiceExpectedAmount: number;
   currency: string;
-  personId: string;
-  personName: string;
+  insuranceHolderPersonId: string;
+  insuranceHolderPersonName: string;
   insurerId: string;
   insurerName: string;
-  policyHolderName: string;
+  serviceRecipientName: string;
   attended: boolean;
   status: ServiceStatus;
   notes: string | null;
@@ -27,9 +27,9 @@ export interface NewService {
   invoiceBilledAmount: number;
   invoiceExpectedAmount: number;
   currency: string;
-  personId: string;
+  insuranceHolderPersonId: string;
   insurerId: string;
-  policyHolderName: string;
+  serviceRecipientName: string;
   attended: boolean;
   status: ServiceStatus;
   notes?: string | null;

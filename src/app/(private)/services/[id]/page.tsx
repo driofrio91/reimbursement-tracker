@@ -3,13 +3,17 @@ import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import {
+  addInvoiceAction,
   completeInvoiceInformationAction,
   correctInvoiceResolutionAction,
+  deleteInvoiceAction,
+  deleteServiceAndRedirectAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
+import { getReimbursementReferenceData } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
@@ -17,6 +21,7 @@ import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const { people } = await getReimbursementReferenceData();
   const summary = await getServiceInvoiceSummaryUseCase(id, {
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
@@ -61,17 +66,21 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           totalBilledAmount={summary.totalBilledAmount}
           totalExpectedAmount={summary.totalExpectedAmount}
           totalPaidAmount={summary.totalPaidAmount}
-          pendingExpectedAmount={summary.pendingExpectedAmount}
           overBilledAmount={summary.overBilledAmount}
           overExpectedAmount={summary.overExpectedAmount}
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
+          people={people}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}
           markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
           correctInvoiceResolutionAction={correctInvoiceResolutionAction}
+          addInvoiceAction={addInvoiceAction}
+          deleteInvoiceAction={deleteInvoiceAction}
+          deleteServiceAction={deleteServiceAndRedirectAction}
+          exportCreatedInvoicesHref={`/services/${id}/export`}
         />
       </div>
     </main>

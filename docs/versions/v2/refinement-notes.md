@@ -1,5 +1,10 @@
 # V2 Refinement Notes
 
+> Nota de vigencia:
+> - Este documento conserva propuestas de refinamiento historicas.
+> - El cierre operativo de V2 se define en `docs/versions/v2/roadmap.md` con alcance `P0-P5`.
+> - Todo item no incluido en `P0-P5` se gestiona desde `docs/backlog.md`.
+
 ## Nuevas funcionalidades propuestas
 
 ### 1) Gestion de usuarios y seguridad de acceso
@@ -40,30 +45,48 @@
 - [ ] El `Sync` del ano actual es solo para `ADMIN`.
 - [ ] Mostrar resultado del `Sync` (usuarios procesados, ajustes aplicados y errores si los hubiera).
 
+#### Jerarquia visual obligatoria (ano actual vs anos anteriores)
+- El bloque del ano actual es el bloque principal y debe ser visualmente dominante.
+- El bloque de anos anteriores es secundario y debe ser mas compacto.
+- Debe identificarse a simple vista cual es el bloque prioritario.
+- En desktop, el bloque principal debe tener una presencia aproximada de `1.6x-1.8x` frente al bloque historico.
+- En mobile, ambos bloques van en columna, con el bloque principal primero y con mayor altura base.
+
+#### Regla de loading por bloques
+- Cada bloque de grafica anual usa su propio `Suspense`; no se permite un `Suspense` global para toda la home.
+- `Suspense` del bloque principal (ano actual) y `Suspense` del bloque secundario (anos anteriores) deben ser independientes.
+- Cada bloque debe tener fallback tipo skeleton con altura estable para evitar saltos visuales.
+- El skeleton del ano actual debe ser mayor que el de anos anteriores para mantener la jerarquia tambien durante la carga.
+- Los estados `error` y `Sin datos` deben resolverse por bloque, sin bloquear el otro contenedor.
+
+#### Regla de `Sync` en UX
+- `Sync` se gestiona con estado propio de accion (`pending`, `success`, `error`) y no como loading global de pantalla.
+- Al ejecutar `Sync`, no se bloquea toda la home; solo se actualizan/revalidan los bloques afectados.
+
 ### 4) Gestion de facturas desde el detalle de servicio
-- [ ] Boton `Anadir factura` a nivel de servicio.
-- [ ] Icono papelera por cada factura para eliminacion.
-- [ ] Papelera visible siempre, pero deshabilitada cuando no se pueda eliminar.
-- [ ] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
+- [x] Boton `Anadir factura` a nivel de servicio.
+- [x] Icono papelera por cada factura para eliminacion.
+- [x] Papelera visible siempre, pero deshabilitada cuando no se pueda eliminar.
+- [x] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
 
 ### 5) Exportacion de facturas por servicio
-- [ ] Anadir opcion `Extraer facturas` en el detalle de servicio.
-- [ ] Exportar unicamente facturas en estado `CREATED`.
-- [ ] Si no hay facturas `CREATED`, boton de exportar deshabilitado.
-- [ ] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
-- [ ] Generar archivo CSV con BOM UTF-8 para compatibilidad.
-- [ ] Separador CSV: `;`.
-- [ ] Formato decimal: coma (ej: `55,00`).
-- [ ] Nombre archivo: `facturas-{nombre-servicio}-{yyyyMMdd-HHmm}.csv`.
-- [ ] Orden de columnas igual a la captura:
+- [x] Anadir opcion `Extraer facturas` en el detalle de servicio.
+- [x] Exportar unicamente facturas en estado `CREATED`.
+- [x] Si no hay facturas `CREATED`, boton de exportar deshabilitado.
+- [x] Motivo de bloqueo obligatorio: tooltip en desktop y bottom sheet contextual en mobile.
+- [x] Generar archivo CSV con BOM UTF-8 para compatibilidad.
+- [x] Separador CSV: `;`.
+- [x] Formato decimal: coma (ej: `55,00`).
+- [x] Nombre archivo: `facturas-{nombre-servicio}-{yyyyMMdd-HHmm}.csv`.
+- [x] Orden de columnas igual a la captura:
   1. `TRATAMIENTO`
-  2. `IMPORTE EN LA FACTURA`
+  2. `IMPORTE DE LA FACTURA`
   3. `TITULAR`
   4. `FECHA FACTURA`
   5. `SOLICITADA`
-- [ ] Mapeo de columnas:
+- [x] Mapeo de columnas:
   - `TRATAMIENTO`: fijo `FISIOTERAPIA - CERVICAL`
-  - `IMPORTE EN LA FACTURA`: `invoiceBilledAmount`
+  - `IMPORTE DE LA FACTURA`: `invoiceBilledAmount`
   - `TITULAR`: vacio
   - `FECHA FACTURA`: vacio
   - `SOLICITADA`: vacio
@@ -119,6 +142,7 @@
 - El calculo de referencia se obtiene de facturas `PAID` por ano de `invoiceDate`.
 - La accion `Sync` reconcilia cache vs calculo de referencia.
 - `Sync` debe ser idempotente y devolver resumen de resultado.
+- El sujeto funcional del consumo anual es el titular del seguro (`Person`), aunque quien recibe el servicio pueda ser otra persona mostrada como texto libre.
 
 ### Estados de factura (definicion funcional)
 - Fases iniciales: `CREATED`, `INFORMATION_COMPLETED`.
@@ -132,6 +156,12 @@
 
 ### Reglas para anadir o eliminar facturas
 - `Anadir factura`: habilitado en `REGISTERED` y `SUBMITTED`; deshabilitado en `REIMBURSED`.
-- `Eliminar factura`: permitido solo si la factura esta en `CREATED`.
-- No eliminar en `INFORMATION_COMPLETED`, `CLAIM_REFERENCE_COMPLETED`, `PAID`, `REJECTED`.
+- `Eliminar factura`: permitido en `CREATED` y `INFORMATION_COMPLETED` (confirmacion obligatoria en `INFORMATION_COMPLETED`).
+- No eliminar en `CLAIM_REFERENCE_COMPLETED`, `PAID`, `REJECTED`.
 - En `REIMBURSED`, bloqueadas todas las modificaciones de estructura de facturas.
+- `Eliminar servicio`: permitido solo cuando todas sus facturas estan en `CREATED`.
+
+### Feedback global post-redirect
+- El area privada usa un sistema unificado de notificaciones con `GlobalToastListener` como punto unico de render.
+- Acciones locales usan transporte `immediate` en memoria y no deben invocar `toast.*` directamente desde features.
+- Acciones que finalizan con `redirect()` usan transporte `after-redirect` mediante flash temporal consumido en destino.

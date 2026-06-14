@@ -17,6 +17,8 @@
 
 Campos clave:
 
+- `insuranceHolderPersonId` (titular del seguro)
+- `serviceRecipientName` (nombre libre de la persona que recibe el servicio)
 - `actualAmount`
 - `invoiceBilledAmount`
 - `invoiceExpectedAmount`
@@ -43,6 +45,8 @@ Campos clave:
 - `correctedFromStatus` (nullable)
 - `correctedByUserId` (nullable)
 - `correctedByUserName` (nullable)
+- `insuranceHolderPersonId` (titular del seguro imputado para topes anuales)
+- `createdManually` (bool, `false` en autogeneradas, `true` en anadidas manualmente)
 
 ## Estados de Invoice
 
@@ -57,7 +61,36 @@ Campos clave:
 - `ReimbursableService 1 -> N Invoice`
 - varias `Invoice` pueden compartir `claimReference`
 
+## Regla funcional de titulares y receptor del servicio
+
+- `Person` representa al titular del seguro a efectos de negocio y consumo anual.
+- El nombre libre guardado en `serviceRecipientName` representa a la persona que recibe el servicio.
+- La persona que recibe el servicio puede ser distinta del titular del seguro.
+- El consumo anual se sigue calculando sobre el titular del seguro imputado en factura.
+
+## Nota de naming interno
+
+- App, dominio y schema fisico ya estan alineados con naming semantico como `insuranceHolderPersonId`, `insuranceHolderPersonName` y `serviceRecipientName`.
+
 ## Regla de cantidad de facturas
 
 - `invoiceCount = ceil(actualAmount / invoiceExpectedAmount)`
 - siempre igualar o superar
+
+## Origen de facturas
+
+- al crear servicio, las facturas autogeneradas nacen con `createdManually=false`
+- al usar `Anadir factura` en detalle de servicio, la factura nace con `createdManually=true`
+- la gestion estructural se limita por estado:
+  - `Anadir factura` permitido en `REGISTERED` y `SUBMITTED`, bloqueado en `REIMBURSED`
+  - `Eliminar factura` permitido en `CREATED` y `INFORMATION_COMPLETED` (con confirmacion explicita en `INFORMATION_COMPLETED`)
+  - `Eliminar servicio` permitido solo cuando todas sus facturas estan en `CREATED`
+
+## Exportacion CSV del servicio
+
+- exporta unicamente facturas en estado `CREATED`
+- formato operativo vigente:
+  - separador `;`
+  - decimal con coma
+  - BOM UTF-8
+  - columnas: `TRATAMIENTO`, `IMPORTE DE LA FACTURA`, `TITULAR`, `FECHA FACTURA`, `SOLICITADA`

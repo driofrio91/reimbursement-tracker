@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
@@ -20,15 +21,36 @@ import {
   CorrectInvoiceResolutionUseCaseError,
   correctInvoiceResolutionUseCase,
 } from "@/modules/reimbursement/application/CorrectInvoiceResolutionUseCase";
+import {
+  AssignInvoicePersonUseCaseError,
+  assignInvoicePersonUseCase,
+} from "@/modules/reimbursement/application/AssignInvoicePersonUseCase";
+import {
+  AddInvoiceToServiceUseCaseError,
+  addInvoiceToServiceUseCase,
+} from "@/modules/reimbursement/application/AddInvoiceToServiceUseCase";
+import {
+  DeleteCreatedInvoiceUseCaseError,
+  deleteCreatedInvoiceUseCase,
+} from "@/modules/reimbursement/application/DeleteCreatedInvoiceUseCase";
+import {
+  DeleteServiceWithCreatedInvoicesUseCaseError,
+  deleteServiceWithCreatedInvoicesUseCase,
+} from "@/modules/reimbursement/application/DeleteServiceWithCreatedInvoicesUseCase";
 import { syncServiceStatusFromInvoicesUseCase } from "@/modules/reimbursement/application/SyncServiceStatusFromInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
-import { auth } from "@/lib/auth/auth";
+import { PrismaPersonAnnualReimbursementLimitRepository } from "@/modules/reimbursement/infrastructure/PrismaPersonAnnualReimbursementLimitRepository";
+import { AuthorizationError, requireRole, type AuthenticatedActor } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
+import { setFlashToast } from "@/lib/ui/flash-toast";
+import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-action-state";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 const completeInvoiceInformationSchema = z.object({
+  personId: z.string().trim().min(1),
   invoiceNumber: z.string().trim().min(1),
   invoiceDate: z.string().trim().regex(datePattern),
   issuerName: z.string().trim().min(1),
@@ -37,10 +59,16 @@ const completeInvoiceInformationSchema = z.object({
 });
 
 const claimReferenceSchema = z.object({
+  personId: z.string().trim().min(1),
   claimReference: z.string().trim().min(1),
 });
 
+const assignInvoicePersonSchema = z.object({
+  personId: z.string().trim().min(1),
+});
+
 const paidSchema = z.object({
+  personId: z.string().trim().min(1),
   paidAmount: z
     .string()
     .trim()
@@ -53,6 +81,7 @@ const paidSchema = z.object({
 });
 
 const rejectedSchema = z.object({
+  personId: z.string().trim().min(1),
   rejectionReason: z.string().trim().optional(),
 });
 
@@ -95,19 +124,20 @@ const correctionSchema = z
     }
   });
 
-export interface InvoiceActionResult {
-  status: "idle" | "success" | "error";
-  message: string;
-  token: number;
-}
-
 export async function completeInvoiceInformationAction(
   serviceId: string,
   invoiceId: string,
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = completeInvoiceInformationSchema.safeParse({
+    personId: getString(formData, "personId"),
     invoiceNumber: getString(formData, "invoiceNumber"),
     invoiceDate: getString(formData, "invoiceDate"),
     issuerName: getString(formData, "issuerName"),
@@ -119,7 +149,13 @@ export async function completeInvoiceInformationAction(
     return buildActionResult("error", "Revisa los datos de factura antes de guardar.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await completeInvoiceInformationUseCase(
       invoiceId,
       {
@@ -134,6 +170,10 @@ export async function completeInvoiceInformationAction(
       },
     );
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof CompleteInvoiceInformationUseCaseError) {
       return buildActionResult("error", toCompleteInvoiceInformationErrorMessage(error));
     }
@@ -152,7 +192,14 @@ export async function registerInvoiceClaimReferenceAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = claimReferenceSchema.safeParse({
+    personId: getString(formData, "personId"),
     claimReference: getString(formData, "claimReference"),
   });
 
@@ -160,11 +207,21 @@ export async function registerInvoiceClaimReferenceAction(
     return buildActionResult("error", "La referencia de reembolso es obligatoria.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await registerInvoiceClaimReferenceUseCase(invoiceId, parsedInput.data.claimReference, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof RegisterInvoiceClaimReferenceUseCaseError) {
       return buildActionResult("error", toRegisterClaimReferenceErrorMessage(error));
     }
@@ -183,7 +240,14 @@ export async function markInvoiceAsPaidAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = paidSchema.safeParse({
+    personId: getString(formData, "personId"),
     paidAmount: getString(formData, "paidAmount"),
     paidAt: getString(formData, "paidAt"),
   });
@@ -192,16 +256,27 @@ export async function markInvoiceAsPaidAction(
     return buildActionResult("error", "El importe pagado y la fecha de pago son obligatorios.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
     await markInvoiceAsPaidUseCase(
       invoiceId,
       parsedInput.data.paidAmount,
       new Date(`${parsedInput.data.paidAt}T00:00:00`),
       {
         invoiceRepository: new PrismaInvoiceRepository(prisma),
+        annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
       },
     );
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof MarkInvoiceAsPaidUseCaseError) {
       return buildActionResult("error", toMarkAsPaidErrorMessage(error));
     }
@@ -220,7 +295,14 @@ export async function markInvoiceAsRejectedAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
   const parsedInput = rejectedSchema.safeParse({
+    personId: getString(formData, "personId"),
     rejectionReason: getString(formData, "rejectionReason"),
   });
 
@@ -228,11 +310,22 @@ export async function markInvoiceAsRejectedAction(
     return buildActionResult("error", "No se pudo validar el motivo de rechazo.");
   }
 
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
   try {
-    await markInvoiceAsRejectedUseCase(invoiceId, parsedInput.data.rejectionReason || undefined, {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     });
+
+    await markInvoiceAsRejectedUseCase(invoiceId, parsedInput.data.rejectionReason || undefined, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+      annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
+    });
   } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
     if (error instanceof MarkInvoiceAsRejectedUseCaseError) {
       return buildActionResult("error", toMarkAsRejectedErrorMessage(error));
     }
@@ -251,9 +344,9 @@ export async function correctInvoiceResolutionAction(
   _previousState: InvoiceActionResult,
   formData: FormData,
 ): Promise<InvoiceActionResult> {
-  const session = await auth();
+  const actor = await authorizeInvoiceAction();
 
-  if (!session?.user?.id) {
+  if (!actor) {
     return buildActionResult("error", "No se pudo identificar al usuario para registrar la correccion.");
   }
 
@@ -279,16 +372,17 @@ export async function correctInvoiceResolutionAction(
       {
         toStatus,
         correctionReason: parsedInput.data.correctionReason,
-        correctedByUserId: session.user.id,
-        correctedByUserName: session.user.name ?? null,
+        correctedByUserId: actor.id,
+        correctedByUserName: actor.name,
         paidAmount: toStatus === "PAID" && paidAmountValue ? Number(paidAmountValue.replace(",", ".")) : undefined,
         paidAt: toStatus === "PAID" && paidAtValue ? new Date(`${paidAtValue}T00:00:00`) : undefined,
         rejectionReason: toStatus === "REJECTED" ? parsedInput.data.rejectionReason || null : null,
       },
-      {
-        invoiceRepository: new PrismaInvoiceRepository(prisma),
-      },
-    );
+        {
+          invoiceRepository: new PrismaInvoiceRepository(prisma),
+          annualLimitRepository: new PrismaPersonAnnualReimbursementLimitRepository(prisma),
+        },
+      );
   } catch (error) {
     if (error instanceof CorrectInvoiceResolutionUseCaseError) {
       return buildActionResult("error", toCorrectResolutionErrorMessage(error));
@@ -303,11 +397,196 @@ export async function correctInvoiceResolutionAction(
   return buildActionResult("success", "Estado final de factura corregido.");
 }
 
+export async function addInvoiceAction(
+  serviceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    const result = await addInvoiceToServiceUseCase(serviceId, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+
+    await syncServiceStatusForInvoiceFlow(serviceId);
+
+    return buildActionResult("success", "Factura anadida manualmente. La encontraras al final del listado.", {
+      createdInvoiceId: result.createdInvoiceId,
+    });
+  } catch (error) {
+    if (error instanceof AddInvoiceToServiceUseCaseError) {
+      return buildActionResult("error", toAddInvoiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo anadir la factura al servicio.");
+  }
+}
+
+export async function deleteInvoiceAction(
+  serviceId: string,
+  invoiceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    await deleteCreatedInvoiceUseCase(invoiceId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+      serviceRepository: new PrismaServiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof DeleteCreatedInvoiceUseCaseError) {
+      return buildActionResult("error", toDeleteInvoiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo eliminar la factura seleccionada.");
+  }
+
+  await syncServiceStatusForInvoiceFlow(serviceId);
+
+  return buildActionResult("success", "Factura eliminada.");
+}
+
+export async function deleteServiceAction(
+  serviceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    await deleteServiceWithCreatedInvoicesUseCase(serviceId, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof DeleteServiceWithCreatedInvoicesUseCaseError) {
+      return buildActionResult("error", toDeleteServiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo eliminar el servicio seleccionado.");
+  }
+
+  revalidatePath("/services");
+  revalidatePath(`/services/${serviceId}`);
+
+  return buildActionResult("success", "Servicio eliminado con todas sus facturas en estado Creada.");
+}
+
+export async function deleteServiceAndRedirectAction(
+  serviceId: string,
+  _previousState: InvoiceActionResult,
+  _formData: FormData,
+): Promise<InvoiceActionResult> {
+  void _previousState;
+  void _formData;
+
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  try {
+    await deleteServiceWithCreatedInvoicesUseCase(serviceId, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof DeleteServiceWithCreatedInvoicesUseCaseError) {
+      return buildActionResult("error", toDeleteServiceErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo eliminar el servicio seleccionado.");
+  }
+
+  revalidatePath("/services");
+  await setFlashToast({
+    type: "success",
+    message: "Servicio eliminado con todas sus facturas en estado Creada.",
+  });
+  redirect("/services");
+}
+
 async function syncServiceStatusForInvoiceFlow(serviceId: string): Promise<void> {
   await syncServiceStatusFromInvoicesUseCase(serviceId, {
     serviceRepository: new PrismaServiceRepository(prisma),
     invoiceRepository: new PrismaInvoiceRepository(prisma),
   });
+}
+
+export async function assignInvoicePersonAction(
+  serviceId: string,
+  invoiceId: string,
+  _previousState: InvoiceActionResult,
+  formData: FormData,
+): Promise<InvoiceActionResult> {
+  const actor = await authorizeInvoiceAction();
+
+  if (!actor) {
+    return buildActionResult("error", "Debes iniciar sesion para completar esta accion.");
+  }
+
+  const parsedInput = assignInvoicePersonSchema.safeParse({
+    personId: getString(formData, "personId"),
+  });
+
+  if (!parsedInput.success) {
+    return buildActionResult("error", "Debes seleccionar el titular imputado de la factura.");
+  }
+
+  const insuranceHolderPersonId = parsedInput.data.personId;
+
+  try {
+    await assignInvoicePersonUseCase(invoiceId, insuranceHolderPersonId, {
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    });
+  } catch (error) {
+    if (error instanceof AssignInvoicePersonUseCaseError) {
+      return buildActionResult("error", toAssignInvoicePersonErrorMessage(error));
+    }
+
+    return buildActionResult("error", "No se pudo guardar el titular imputado de la factura.");
+  }
+
+  revalidatePath(`/services/${serviceId}`);
+  return buildActionResult("success", "Titular imputado de factura guardado.");
+}
+
+async function authorizeInvoiceAction(): Promise<AuthenticatedActor | null> {
+  try {
+    return await requireRole(USER_ROLES.ADMIN, USER_ROLES.USER);
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 function getString(formData: FormData, key: string): string {
@@ -316,12 +595,28 @@ function getString(formData: FormData, key: string): string {
   return typeof value === "string" ? value : "";
 }
 
-function buildActionResult(status: "success" | "error", message: string): InvoiceActionResult {
+function buildActionResult(
+  status: "success" | "error",
+  message: string,
+  extra: Partial<InvoiceActionResult> = {},
+): InvoiceActionResult {
   return {
     status,
     message,
     token: Date.now(),
+    ...extra,
   };
+}
+
+function toAssignInvoicePersonErrorMessage(error: AssignInvoicePersonUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura ya no existe o fue eliminada.";
+    case "INVALID_STATUS":
+      return error.message;
+    case "INVALID_PERSON":
+      return "Debes seleccionar una persona valida para la factura.";
+  }
 }
 
 function toCompleteInvoiceInformationErrorMessage(error: CompleteInvoiceInformationUseCaseError): string {
@@ -352,6 +647,8 @@ function toMarkAsPaidErrorMessage(error: MarkInvoiceAsPaidUseCaseError): string 
       return "La factura debe tener referencia registrada para poder marcarse como pagada.";
     case "INVALID_PAID_AMOUNT":
       return "El importe pagado debe ser mayor que cero.";
+    case "MISSING_INVOICE_PERSON":
+      return "Debes revisar y guardar el titular imputado antes de marcar la factura como pagada.";
   }
 }
 
@@ -378,5 +675,40 @@ function toCorrectResolutionErrorMessage(error: CorrectInvoiceResolutionUseCaseE
       return "Para corregir a pagada debes indicar importe y fecha de pago.";
     case "INVALID_PAID_AMOUNT":
       return "El importe pagado debe ser mayor que cero.";
+  }
+}
+
+function toAddInvoiceErrorMessage(error: AddInvoiceToServiceUseCaseError): string {
+  switch (error.code) {
+    case "SERVICE_NOT_FOUND":
+      return "El servicio seleccionado no existe.";
+    case "SERVICE_ALREADY_CLOSED":
+      return "Este servicio ya esta cerrado. No se pueden anadir mas facturas.";
+  }
+}
+
+function toDeleteInvoiceErrorMessage(error: DeleteCreatedInvoiceUseCaseError): string {
+  switch (error.code) {
+    case "INVOICE_NOT_FOUND":
+      return "La factura ya no existe o fue eliminada.";
+    case "SERVICE_NOT_FOUND":
+      return "El servicio asociado ya no existe.";
+    case "SERVICE_ALREADY_CLOSED":
+      return "Este servicio ya esta cerrado. No se puede modificar su estructura de facturas.";
+    case "INVOICE_NOT_DELETABLE":
+      return "Solo se pueden eliminar facturas en estado Creada o Informacion completada.";
+    case "INVOICE_STATE_CHANGED":
+      return "La factura ya cambio de estado y no se puede eliminar.";
+  }
+}
+
+function toDeleteServiceErrorMessage(error: DeleteServiceWithCreatedInvoicesUseCaseError): string {
+  switch (error.code) {
+    case "SERVICE_NOT_FOUND":
+      return "El servicio ya no existe o fue eliminado.";
+    case "SERVICE_NOT_DELETABLE":
+      return "Solo se puede eliminar un servicio si todas sus facturas estan en estado Creada.";
+    case "SERVICE_STATE_CHANGED":
+      return "La accion ya no esta disponible porque el estado ha cambiado.";
   }
 }

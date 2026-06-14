@@ -3,6 +3,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { prisma } from "@/lib/db/prisma";
+import { isUserRole, USER_ROLES } from "@/lib/auth/roles";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
@@ -43,6 +44,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
+          role: user.role,
+          mustChangePasswordOnFirstLogin: user.mustChangePasswordOnFirstLogin,
         };
       },
     }),
@@ -51,13 +54,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = isUserRole(user.role) ? user.role : USER_ROLES.USER;
+        token.mustChangePasswordOnFirstLogin = Boolean(user.mustChangePasswordOnFirstLogin);
       }
 
       return token;
     },
     session({ session, token }) {
       if (session.user) {
+        const role = isUserRole(token.role) ? token.role : USER_ROLES.USER;
+
         session.user.id = typeof token.id === "string" ? token.id : token.sub ?? "";
+        session.user.role = role;
+        session.user.mustChangePasswordOnFirstLogin = Boolean(token.mustChangePasswordOnFirstLogin);
       }
 
       return session;

@@ -84,6 +84,19 @@ Solo se incluyen criterios que afectan decisiones reales del repositorio.
 - Cualquier mejora de navegacion debe priorizar claridad en pantallas pequenas sin duplicar todas las acciones globales en cada vista.
 - Si una US anade o cambia rutas privadas, la integracion de sidebar y estado activo forma parte del criterio de cierre de esa US.
 
+## Toasts y redirects
+
+- Mantener `Toaster` global en `src/app/(private)/layout.tsx` para toda el area autenticada.
+- El render real de notificaciones vive en `src/app/(private)/_components/GlobalToastListener.tsx`; los features privados no deben invocar `toast.*` directamente.
+- Las notificaciones privadas usan un sistema comun con dos transportes internos:
+  - `immediate`: canal cliente en memoria para acciones locales
+  - `after-redirect`: flash toast temporal para acciones que terminan con `redirect()`
+- La emision de notificaciones inmediatas debe pasar por `src/lib/ui/notifications.ts`.
+- La infraestructura de flash post-redirect vive en `src/lib/ui/flash-toast.ts` y su consumo interno en `src/app/api/flash-toast/consume/route.ts`.
+- Si una accion termina con `redirect()`, no disparar `toast` justo antes de navegar; usar el transporte `after-redirect`.
+- Evitar `setTimeout` como mecanismo para forzar visibilidad del toast antes de navegar.
+- La fase actual aplica este patron al area privada. `change-password` y otros flujos publicos quedan para una fase posterior.
+
 ## Continuidad documental obligatoria
 
 - Al cerrar cada US o caso de uso, actualizar el roadmap de la version activa en `docs/versions/`.

@@ -5,6 +5,8 @@ import type { SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
+import { PasswordInput } from "@/app/_components/PasswordInput";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -12,6 +14,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const showDevelopmentCredentials = process.env.NODE_ENV !== "production";
+  const passwordChanged =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("passwordChanged") === "1";
 
   async function handleSubmit(event: SyntheticEvent<HTMLFormElement, SubmitEvent>) {
     event.preventDefault();
@@ -46,6 +50,12 @@ export default function LoginPage() {
         </div>
 
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+          {passwordChanged ? (
+            <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              Contrasena actualizada. Inicia sesion con tu nueva contrasena.
+            </p>
+          ) : null}
+
           <label className="block space-y-2">
             <span className="text-sm font-medium text-slate-700">Email</span>
             <input
@@ -58,17 +68,7 @@ export default function LoginPage() {
             />
           </label>
 
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-700">Contrasena</span>
-            <input
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 placeholder:text-slate-400 outline-none transition focus:border-slate-400"
-              type="password"
-              name="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </label>
+          <PasswordInput name="password" label="Contrasena" value={password} onChange={setPassword} required />
 
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

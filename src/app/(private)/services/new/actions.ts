@@ -13,12 +13,30 @@ import {
 } from "@/modules/reimbursement/entrypoints/CreateServiceFormSchema";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
+import { AuthorizationError, requireRole } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
+import { setFlashToast } from "@/lib/ui/flash-toast";
 
 export async function createServiceAction(
   _previousState: CreateServiceFormState,
   formData: FormData,
 ): Promise<CreateServiceFormState> {
+  try {
+    await requireRole(USER_ROLES.ADMIN, USER_ROLES.USER);
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return {
+        values: getCreateServiceFormValues(formData),
+        errors: {
+          form: "Debes iniciar sesion para crear un servicio.",
+        },
+      };
+    }
+
+    throw error;
+  }
+
   const values = getCreateServiceFormValues(formData);
   const parsedInput = createServiceFormSchema.safeParse(values);
 
@@ -50,9 +68,9 @@ export async function createServiceAction(
         actualAmount: parsedInput.data.actualAmount,
         invoiceBilledAmount: parsedInput.data.invoiceBilledAmount,
         invoiceExpectedAmount: parsedInput.data.invoiceExpectedAmount,
-        personId: parsedInput.data.personId,
+        insuranceHolderPersonId: parsedInput.data.personId,
         insurerId: parsedInput.data.insurerId,
-        policyHolderName: parsedInput.data.policyHolderName,
+        serviceRecipientName: parsedInput.data.policyHolderName,
         attended: parsedInput.data.attended,
         notes: parsedInput.data.notes,
       },
@@ -62,6 +80,10 @@ export async function createServiceAction(
       },
     );
 
+    await setFlashToast({
+      type: "success",
+      message: "Servicio creado correctamente.",
+    });
     redirect(`/services/${result.id}`);
   } catch (error) {
     if (error instanceof CreateServiceUseCaseError) {

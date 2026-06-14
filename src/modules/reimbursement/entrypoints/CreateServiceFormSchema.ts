@@ -17,9 +17,9 @@ export const createServiceFormSchema = z.object({
   actualAmount: amountSchema,
   invoiceBilledAmount: amountSchema,
   invoiceExpectedAmount: amountSchema,
-  personId: z.string().trim().min(1, "La persona es obligatoria."),
+  personId: z.string().trim().min(1, "Debes seleccionar el titular del seguro."),
   insurerId: z.string().trim().min(1, "La aseguradora es obligatoria."),
-  policyHolderName: z.string().trim().min(1, "El titular es obligatorio."),
+  policyHolderName: z.string().trim().min(1, "Debes indicar la persona que recibe el servicio."),
   attended: z.boolean(),
   notes: z.string().trim().optional(),
 });
