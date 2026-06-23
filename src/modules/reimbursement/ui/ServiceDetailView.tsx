@@ -8,6 +8,7 @@ import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifec
 import { InvoiceCorrectionModal } from "@/modules/reimbursement/ui/InvoiceCorrectionModal";
 import { useInvoiceCorrectionFlow } from "@/modules/reimbursement/ui/hooks/useInvoiceCorrectionFlow";
 import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
+import { getServiceDeleteState } from "@/modules/reimbursement/application/GetServiceDeleteStateUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
@@ -1240,34 +1241,6 @@ function CompactInfoRow({ label, value }: { label: string; value: string }) {
       </dd>
     </div>
   );
-}
-
-function getServiceDeleteState(invoices: Invoice[]): { canDelete: boolean; blockedReason: string } {
-  const hasInformationCompleted = invoices.some((invoice) => invoice.status === "INFORMATION_COMPLETED");
-  const hasAdvancedStatus = invoices.some(
-    (invoice) =>
-      invoice.status === "CLAIM_REFERENCE_COMPLETED" || invoice.status === "PAID" || invoice.status === "REJECTED",
-  );
-
-  if (hasAdvancedStatus) {
-    return {
-      canDelete: false,
-      blockedReason: "Este servicio ya tiene facturas tramitadas o resueltas y no se puede eliminar.",
-    };
-  }
-
-  if (hasInformationCompleted) {
-    return {
-      canDelete: false,
-      blockedReason:
-        "Para eliminar este servicio, primero revisa y borra una a una las facturas en estado Informacion completada.",
-    };
-  }
-
-  return {
-    canDelete: true,
-    blockedReason: "",
-  };
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {
