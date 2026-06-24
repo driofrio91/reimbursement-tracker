@@ -10,7 +10,7 @@ import { useInvoiceCorrectionFlow } from "@/modules/reimbursement/ui/hooks/useIn
 import { type ReimbursementOutcome } from "@/modules/reimbursement/domain/ReimbursementOutcome";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
-import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
+import type { ReferencePerson } from "@/modules/reimbursement/application/ReimbursementReferenceData";
 import { notifyError, notifySuccess } from "@/lib/ui/notifications";
 
 const initialInvoiceActionResult: InvoiceActionResult = {

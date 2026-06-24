@@ -2,11 +2,15 @@ import Link from "next/link";
 
 import { createServiceAction } from "@/app/(private)/services/new/actions";
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
-import { getReimbursementReferenceData } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
+import { getReimbursementReferenceDataUseCase } from "@/modules/reimbursement/application/ReimbursementReferenceData";
+import { PrismaReimbursementReferenceDataRepository } from "@/modules/reimbursement/infrastructure/PrismaReimbursementReferenceDataRepository";
 import { CreateServiceForm } from "@/modules/reimbursement/ui/CreateServiceForm";
+import { prisma } from "@/lib/db/prisma";
 
 export default async function NewServicePage() {
-  const { insurers, people } = await getReimbursementReferenceData();
+  const { insurers, people } = await getReimbursementReferenceDataUseCase({
+    referenceDataRepository: new PrismaReimbursementReferenceDataRepository(prisma),
+  });
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">

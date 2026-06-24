@@ -6,10 +6,10 @@ import {
   CreateServiceFormState,
   initialCreateServiceFormState,
 } from "@/modules/reimbursement/entrypoints/CreateServiceFormSchema";
-import {
+import type {
   ReferenceInsurer,
   ReferencePerson,
-} from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
+} from "@/modules/reimbursement/application/ReimbursementReferenceData";
 
 interface CreateServiceFormProps {
   action: (

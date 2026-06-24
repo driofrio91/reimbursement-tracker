@@ -12,10 +12,11 @@ import {
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
+import { getReimbursementReferenceDataUseCase } from "@/modules/reimbursement/application/ReimbursementReferenceData";
 import { getServiceDeleteEligibilityUseCase } from "@/modules/reimbursement/application/GetServiceDeleteEligibilityUseCase";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
-import { getReimbursementReferenceData } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
+import { PrismaReimbursementReferenceDataRepository } from "@/modules/reimbursement/infrastructure/PrismaReimbursementReferenceDataRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
 import { prisma } from "@/lib/db/prisma";
@@ -23,8 +24,9 @@ import { prisma } from "@/lib/db/prisma";
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const invoiceRepository = new PrismaInvoiceRepository(prisma);
-  const { people } = await getReimbursementReferenceData();
-  const [summary, deleteEligibility] = await Promise.all([
+  const referenceDataRepository = new PrismaReimbursementReferenceDataRepository(prisma);
+  const [referenceData, summary, deleteEligibility] = await Promise.all([
+    getReimbursementReferenceDataUseCase({ referenceDataRepository }),
     getServiceInvoiceSummaryUseCase(id, {
       serviceRepository: new PrismaServiceRepository(prisma),
       invoiceRepository,
@@ -78,7 +80,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           reimbursementOutcome={summary.reimbursementOutcome}
           canDelete={deleteEligibility.canDelete}
           deleteBlockedReason={deleteEligibility.blockedReason}
-          people={people}
+          people={referenceData.people}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}
