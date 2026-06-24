@@ -6,6 +6,7 @@ export interface SyncAnnualReimbursementLimitsResult {
   combinationsProcessed: number;
   adjusted: number;
   unchanged: number;
+  zeroed: number;
   errors: number;
 }
 
@@ -13,7 +14,7 @@ interface SyncAnnualReimbursementLimitsUseCaseDependencies {
   invoiceRepository: Pick<InvoiceRepository, "getPaidAmountByPersonInsurerForYear">;
   annualLimitRepository: Pick<
     PersonAnnualReimbursementLimitRepository,
-    "upsertForPersonInsurerYear" | "setAccumulated"
+    "upsertForPersonInsurerYear" | "setAccumulated" | "zeroAccumulatedNotInYearSnapshot"
   >;
 }
 
@@ -25,7 +26,13 @@ export async function syncAnnualReimbursementLimitsUseCase(
 
   let adjusted = 0;
   let unchanged = 0;
+  let zeroed = 0;
   let errors = 0;
+
+  const activeKeys = paidAmountByCombination.map((row) => ({
+    insuranceHolderPersonId: row.insuranceHolderPersonId,
+    insurerId: row.insurerId,
+  }));
 
   for (const row of paidAmountByCombination) {
     try {
@@ -48,11 +55,18 @@ export async function syncAnnualReimbursementLimitsUseCase(
     }
   }
 
+  try {
+    zeroed = await dependencies.annualLimitRepository.zeroAccumulatedNotInYearSnapshot(year, activeKeys);
+  } catch {
+    errors += 1;
+  }
+
   return {
     year,
     combinationsProcessed: paidAmountByCombination.length,
     adjusted,
     unchanged,
+    zeroed,
     errors,
   };
 }

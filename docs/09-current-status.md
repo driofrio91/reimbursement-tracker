@@ -168,6 +168,11 @@
 - validacion de negocio activa: no se permite marcar `PAID` sin `invoice.insuranceHolderPersonId`
 - `invoice.insuranceHolderPersonId` bloqueado cuando la factura ya esta en `PAID`
 - reconciliacion `Sync` del ano actual disponible solo para `ADMIN` desde home privada con resumen visible
+- reconciliacion `Sync` anual no destructiva:
+  - recalcula acumulados desde facturas `PAID` del ano solicitado
+  - actualiza/crea combinaciones activas `titular del seguro + aseguradora`
+  - conserva filas historicas del mismo ano que ya no estan en el snapshot y pone `reimbursedAccumulated = 0`
+  - no elimina filas ni modifica otros anos
 
 ## Stack real
 

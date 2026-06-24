@@ -43,7 +43,7 @@ export async function syncAnnualLimitsAction(
 
   return {
     status: "success",
-    message: `Sync ${result.year}: ${result.combinationsProcessed} combinaciones titular+aseguradora, ${result.adjusted} ajustados, ${result.unchanged} sin cambios, ${result.errors} errores.`,
+    message: `Sync ${result.year}: ${result.combinationsProcessed} combinaciones titular+aseguradora, ${result.adjusted} ajustados, ${result.unchanged} sin cambios, ${result.zeroed} obsoletos a cero, ${result.errors} errores.`,
     token: Date.now(),
   };
 }
