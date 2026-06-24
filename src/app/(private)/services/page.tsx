@@ -2,32 +2,16 @@ import Link from "next/link";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import { deleteServiceAction } from "@/app/(private)/services/[id]/actions";
-import { listServicesUseCase } from "@/modules/reimbursement/application/ListServicesUseCase";
-import { getServiceDeleteState } from "@/modules/reimbursement/application/GetServiceDeleteStateUseCase";
+import { listServicesWithDeleteStateUseCase } from "@/modules/reimbursement/application/ListServicesWithDeleteStateUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServicesList } from "@/modules/reimbursement/ui/ServicesList";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function ServicesPage() {
-  const invoiceRepository = new PrismaInvoiceRepository(prisma);
-  const services = await listServicesUseCase({
+  const servicesWithDeleteState = await listServicesWithDeleteStateUseCase({
     serviceRepository: new PrismaServiceRepository(prisma),
-  });
-
-  const invoiceStatusesByServiceId = await invoiceRepository.listStatusesByServiceIds(
-    services.map((s) => s.id),
-  );
-
-  const servicesWithDeleteState = services.map((service) => {
-    const invoices = invoiceStatusesByServiceId.get(service.id) ?? [];
-    const deleteDecision = getServiceDeleteState(invoices);
-
-    return {
-      service,
-      canDelete: deleteDecision.canDelete,
-      deleteBlockedReason: deleteDecision.blockedReason,
-    };
+    invoiceRepository: new PrismaInvoiceRepository(prisma),
   });
 
   return (

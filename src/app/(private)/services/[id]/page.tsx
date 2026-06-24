@@ -12,6 +12,7 @@ import {
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
+import { getServiceDeleteEligibilityUseCase } from "@/modules/reimbursement/application/GetServiceDeleteEligibilityUseCase";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { getReimbursementReferenceData } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
@@ -21,11 +22,15 @@ import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const invoiceRepository = new PrismaInvoiceRepository(prisma);
   const { people } = await getReimbursementReferenceData();
-  const summary = await getServiceInvoiceSummaryUseCase(id, {
-    serviceRepository: new PrismaServiceRepository(prisma),
-    invoiceRepository: new PrismaInvoiceRepository(prisma),
-  });
+  const [summary, deleteEligibility] = await Promise.all([
+    getServiceInvoiceSummaryUseCase(id, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository,
+    }),
+    getServiceDeleteEligibilityUseCase(id, { invoiceRepository }),
+  ]);
 
   if (!summary) {
     notFound();
@@ -71,6 +76,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
+          canDelete={deleteEligibility.canDelete}
+          deleteBlockedReason={deleteEligibility.blockedReason}
           people={people}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}

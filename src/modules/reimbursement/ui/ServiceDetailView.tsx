@@ -8,7 +8,6 @@ import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifec
 import { InvoiceCorrectionModal } from "@/modules/reimbursement/ui/InvoiceCorrectionModal";
 import { useInvoiceCorrectionFlow } from "@/modules/reimbursement/ui/hooks/useInvoiceCorrectionFlow";
 import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
-import { getServiceDeleteState } from "@/modules/reimbursement/application/GetServiceDeleteStateUseCase";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
@@ -46,6 +45,8 @@ interface ServiceDetailViewProps {
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
   reimbursementOutcome: ReimbursementOutcome;
+  canDelete: boolean;
+  deleteBlockedReason: string;
   completeInvoiceInformationAction: (
     serviceId: string,
     invoiceId: string,
@@ -107,6 +108,8 @@ export function ServiceDetailView({
   paidInvoicesCount,
   rejectedInvoicesCount,
   reimbursementOutcome,
+  canDelete,
+  deleteBlockedReason,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
@@ -129,7 +132,6 @@ export function ServiceDetailView({
   const createdInvoicesCount = orderedInvoices.filter((invoice) => invoice.status === "CREATED").length;
   const canAddInvoice = service.status !== "REIMBURSED";
   const canExportInvoices = createdInvoicesCount > 0;
-  const serviceDeleteState = getServiceDeleteState(orderedInvoices);
   const addBoundAction = addInvoiceAction.bind(null, service.id);
   const deleteServiceBoundAction = deleteServiceAction.bind(null, service.id);
   const [addInvoiceState, addInvoiceFormAction, isAddingInvoice] = useActionState(addBoundAction, initialInvoiceActionResult);
@@ -217,8 +219,8 @@ export function ServiceDetailView({
                 </span>
                 <form action={deleteServiceFormAction} className="sm:hidden">
                   <ServiceActionsMenu
-                    isDeleteDisabled={!serviceDeleteState.canDelete || isDeletingService}
-                    deleteDisabledReason={serviceDeleteState.blockedReason}
+                    isDeleteDisabled={!canDelete || isDeletingService}
+                    deleteDisabledReason={deleteBlockedReason}
                     isDeleting={isDeletingService}
                   />
                 </form>
@@ -229,8 +231,8 @@ export function ServiceDetailView({
             <div className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end sm:gap-2">
               <form action={deleteServiceFormAction} className="hidden sm:block">
                 <ServiceActionsMenu
-                  isDeleteDisabled={!serviceDeleteState.canDelete || isDeletingService}
-                  deleteDisabledReason={serviceDeleteState.blockedReason}
+                  isDeleteDisabled={!canDelete || isDeletingService}
+                  deleteDisabledReason={deleteBlockedReason}
                   isDeleting={isDeletingService}
                 />
               </form>
