@@ -14,18 +14,21 @@ export default async function ServicesPage() {
   const services = await listServicesUseCase({
     serviceRepository: new PrismaServiceRepository(prisma),
   });
-  const servicesWithDeleteState = await Promise.all(
-    services.map(async (service) => {
-      const invoices = await invoiceRepository.listByServiceId(service.id);
-      const serviceDeleteState = getServiceDeleteState(invoices);
 
-      return {
-        service,
-        canDelete: serviceDeleteState.canDelete,
-        deleteBlockedReason: serviceDeleteState.blockedReason,
-      };
-    }),
+  const invoiceStatusesByServiceId = await invoiceRepository.listStatusesByServiceIds(
+    services.map((s) => s.id),
   );
+
+  const servicesWithDeleteState = services.map((service) => {
+    const invoices = invoiceStatusesByServiceId.get(service.id) ?? [];
+    const deleteDecision = getServiceDeleteState(invoices);
+
+    return {
+      service,
+      canDelete: deleteDecision.canDelete,
+      deleteBlockedReason: deleteDecision.blockedReason,
+    };
+  });
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">

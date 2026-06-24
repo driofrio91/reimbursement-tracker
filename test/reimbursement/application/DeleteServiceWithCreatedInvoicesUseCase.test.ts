@@ -44,6 +44,24 @@ describe("DeleteServiceWithCreatedInvoicesUseCase", () => {
     ).rejects.toBeInstanceOf(DeleteServiceWithCreatedInvoicesUseCaseError);
   });
 
+  it("rejects deletion when at least one invoice has an advanced status (CLAIM_REFERENCE_COMPLETED)", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    serviceRepository.getById.mockResolvedValue(buildService());
+    invoiceRepository.listByServiceId.mockResolvedValue([
+      buildInvoice({ status: "CREATED" }),
+      buildInvoice({ id: "invoice-2", status: "CLAIM_REFERENCE_COMPLETED" }),
+    ]);
+
+    await expect(
+      deleteServiceWithCreatedInvoicesUseCase("service-1", {
+        serviceRepository,
+        invoiceRepository,
+      }),
+    ).rejects.toBeInstanceOf(DeleteServiceWithCreatedInvoicesUseCaseError);
+  });
+
   it("rejects deletion when state changed during execution", async () => {
     const serviceRepository = createServiceRepositoryMock();
     const invoiceRepository = createInvoiceRepositoryMock();

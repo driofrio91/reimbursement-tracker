@@ -1,4 +1,5 @@
 import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { evaluateServiceDeleteEligibility } from "@/modules/reimbursement/domain/ServiceDeletePolicy";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
 
 export type DeleteServiceWithCreatedInvoicesUseCaseErrorCode =
@@ -29,9 +30,9 @@ export async function deleteServiceWithCreatedInvoicesUseCase(
   }
 
   const invoices = await dependencies.invoiceRepository.listByServiceId(serviceId);
-  const hasAnyNonCreatedInvoice = invoices.some((invoice) => invoice.status !== "CREATED");
+  const { canDelete } = evaluateServiceDeleteEligibility(invoices);
 
-  if (hasAnyNonCreatedInvoice) {
+  if (!canDelete) {
     throw new DeleteServiceWithCreatedInvoicesUseCaseError(
       "SERVICE_NOT_DELETABLE",
       "Solo se puede eliminar un servicio si todas sus facturas estan en estado Creada.",

@@ -25,6 +25,7 @@ export interface InvoiceRepository {
   createMany(invoices: NewInvoice[]): Promise<Invoice[]>;
   deleteDraftOrInformationCompleted(invoiceId: string): Promise<boolean>;
   listByServiceId(serviceId: string): Promise<Invoice[]>;
+  listStatusesByServiceIds(serviceIds: string[]): Promise<Map<string, Pick<Invoice, "status">[]>>;
   completeInformation(invoiceId: string, input: CompleteInvoiceInformationInput): Promise<Invoice | null>;
   setClaimReference(invoiceId: string, claimReference: string): Promise<Invoice | null>;
   setInsuranceHolder(invoiceId: string, insuranceHolderPersonId: string): Promise<Invoice | null>;

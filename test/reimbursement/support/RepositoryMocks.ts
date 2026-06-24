@@ -40,6 +40,7 @@ export interface InvoiceRepositoryMock extends InvoiceRepository {
   createMany: Mock<(invoices: NewInvoice[]) => Promise<Invoice[]>>;
   deleteDraftOrInformationCompleted: Mock<(invoiceId: string) => Promise<boolean>>;
   listByServiceId: Mock<(serviceId: string) => Promise<Invoice[]>>;
+  listStatusesByServiceIds: Mock<(serviceIds: string[]) => Promise<Map<string, Pick<Invoice, "status">[]>>>;
   completeInformation: Mock<(invoiceId: string, input: CompleteInvoiceInformationInput) => Promise<Invoice | null>>;
   setClaimReference: Mock<(invoiceId: string, claimReference: string) => Promise<Invoice | null>>;
   setInsuranceHolder: Mock<(invoiceId: string, insuranceHolderPersonId: string) => Promise<Invoice | null>>;
@@ -59,6 +60,7 @@ export function createInvoiceRepositoryMock(): InvoiceRepositoryMock {
     createMany: vi.fn(),
     deleteDraftOrInformationCompleted: vi.fn(),
     listByServiceId: vi.fn(),
+    listStatusesByServiceIds: vi.fn(),
     completeInformation: vi.fn(),
     setClaimReference: vi.fn(),
     setInsuranceHolder: vi.fn(),
