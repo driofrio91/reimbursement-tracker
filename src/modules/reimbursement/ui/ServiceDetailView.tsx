@@ -7,7 +7,7 @@ import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-
 import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifecycleStepper";
 import { InvoiceCorrectionModal } from "@/modules/reimbursement/ui/InvoiceCorrectionModal";
 import { useInvoiceCorrectionFlow } from "@/modules/reimbursement/ui/hooks/useInvoiceCorrectionFlow";
-import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
+import { type ReimbursementOutcome } from "@/modules/reimbursement/domain/ReimbursementOutcome";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";

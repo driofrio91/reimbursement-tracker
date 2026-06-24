@@ -1,9 +1,8 @@
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { ReimbursementOutcome } from "@/modules/reimbursement/domain/ReimbursementOutcome";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
-
-export type ReimbursementOutcome = "FULL" | "PARTIAL" | "NONE";
 
 export interface ServiceInvoiceSummary {
   service: Service;
