@@ -1,0 +1,72 @@
+name: Dependabot Labels
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  label-dependabot-pr:
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Apply dependency labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const title = pr.title || "";
+            const body = pr.body || "";
+            const headRef = pr.head?.ref || "";
+            const text = `${title}\n${body}\n${headRef}`.toLowerCase();
+
+            const labels = new Set(["dependencies"]);
+
+            if (text.includes("github_actions") || text.includes("github-actions") || text.includes("actions/")) {
+              labels.add("area:github-actions");
+            } else if (text.includes("prisma") || text.includes("@prisma/client")) {
+              labels.add("area:prisma");
+            } else if (
+              text.includes("react") ||
+              text.includes("react-dom") ||
+              text.includes("next") ||
+              text.includes("next-auth") ||
+              text.includes("zod") ||
+              text.includes("sonner") ||
+              text.includes("bcryptjs") ||
+              text.includes("@radix-ui/")
+            ) {
+              labels.add("area:runtime");
+            } else {
+              labels.add("area:tooling");
+            }
+
+            const explicitMajor = text.includes("major");
+            const explicitMinorPatch = text.includes("minor-patch") || text.includes("minor") || text.includes("patch");
+            const versionMatch = title.match(/from\s+(\d+)\.[\w.-]*\s+to\s+(\d+)\./i);
+
+            if (explicitMajor || (versionMatch && versionMatch[1] !== versionMatch[2])) {
+              labels.add("semver:major");
+            } else if (explicitMinorPatch || versionMatch) {
+              labels.add("semver:minor-patch");
+            }
+
+            if (text.includes("security") || text.includes("vulnerability") || text.includes("cve-") || text.includes("ghsa-")) {
+              labels.add("priority:security");
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: [...labels],
+            });
