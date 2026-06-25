@@ -3,6 +3,11 @@ import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceReposit
 import { ReimbursementOutcome } from "@/modules/reimbursement/domain/ReimbursementOutcome";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
+import { evaluateServiceDeleteEligibility } from "@/modules/reimbursement/domain/ServiceDeletePolicy";
+import {
+  mapServiceDeleteDecisionToEligibility,
+  ServiceDeleteEligibilityView,
+} from "@/modules/reimbursement/application/ServiceDeleteEligibilityMapper";
 
 export interface ServiceInvoiceSummary {
   service: Service;
@@ -15,6 +20,7 @@ export interface ServiceInvoiceSummary {
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
   reimbursementOutcome: ReimbursementOutcome;
+  deleteEligibility: ServiceDeleteEligibilityView;
 }
 
 interface GetServiceInvoiceSummaryUseCaseDependencies {
@@ -43,6 +49,7 @@ export async function getServiceInvoiceSummaryUseCase(
   const paidInvoicesCount = invoices.filter((invoice) => invoice.status === "PAID").length;
   const rejectedInvoicesCount = invoices.filter((invoice) => invoice.status === "REJECTED").length;
   const reimbursementOutcome = deriveReimbursementOutcome(invoices, totalExpectedAmount, totalPaidAmount);
+  const deleteEligibility = mapServiceDeleteDecisionToEligibility(evaluateServiceDeleteEligibility(invoices));
 
   return {
     service,
@@ -55,6 +62,7 @@ export async function getServiceInvoiceSummaryUseCase(
     paidInvoicesCount,
     rejectedInvoicesCount,
     reimbursementOutcome,
+    deleteEligibility,
   };
 }
 

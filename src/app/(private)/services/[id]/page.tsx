@@ -13,7 +13,6 @@ import {
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
 import { getReimbursementReferenceDataUseCase } from "@/modules/reimbursement/application/ReimbursementReferenceData";
-import { getServiceDeleteEligibilityUseCase } from "@/modules/reimbursement/application/GetServiceDeleteEligibilityUseCase";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaReimbursementReferenceDataRepository } from "@/modules/reimbursement/infrastructure/PrismaReimbursementReferenceDataRepository";
@@ -25,13 +24,12 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const invoiceRepository = new PrismaInvoiceRepository(prisma);
   const referenceDataRepository = new PrismaReimbursementReferenceDataRepository(prisma);
-  const [referenceData, summary, deleteEligibility] = await Promise.all([
+  const [referenceData, summary] = await Promise.all([
     getReimbursementReferenceDataUseCase({ referenceDataRepository }),
     getServiceInvoiceSummaryUseCase(id, {
       serviceRepository: new PrismaServiceRepository(prisma),
       invoiceRepository,
     }),
-    getServiceDeleteEligibilityUseCase(id, { invoiceRepository }),
   ]);
 
   if (!summary) {
@@ -78,8 +76,8 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
-          canDelete={deleteEligibility.canDelete}
-          deleteBlockedReason={deleteEligibility.blockedReason}
+          canDelete={summary.deleteEligibility.canDelete}
+          deleteBlockedReason={summary.deleteEligibility.blockedReason}
           people={referenceData.people}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
