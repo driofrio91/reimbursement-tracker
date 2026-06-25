@@ -42,5 +42,10 @@
     "tsx": "^4.22.4",
     "typescript": "^5",
     "vitest": "^4.1.9"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.0.3",
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.1",
+    "lightningcss-linux-x64-gnu": "^1.32.0"
   }
 }

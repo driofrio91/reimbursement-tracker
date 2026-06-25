@@ -12,20 +12,25 @@ import {
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
+import { getReimbursementReferenceDataUseCase } from "@/modules/reimbursement/application/ReimbursementReferenceData";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
-import { getReimbursementReferenceData } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
+import { PrismaReimbursementReferenceDataRepository } from "@/modules/reimbursement/infrastructure/PrismaReimbursementReferenceDataRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { people } = await getReimbursementReferenceData();
-  const summary = await getServiceInvoiceSummaryUseCase(id, {
-    serviceRepository: new PrismaServiceRepository(prisma),
-    invoiceRepository: new PrismaInvoiceRepository(prisma),
-  });
+  const invoiceRepository = new PrismaInvoiceRepository(prisma);
+  const referenceDataRepository = new PrismaReimbursementReferenceDataRepository(prisma);
+  const [referenceData, summary] = await Promise.all([
+    getReimbursementReferenceDataUseCase({ referenceDataRepository }),
+    getServiceInvoiceSummaryUseCase(id, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository,
+    }),
+  ]);
 
   if (!summary) {
     notFound();
@@ -71,7 +76,9 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
-          people={people}
+          canDelete={summary.deleteEligibility.canDelete}
+          deleteBlockedReason={summary.deleteEligibility.blockedReason}
+          people={referenceData.people}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}

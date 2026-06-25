@@ -7,10 +7,10 @@ import type { InvoiceActionResult } from "@/app/(private)/services/[id]/invoice-
 import { InvoiceLifecycleStepper } from "@/modules/reimbursement/ui/InvoiceLifecycleStepper";
 import { InvoiceCorrectionModal } from "@/modules/reimbursement/ui/InvoiceCorrectionModal";
 import { useInvoiceCorrectionFlow } from "@/modules/reimbursement/ui/hooks/useInvoiceCorrectionFlow";
-import { type ReimbursementOutcome } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
+import { type ReimbursementOutcome } from "@/modules/reimbursement/domain/ReimbursementOutcome";
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { Service } from "@/modules/reimbursement/domain/Service";
-import { ReferencePerson } from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
+import type { ReferencePerson } from "@/modules/reimbursement/application/ReimbursementReferenceData";
 import { notifyError, notifySuccess } from "@/lib/ui/notifications";
 
 const initialInvoiceActionResult: InvoiceActionResult = {
@@ -45,6 +45,8 @@ interface ServiceDetailViewProps {
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
   reimbursementOutcome: ReimbursementOutcome;
+  canDelete: boolean;
+  deleteBlockedReason: string;
   completeInvoiceInformationAction: (
     serviceId: string,
     invoiceId: string,
@@ -106,6 +108,8 @@ export function ServiceDetailView({
   paidInvoicesCount,
   rejectedInvoicesCount,
   reimbursementOutcome,
+  canDelete,
+  deleteBlockedReason,
   completeInvoiceInformationAction,
   registerInvoiceClaimReferenceAction,
   markInvoiceAsPaidAction,
@@ -128,7 +132,6 @@ export function ServiceDetailView({
   const createdInvoicesCount = orderedInvoices.filter((invoice) => invoice.status === "CREATED").length;
   const canAddInvoice = service.status !== "REIMBURSED";
   const canExportInvoices = createdInvoicesCount > 0;
-  const serviceDeleteState = getServiceDeleteState(orderedInvoices);
   const addBoundAction = addInvoiceAction.bind(null, service.id);
   const deleteServiceBoundAction = deleteServiceAction.bind(null, service.id);
   const [addInvoiceState, addInvoiceFormAction, isAddingInvoice] = useActionState(addBoundAction, initialInvoiceActionResult);
@@ -216,8 +219,8 @@ export function ServiceDetailView({
                 </span>
                 <form action={deleteServiceFormAction} className="sm:hidden">
                   <ServiceActionsMenu
-                    isDeleteDisabled={!serviceDeleteState.canDelete || isDeletingService}
-                    deleteDisabledReason={serviceDeleteState.blockedReason}
+                    isDeleteDisabled={!canDelete || isDeletingService}
+                    deleteDisabledReason={deleteBlockedReason}
                     isDeleting={isDeletingService}
                   />
                 </form>
@@ -228,8 +231,8 @@ export function ServiceDetailView({
             <div className="flex w-full flex-col items-stretch gap-1.5 sm:w-auto sm:items-end sm:gap-2">
               <form action={deleteServiceFormAction} className="hidden sm:block">
                 <ServiceActionsMenu
-                  isDeleteDisabled={!serviceDeleteState.canDelete || isDeletingService}
-                  deleteDisabledReason={serviceDeleteState.blockedReason}
+                  isDeleteDisabled={!canDelete || isDeletingService}
+                  deleteDisabledReason={deleteBlockedReason}
                   isDeleting={isDeletingService}
                 />
               </form>
@@ -1240,34 +1243,6 @@ function CompactInfoRow({ label, value }: { label: string; value: string }) {
       </dd>
     </div>
   );
-}
-
-function getServiceDeleteState(invoices: Invoice[]): { canDelete: boolean; blockedReason: string } {
-  const hasInformationCompleted = invoices.some((invoice) => invoice.status === "INFORMATION_COMPLETED");
-  const hasAdvancedStatus = invoices.some(
-    (invoice) =>
-      invoice.status === "CLAIM_REFERENCE_COMPLETED" || invoice.status === "PAID" || invoice.status === "REJECTED",
-  );
-
-  if (hasAdvancedStatus) {
-    return {
-      canDelete: false,
-      blockedReason: "Este servicio ya tiene facturas tramitadas o resueltas y no se puede eliminar.",
-    };
-  }
-
-  if (hasInformationCompleted) {
-    return {
-      canDelete: false,
-      blockedReason:
-        "Para eliminar este servicio, primero revisa y borra una a una las facturas en estado Informacion completada.",
-    };
-  }
-
-  return {
-    canDelete: true,
-    blockedReason: "",
-  };
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {

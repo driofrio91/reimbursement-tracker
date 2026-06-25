@@ -5,6 +5,7 @@ import {
   PersonAnnualReimbursementLimit,
 } from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimit";
 import {
+  PersonAnnualLimitSnapshotKey,
   PersonAnnualLimitYearRow,
   PersonAnnualReimbursementLimitRepository,
 } from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimitRepository";
@@ -102,6 +103,34 @@ export class PrismaPersonAnnualReimbursementLimitRepository implements PersonAnn
     });
 
     return this.map(updatedLimit);
+  }
+
+  async zeroAccumulatedNotInYearSnapshot(year: number, activeKeys: PersonAnnualLimitSnapshotKey[]): Promise<number> {
+    const activeCombinations = activeKeys.map((key) => ({
+      insuranceHolderPersonId: key.insuranceHolderPersonId,
+      insurerId: key.insurerId,
+    }));
+
+    const result = await this.prisma.insuranceHolderAnnualReimbursementLimit.updateMany({
+      where: {
+        year,
+        reimbursedAccumulated: {
+          not: 0,
+        },
+        ...(activeCombinations.length > 0
+          ? {
+              NOT: {
+                OR: activeCombinations,
+              },
+            }
+          : {}),
+      },
+      data: {
+        reimbursedAccumulated: 0,
+      },
+    });
+
+    return result.count;
   }
 
   async listByYear(year: number): Promise<PersonAnnualLimitYearRow[]> {

@@ -24,6 +24,8 @@
 .DS_Store
 *.pem
 /.opencode/
+.atl/
+local/
 
 # debug
 npm-debug.log*

@@ -127,6 +127,32 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
     return invoices.map((invoice) => this.mapInvoice(invoice));
   }
 
+  async listStatusesByServiceIds(serviceIds: string[]): Promise<Map<string, Pick<Invoice, "status">[]>> {
+    if (serviceIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await this.prisma.invoice.findMany({
+      select: { serviceId: true, status: true },
+      where: { serviceId: { in: serviceIds } },
+    });
+
+    const result = new Map<string, Pick<Invoice, "status">[]>();
+
+    for (const row of rows) {
+      const existing = result.get(row.serviceId);
+      const entry: Pick<Invoice, "status"> = { status: row.status as Invoice["status"] };
+
+      if (existing) {
+        existing.push(entry);
+      } else {
+        result.set(row.serviceId, [entry]);
+      }
+    }
+
+    return result;
+  }
+
   async completeInformation(invoiceId: string, input: CompleteInvoiceInformationInput): Promise<Invoice | null> {
     const updateResult = await this.prisma.invoice.updateMany({
       where: {

@@ -9,6 +9,7 @@ import {
   AnnualLimitTrafficLight,
   getAnnualLimitsDashboardUseCase,
 } from "@/modules/reimbursement/application/GetAnnualLimitsDashboardUseCase";
+import { resolveAnnualLimitsHistoryYear } from "@/modules/reimbursement/application/ResolveAnnualLimitsHistoryYear";
 import { PrismaPersonAnnualReimbursementLimitRepository } from "@/modules/reimbursement/infrastructure/PrismaPersonAnnualReimbursementLimitRepository";
 import { prisma } from "@/lib/db/prisma";
 
@@ -20,7 +21,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const actor = await requireAuth();
   const currentYear = new Date().getUTCFullYear();
   const resolvedParams = (await searchParams) ?? {};
-  const selectedHistoryYear = normalizeHistoryYear(resolvedParams.historyYear, currentYear);
+  const { selectedHistoryYear } = resolveAnnualLimitsHistoryYear(resolvedParams.historyYear, currentYear);
   const canManageCatalogs = actor.role === USER_ROLES.ADMIN;
 
   return (
@@ -103,9 +104,7 @@ async function AnnualLimitsHistoricalSection({
   currentYear: number;
   canSync: boolean;
 }) {
-  const previousYear = year - 1;
-  const nextYear = year + 1;
-  const isNextDisabled = nextYear >= currentYear;
+  const { previousHistoryYear, nextHistoryYear, isNextDisabled } = resolveAnnualLimitsHistoryYear(String(year), currentYear);
 
   return (
     <AnnualLimitsDashboardSection
@@ -117,12 +116,12 @@ async function AnnualLimitsHistoricalSection({
       navSlot={
         <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
           <Link
-            aria-label={`Ir al año ${previousYear}`}
+            aria-label={`Ir al año ${previousHistoryYear}`}
             className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            href={`/?historyYear=${previousYear}`}
+            href={`/?historyYear=${previousHistoryYear}`}
             scroll={false}
           >
-            {`← ${previousYear}`}
+            {`← ${previousHistoryYear}`}
           </Link>
           <span
             aria-label={`Año seleccionado ${year}`}
@@ -132,19 +131,19 @@ async function AnnualLimitsHistoricalSection({
           </span>
           {isNextDisabled ? (
             <span
-              aria-label={`Año ${nextYear} no disponible`}
+              aria-label={`Año ${nextHistoryYear} no disponible`}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-3 text-sm font-medium text-slate-400"
             >
-              {`${nextYear} →`}
+              {`${nextHistoryYear} →`}
             </span>
           ) : (
             <Link
-              aria-label={`Ir al año ${nextYear}`}
+              aria-label={`Ir al año ${nextHistoryYear}`}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              href={`/?historyYear=${nextYear}`}
+              href={`/?historyYear=${nextHistoryYear}`}
               scroll={false}
             >
-              {`${nextYear} →`}
+              {`${nextHistoryYear} →`}
             </Link>
           )}
         </div>
@@ -291,20 +290,4 @@ function formatCurrency(amount: number, currency: string) {
 
 function formatPercentage(value: number) {
   return `${Math.round(value)}% consumido`;
-}
-
-function normalizeHistoryYear(rawHistoryYear: string | undefined, currentYear: number) {
-  const fallback = currentYear - 1;
-
-  if (!rawHistoryYear) {
-    return fallback;
-  }
-
-  const parsed = Number(rawHistoryYear);
-
-  if (!Number.isInteger(parsed) || parsed >= currentYear) {
-    return fallback;
-  }
-
-  return parsed;
 }
