@@ -8,7 +8,10 @@ import { PrismaPersonAnnualReimbursementLimitRepository } from "@/modules/reimbu
 import { AuthorizationError, requireRole } from "@/lib/auth/authorization";
 import { USER_ROLES } from "@/lib/auth/roles";
 import { prisma } from "@/lib/db/prisma";
-import { SyncAnnualLimitsActionResult } from "@/app/(private)/sync-annual-limits-state";
+import {
+  createSyncAnnualLimitsActionResult,
+  SyncAnnualLimitsActionResult,
+} from "@/app/(private)/sync-annual-limits-state";
 
 export async function syncAnnualLimitsAction(
   _previousState: SyncAnnualLimitsActionResult,
@@ -41,9 +44,5 @@ export async function syncAnnualLimitsAction(
 
   revalidatePath("/");
 
-  return {
-    status: "success",
-    message: `Sync ${result.year}: ${result.combinationsProcessed} combinaciones titular+aseguradora, ${result.adjusted} ajustados, ${result.unchanged} sin cambios, ${result.zeroed} obsoletos a cero, ${result.errors} errores.`,
-    token: Date.now(),
-  };
+  return createSyncAnnualLimitsActionResult(result, Date.now());
 }
