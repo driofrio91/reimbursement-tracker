@@ -2,6 +2,7 @@ import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceReposit
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
 import { evaluateServiceDeleteEligibility } from "@/modules/reimbursement/domain/ServiceDeletePolicy";
+import { mapServiceDeleteDecisionToEligibility } from "@/modules/reimbursement/application/ServiceDeleteEligibilityMapper";
 
 interface ListServicesWithDeleteStateUseCaseDependencies {
   serviceRepository: Pick<ServiceRepository, "list">;
@@ -29,11 +30,12 @@ export async function listServicesWithDeleteStateUseCase(
   return services.map((service) => {
     const invoices = invoiceStatusesByServiceId.get(service.id) ?? [];
     const decision = evaluateServiceDeleteEligibility(invoices);
+    const eligibility = mapServiceDeleteDecisionToEligibility(decision);
 
     return {
       service,
-      canDelete: decision.canDelete,
-      deleteBlockedReason: decision.blockedReason,
+      canDelete: eligibility.canDelete,
+      deleteBlockedReason: eligibility.blockedReason,
     };
   });
 }

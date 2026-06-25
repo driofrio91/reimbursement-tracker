@@ -1,14 +1,15 @@
 import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
 import { evaluateServiceDeleteEligibility } from "@/modules/reimbursement/domain/ServiceDeletePolicy";
+import {
+  mapServiceDeleteDecisionToEligibility,
+  ServiceDeleteEligibilityView,
+} from "@/modules/reimbursement/application/ServiceDeleteEligibilityMapper";
 
 interface GetServiceDeleteEligibilityUseCaseDependencies {
   invoiceRepository: Pick<InvoiceRepository, "listByServiceId">;
 }
 
-export interface ServiceDeleteEligibility {
-  canDelete: boolean;
-  blockedReason: string;
-}
+export type ServiceDeleteEligibility = ServiceDeleteEligibilityView;
 
 export async function getServiceDeleteEligibilityUseCase(
   serviceId: string,
@@ -17,8 +18,5 @@ export async function getServiceDeleteEligibilityUseCase(
   const invoices = await dependencies.invoiceRepository.listByServiceId(serviceId);
   const decision = evaluateServiceDeleteEligibility(invoices);
 
-  return {
-    canDelete: decision.canDelete,
-    blockedReason: decision.blockedReason,
-  };
+  return mapServiceDeleteDecisionToEligibility(decision);
 }

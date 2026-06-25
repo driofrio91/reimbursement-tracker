@@ -2,8 +2,10 @@ import type { Invoice } from "@/modules/reimbursement/domain/Invoice";
 
 export interface ServiceDeleteDecision {
   canDelete: boolean;
-  blockedReason: string;
+  blockedReasonCode: ServiceDeleteBlockedReasonCode | null;
 }
+
+export type ServiceDeleteBlockedReasonCode = "HAS_ADVANCED_INVOICES" | "HAS_INFORMATION_COMPLETED_INVOICES";
 
 /**
  * Evaluates whether a service can be deleted based on its invoices' statuses.
@@ -28,7 +30,7 @@ export function evaluateServiceDeleteEligibility(
   if (hasAdvancedStatus) {
     return {
       canDelete: false,
-      blockedReason: "Este servicio ya tiene facturas tramitadas o resueltas y no se puede eliminar.",
+      blockedReasonCode: "HAS_ADVANCED_INVOICES",
     };
   }
 
@@ -39,13 +41,12 @@ export function evaluateServiceDeleteEligibility(
   if (hasInformationCompleted) {
     return {
       canDelete: false,
-      blockedReason:
-        "Para eliminar este servicio, primero revisa y borra una a una las facturas en estado Informacion completada.",
+      blockedReasonCode: "HAS_INFORMATION_COMPLETED_INVOICES",
     };
   }
 
   return {
     canDelete: true,
-    blockedReason: "",
+    blockedReasonCode: null,
   };
 }
