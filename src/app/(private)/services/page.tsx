@@ -1,14 +1,17 @@
 import Link from "next/link";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
-import { listServicesUseCase } from "@/modules/reimbursement/application/ListServicesUseCase";
+import { deleteServiceAction } from "@/app/(private)/services/[id]/actions";
+import { listServicesWithDeleteStateUseCase } from "@/modules/reimbursement/application/ListServicesWithDeleteStateUseCase";
+import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServicesList } from "@/modules/reimbursement/ui/ServicesList";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function ServicesPage() {
-  const services = await listServicesUseCase({
+  const servicesWithDeleteState = await listServicesWithDeleteStateUseCase({
     serviceRepository: new PrismaServiceRepository(prisma),
+    invoiceRepository: new PrismaInvoiceRepository(prisma),
   });
 
   return (
@@ -32,7 +35,7 @@ export default async function ServicesPage() {
           </Link>
         </div>
 
-        <ServicesList services={services} />
+        <ServicesList services={servicesWithDeleteState} deleteServiceAction={deleteServiceAction} />
       </div>
     </main>
   );

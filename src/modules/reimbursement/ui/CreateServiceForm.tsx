@@ -1,15 +1,15 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   CreateServiceFormState,
   initialCreateServiceFormState,
 } from "@/modules/reimbursement/entrypoints/CreateServiceFormSchema";
-import {
+import type {
   ReferenceInsurer,
   ReferencePerson,
-} from "@/modules/reimbursement/infrastructure/ReimbursementReferenceData";
+} from "@/modules/reimbursement/application/ReimbursementReferenceData";
 
 interface CreateServiceFormProps {
   action: (
@@ -22,6 +22,22 @@ interface CreateServiceFormProps {
 
 export function CreateServiceForm({ action, insurers, people }: CreateServiceFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialCreateServiceFormState);
+  const [selectedInsuranceHolderId, setSelectedInsuranceHolderId] = useState(state.values.personId);
+  const [serviceRecipientName, setServiceRecipientName] = useState(state.values.policyHolderName);
+
+  function handleInsuranceHolderChange(nextInsuranceHolderPersonId: string) {
+    setSelectedInsuranceHolderId(nextInsuranceHolderPersonId);
+
+    const selectedInsuranceHolder = people.find((person) => person.id === nextInsuranceHolderPersonId);
+
+    if (!selectedInsuranceHolder) {
+      setServiceRecipientName("");
+
+      return;
+    }
+
+    setServiceRecipientName(selectedInsuranceHolder.displayName);
+  }
 
   return (
     <form action={formAction} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -82,14 +98,15 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
           />
         </Field>
 
-        <Field label="Persona" error={state.errors.personId}>
+        <Field label="Titular del seguro" error={state.errors.personId}>
           <select
             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             name="personId"
-            defaultValue={state.values.personId}
+            value={selectedInsuranceHolderId}
+            onChange={(event) => handleInsuranceHolderChange(event.target.value)}
             required
           >
-            <option value="">Selecciona una persona</option>
+            <option value="">Selecciona un titular</option>
             {people.map((person) => (
               <option key={person.id} value={person.id}>
                 {person.displayName}
@@ -114,12 +131,13 @@ export function CreateServiceForm({ action, insurers, people }: CreateServiceFor
           </select>
         </Field>
 
-        <Field className="md:col-span-2" label="Titular" error={state.errors.policyHolderName}>
+        <Field className="md:col-span-2" label="Persona que recibe el servicio" error={state.errors.policyHolderName}>
           <input
             className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-slate-400"
             type="text"
             name="policyHolderName"
-            defaultValue={state.values.policyHolderName}
+            value={serviceRecipientName}
+            onChange={(event) => setServiceRecipientName(event.target.value)}
             required
           />
         </Field>

@@ -45,7 +45,6 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
       invoices,
       totalBilledAmount: 110,
       totalExpectedAmount: 99,
-      pendingExpectedAmount: 101,
       overBilledAmount: 0,
       overExpectedAmount: 0,
       reimbursementOutcome: "PARTIAL",
@@ -72,7 +71,6 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
     expect(result).toMatchObject({
       totalBilledAmount: 220,
       totalExpectedAmount: 210,
-      pendingExpectedAmount: 0,
       overBilledAmount: 20,
       overExpectedAmount: 10,
       reimbursementOutcome: "PARTIAL",
@@ -198,6 +196,29 @@ describe("GetServiceInvoiceSummaryUseCase", () => {
 
     expect(serviceRepository.getById).toHaveBeenCalledWith("service-42");
     expect(invoiceRepository.listByServiceId).toHaveBeenCalledWith("service-42");
+  });
+
+  it("derives delete eligibility from the loaded invoice snapshot", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+
+    serviceRepository.getById.mockResolvedValue(buildService());
+    invoiceRepository.listByServiceId.mockResolvedValue([
+      buildInvoice({ status: "CREATED" }),
+      buildInvoice({ id: "invoice-2", status: "INFORMATION_COMPLETED" }),
+    ]);
+
+    const result = await getServiceInvoiceSummaryUseCase("service-1", {
+      serviceRepository,
+      invoiceRepository,
+    });
+
+    expect(invoiceRepository.listByServiceId).toHaveBeenCalledTimes(1);
+    expect(result?.deleteEligibility).toEqual({
+      canDelete: false,
+      blockedReason:
+        "Para eliminar este servicio, primero revisa y borra una a una las facturas en estado Informacion completada.",
+    });
   });
 
   it("propagates repository errors", async () => {

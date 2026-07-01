@@ -1,7 +1,13 @@
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { PersonAnnualReimbursementLimitRepository } from "@/modules/reimbursement/domain/PersonAnnualReimbursementLimitRepository";
+import { applyInvoiceAnnualLimitDeltaUseCase } from "@/modules/reimbursement/application/ApplyInvoiceAnnualLimitDeltaUseCase";
 
-export type MarkInvoiceAsPaidUseCaseErrorCode = "INVOICE_NOT_FOUND" | "INVALID_STATUS" | "INVALID_PAID_AMOUNT";
+export type MarkInvoiceAsPaidUseCaseErrorCode =
+  | "INVOICE_NOT_FOUND"
+  | "INVALID_STATUS"
+  | "INVALID_PAID_AMOUNT"
+  | "MISSING_INVOICE_PERSON";
 
 export class MarkInvoiceAsPaidUseCaseError extends Error {
   constructor(public readonly code: MarkInvoiceAsPaidUseCaseErrorCode, message: string) {
@@ -12,6 +18,7 @@ export class MarkInvoiceAsPaidUseCaseError extends Error {
 
 interface MarkInvoiceAsPaidUseCaseDependencies {
   invoiceRepository: Pick<InvoiceRepository, "getById" | "markAsPaid">;
+  annualLimitRepository: Pick<PersonAnnualReimbursementLimitRepository, "applyDelta">;
 }
 
 export async function markInvoiceAsPaidUseCase(
@@ -37,6 +44,13 @@ export async function markInvoiceAsPaidUseCase(
     );
   }
 
+  if (!invoice.insuranceHolderPersonId) {
+    throw new MarkInvoiceAsPaidUseCaseError(
+      "MISSING_INVOICE_PERSON",
+      "Debes revisar y guardar la persona imputada antes de marcar la factura como pagada.",
+    );
+  }
+
   const updatedInvoice = await dependencies.invoiceRepository.markAsPaid(invoiceId, paidAmount, paidAt);
 
   if (!updatedInvoice) {
@@ -45,6 +59,10 @@ export async function markInvoiceAsPaidUseCase(
       "No se pudo guardar porque la factura cambio de estado. Recarga la pagina e intentalo de nuevo.",
     );
   }
+
+  await applyInvoiceAnnualLimitDeltaUseCase(invoice, updatedInvoice, {
+    annualLimitRepository: dependencies.annualLimitRepository,
+  });
 
   return updatedInvoice;
 }

@@ -1,4 +1,8 @@
-# Product Vision
+# Vision de producto
+
+> Documento de vision de producto. No usar como fuente operativa para ejecucion de version.
+>
+> Consulta `docs/PROJECT-HUB.md` para documentacion vigente por version.
 
 ## Vision
 
@@ -103,4 +107,4 @@ El MVP sera exitoso si permite:
 
 Aunque la vision del producto contempla trazabilidad mas rica, importacion historica, adjuntos y evolucion futura, la primera version implementada se recorta deliberadamente a un nucleo operativo minimo.
 
-Ese recorte queda definido en `docs/07-mvp-scope.md`.
+Ese recorte queda definido en `docs/versions/v1/mvp-scope.md`.

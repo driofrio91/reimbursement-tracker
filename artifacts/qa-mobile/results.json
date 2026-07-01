@@ -1,0 +1,59 @@
+{
+  "baseUrl": "http://localhost:4010",
+  "executedAt": "2026-05-09T18:43:04.486Z",
+  "checks": [
+    {
+      "id": "QA-22-login",
+      "pass": true,
+      "note": "Login movil correcto con Sandy."
+    },
+    {
+      "id": "QA-22",
+      "pass": true,
+      "note": "Navegacion movil ejecutada en rutas privadas principales."
+    },
+    {
+      "id": "QA-23",
+      "pass": true,
+      "note": "Acciones principales visibles en /services y /invoices."
+    },
+    {
+      "id": "QA-24",
+      "pass": true,
+      "note": "Sin overflow horizontal en rutas revisadas."
+    }
+  ],
+  "routes": {
+    "/": "http://localhost:4010/",
+    "/services": "http://localhost:4010/services",
+    "/services/new": "http://localhost:4010/services/new",
+    "/invoices": "http://localhost:4010/invoices"
+  },
+  "overflow": {
+    "/": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false
+    },
+    "/services": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false
+    },
+    "/services/new": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false
+    },
+    "/invoices": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasHorizontalOverflow": false
+    }
+  },
+  "primaryActions": {
+    "servicesNewButtonVisible": true,
+    "invoicesSearchButtonVisible": true,
+    "invoiceDetailServiceLinkVisible": true
+  }
+}

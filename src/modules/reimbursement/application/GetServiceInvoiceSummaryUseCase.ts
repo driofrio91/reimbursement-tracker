@@ -1,9 +1,13 @@
 import { Invoice } from "@/modules/reimbursement/domain/Invoice";
 import { InvoiceRepository } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { ReimbursementOutcome } from "@/modules/reimbursement/domain/ReimbursementOutcome";
 import { Service } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
-
-export type ReimbursementOutcome = "FULL" | "PARTIAL" | "NONE";
+import { evaluateServiceDeleteEligibility } from "@/modules/reimbursement/domain/ServiceDeletePolicy";
+import {
+  mapServiceDeleteDecisionToEligibility,
+  ServiceDeleteEligibilityView,
+} from "@/modules/reimbursement/application/ServiceDeleteEligibilityMapper";
 
 export interface ServiceInvoiceSummary {
   service: Service;
@@ -11,12 +15,12 @@ export interface ServiceInvoiceSummary {
   totalBilledAmount: number;
   totalExpectedAmount: number;
   totalPaidAmount: number;
-  pendingExpectedAmount: number;
   overBilledAmount: number;
   overExpectedAmount: number;
   paidInvoicesCount: number;
   rejectedInvoicesCount: number;
   reimbursementOutcome: ReimbursementOutcome;
+  deleteEligibility: ServiceDeleteEligibilityView;
 }
 
 interface GetServiceInvoiceSummaryUseCaseDependencies {
@@ -40,12 +44,12 @@ export async function getServiceInvoiceSummaryUseCase(
   const totalPaidAmount = roundMoney(
     invoices.reduce((sum, invoice) => sum + (invoice.status === "PAID" ? (invoice.paidAmount ?? 0) : 0), 0),
   );
-  const pendingExpectedAmount = roundMoney(Math.max(service.actualAmount - totalExpectedAmount, 0));
   const overBilledAmount = roundMoney(Math.max(totalBilledAmount - service.actualAmount, 0));
   const overExpectedAmount = roundMoney(Math.max(totalExpectedAmount - service.actualAmount, 0));
   const paidInvoicesCount = invoices.filter((invoice) => invoice.status === "PAID").length;
   const rejectedInvoicesCount = invoices.filter((invoice) => invoice.status === "REJECTED").length;
   const reimbursementOutcome = deriveReimbursementOutcome(invoices, totalExpectedAmount, totalPaidAmount);
+  const deleteEligibility = mapServiceDeleteDecisionToEligibility(evaluateServiceDeleteEligibility(invoices));
 
   return {
     service,
@@ -53,12 +57,12 @@ export async function getServiceInvoiceSummaryUseCase(
     totalBilledAmount,
     totalExpectedAmount,
     totalPaidAmount,
-    pendingExpectedAmount,
     overBilledAmount,
     overExpectedAmount,
     paidInvoicesCount,
     rejectedInvoicesCount,
     reimbursementOutcome,
+    deleteEligibility,
   };
 }
 

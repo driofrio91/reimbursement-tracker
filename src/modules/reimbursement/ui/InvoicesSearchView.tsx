@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ClearFiltersLink } from "@/modules/reimbursement/ui/ClearFiltersLink";
 import { Invoice, InvoiceStatus } from "@/modules/reimbursement/domain/Invoice";
 
 interface InvoicesSearchViewProps {
@@ -20,9 +21,16 @@ const invoiceStatuses: InvoiceStatus[] = [
 ];
 
 export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProps) {
+  const exportHref = buildExportHref(filters);
+  const hasActiveFilters = Boolean(filters.invoiceNumber || filters.claimReference || filters.status);
+
   return (
     <section className="space-y-4">
-      <form action="/invoices" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
+      <form
+        key={`${filters.invoiceNumber}-${filters.claimReference}-${filters.status}`}
+        action="/invoices"
+        className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
+      >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Numero de factura" htmlFor="invoiceNumber">
             <input
@@ -61,15 +69,41 @@ export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProp
             <button className="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800" type="submit">
               Buscar
             </button>
-            <Link
+            <ClearFiltersLink
               href="/invoices"
+              hasActiveFilters={hasActiveFilters}
               className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
             >
               Limpiar
-            </Link>
+            </ClearFiltersLink>
           </div>
         </div>
       </form>
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-950">Resultados</h2>
+          <p className="text-sm text-slate-600">{invoices.length} factura{invoices.length === 1 ? "" : "s"} encontrada{invoices.length === 1 ? "" : "s"}</p>
+        </div>
+        {invoices.length === 0 ? (
+          <button
+            aria-disabled="true"
+            className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-400 sm:w-auto"
+            disabled
+            title="No hay facturas para exportar con los filtros actuales."
+            type="button"
+          >
+            Extraer facturas
+          </button>
+        ) : (
+          <Link
+            className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:w-auto"
+            href={exportHref}
+          >
+            Extraer facturas
+          </Link>
+        )}
+      </div>
 
       {invoices.length === 0 ? (
         <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
@@ -125,6 +159,26 @@ export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProp
       )}
     </section>
   );
+}
+
+function buildExportHref(filters: InvoicesSearchViewProps["filters"]): string {
+  const searchParams = new URLSearchParams();
+
+  if (filters.invoiceNumber) {
+    searchParams.set("invoiceNumber", filters.invoiceNumber);
+  }
+
+  if (filters.claimReference) {
+    searchParams.set("claimReference", filters.claimReference);
+  }
+
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString ? `/invoices/export?${queryString}` : "/invoices/export";
 }
 
 function Field({

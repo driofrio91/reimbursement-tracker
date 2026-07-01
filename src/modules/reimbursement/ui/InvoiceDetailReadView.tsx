@@ -26,7 +26,7 @@ export function InvoiceDetailReadView({ invoice }: InvoiceDetailReadViewProps) {
         <Info label="Esperado" value={formatCurrency(invoice.invoiceExpectedAmount, invoice.currency)} />
         <Info
           label="Pagado"
-          value={invoice.paidAmount !== null ? formatCurrency(invoice.paidAmount, invoice.currency) : "Pendiente"}
+          value={toDisplayPaidStatus(invoice)}
         />
         <Info label="Fecha de pago" value={invoice.paidAt ? formatDate(invoice.paidAt) : "Sin fecha"} />
         <Info label="Emisor" value={invoice.issuerName ?? "Sin emisor"} />
@@ -127,4 +127,16 @@ function toDisplayInvoiceStatus(status: Invoice["status"]) {
     case "REJECTED":
       return "Rechazada";
   }
+}
+
+function toDisplayPaidStatus(invoice: Invoice) {
+  if (invoice.status === "REJECTED") {
+    return "Rechazada";
+  }
+
+  if (typeof invoice.paidAmount === "number") {
+    return formatCurrency(invoice.paidAmount, invoice.currency);
+  }
+
+  return "Pendiente";
 }

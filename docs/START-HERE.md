@@ -1,5 +1,9 @@
 # Start Here
 
+> Legacy onboarding de V1. Este documento ya no es el punto de entrada principal.
+>
+> Usa `docs/PROJECT-HUB.md` para navegar la documentacion vigente.
+
 ## Objetivo
 
 Este archivo es el punto unico de entrada para retomar el proyecto.
@@ -17,9 +21,9 @@ Si una pieza no ayuda directamente a sustituir el Excel diario, no entra en V1.
 ## Fuentes de verdad
 
 1. `docs/START-HERE.md`
-2. `docs/07-mvp-scope.md`
+2. `docs/versions/v1/mvp-scope.md`
 3. `docs/09-current-status.md`
-4. `docs/10-use-cases-roadmap.md`
+4. `docs/versions/v1/use-cases-roadmap.md`
 5. `AGENTS.md`
 
 ## Cambio de modelo vigente
@@ -68,15 +72,27 @@ Definicion funcional cerrada para esta US:
 - sin paginacion en esta primera iteracion
 - el detalle de factura en V1 es de lectura y enlaza al detalle del servicio para ejecutar acciones del ciclo
 
-Siguiente bloque priorizado para cerrar V1:
+Siguiente bloque priorizado tras cierre de V1:
 
-1. preparar entorno desplegado para QA funcional final en movil y desktop
+1. documentar cierre operativo de V1
+2. iniciar backlog V2 de trazabilidad historica de correcciones
+
+Estado de despliegue actual:
+
+- release final publicada y despliegue productivo ejecutado por workflow de release
+- auto-deploy por commit en Vercel desactivado; el despliegue queda controlado por release
 
 Cobertura de escenarios limite cerrada para estado global y resultado economico:
 
 - estado global de servicio sincronizado por reglas operativas ya validadas con tests
 - resultado economico (`FULL`, `PARTIAL`, `NONE`) cubierto con casos de borde en regresion
-- matrices cerradas y documentadas en `docs/07-mvp-scope.md` (casos `A1-A14` y `B1-B10`)
+- matrices cerradas y documentadas en `docs/versions/v1/mvp-scope.md` (casos `A1-A14` y `B1-B10`)
+
+QA funcional V1 cerrada:
+
+- checklist completada en `docs/versions/v1/qa-functional-checklist-v1.md` (`24 PASS`, `V1 LISTA`)
+- evidencia tecnica y de acceso autenticado en `docs/versions/v1/qa-local-evidence.md`
+- evidencia movil automatizada en `artifacts/qa-mobile/results.json` y capturas `artifacts/qa-mobile/*.png`
 
 Validacion de transiciones de factura cerrada en V1:
 

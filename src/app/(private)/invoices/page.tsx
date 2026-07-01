@@ -1,23 +1,10 @@
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import { searchInvoicesUseCase } from "@/modules/reimbursement/application/SearchInvoicesUseCase";
-import { InvoiceStatus } from "@/modules/reimbursement/domain/Invoice";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { InvoicesSearchView } from "@/modules/reimbursement/ui/InvoicesSearchView";
 import { prisma } from "@/lib/db/prisma";
 
-const invoiceStatuses: InvoiceStatus[] = [
-  "CREATED",
-  "INFORMATION_COMPLETED",
-  "CLAIM_REFERENCE_COMPLETED",
-  "PAID",
-  "REJECTED",
-];
-
-interface InvoicesPageSearchParams {
-  invoiceNumber?: string | string[];
-  claimReference?: string | string[];
-  status?: string | string[];
-}
+import { InvoicesPageSearchParams, parseInvoicesSearchFilters } from "./invoiceSearchParams";
 
 export default async function InvoicesPage({
   searchParams,
@@ -25,17 +12,10 @@ export default async function InvoicesPage({
   searchParams: Promise<InvoicesPageSearchParams>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const invoiceNumber = getSingleQueryParam(resolvedSearchParams.invoiceNumber).trim();
-  const claimReference = getSingleQueryParam(resolvedSearchParams.claimReference).trim();
-  const statusValue = getSingleQueryParam(resolvedSearchParams.status).trim();
-  const status = invoiceStatuses.find((item) => item === statusValue);
+  const filters = parseInvoicesSearchFilters(resolvedSearchParams);
 
   const invoices = await searchInvoicesUseCase(
-    {
-      invoiceNumber: invoiceNumber || undefined,
-      claimReference: claimReference || undefined,
-      status,
-    },
+    filters,
     {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     },
@@ -56,20 +36,12 @@ export default async function InvoicesPage({
         <InvoicesSearchView
           invoices={invoices}
           filters={{
-            invoiceNumber,
-            claimReference,
-            status: status ?? "",
+            invoiceNumber: filters.invoiceNumber ?? "",
+            claimReference: filters.claimReference ?? "",
+            status: filters.status ?? "",
           }}
         />
       </div>
     </main>
   );
-}
-
-function getSingleQueryParam(value: string | string[] | undefined): string {
-  if (Array.isArray(value)) {
-    return value[0] ?? "";
-  }
-
-  return value ?? "";
 }

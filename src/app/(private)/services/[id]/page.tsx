@@ -3,24 +3,34 @@ import { notFound } from "next/navigation";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import {
+  addInvoiceAction,
   completeInvoiceInformationAction,
   correctInvoiceResolutionAction,
+  deleteInvoiceAction,
+  deleteServiceAndRedirectAction,
   markInvoiceAsPaidAction,
   markInvoiceAsRejectedAction,
   registerInvoiceClaimReferenceAction,
 } from "@/app/(private)/services/[id]/actions";
+import { getReimbursementReferenceDataUseCase } from "@/modules/reimbursement/application/ReimbursementReferenceData";
 import { getServiceInvoiceSummaryUseCase } from "@/modules/reimbursement/application/GetServiceInvoiceSummaryUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
+import { PrismaReimbursementReferenceDataRepository } from "@/modules/reimbursement/infrastructure/PrismaReimbursementReferenceDataRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
 import { ServiceDetailView } from "@/modules/reimbursement/ui/ServiceDetailView";
 import { prisma } from "@/lib/db/prisma";
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const summary = await getServiceInvoiceSummaryUseCase(id, {
-    serviceRepository: new PrismaServiceRepository(prisma),
-    invoiceRepository: new PrismaInvoiceRepository(prisma),
-  });
+  const invoiceRepository = new PrismaInvoiceRepository(prisma);
+  const referenceDataRepository = new PrismaReimbursementReferenceDataRepository(prisma);
+  const [referenceData, summary] = await Promise.all([
+    getReimbursementReferenceDataUseCase({ referenceDataRepository }),
+    getServiceInvoiceSummaryUseCase(id, {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository,
+    }),
+  ]);
 
   if (!summary) {
     notFound();
@@ -61,17 +71,23 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           totalBilledAmount={summary.totalBilledAmount}
           totalExpectedAmount={summary.totalExpectedAmount}
           totalPaidAmount={summary.totalPaidAmount}
-          pendingExpectedAmount={summary.pendingExpectedAmount}
           overBilledAmount={summary.overBilledAmount}
           overExpectedAmount={summary.overExpectedAmount}
           paidInvoicesCount={summary.paidInvoicesCount}
           rejectedInvoicesCount={summary.rejectedInvoicesCount}
           reimbursementOutcome={summary.reimbursementOutcome}
+          canDelete={summary.deleteEligibility.canDelete}
+          deleteBlockedReason={summary.deleteEligibility.blockedReason}
+          people={referenceData.people}
           completeInvoiceInformationAction={completeInvoiceInformationAction}
           registerInvoiceClaimReferenceAction={registerInvoiceClaimReferenceAction}
           markInvoiceAsPaidAction={markInvoiceAsPaidAction}
           markInvoiceAsRejectedAction={markInvoiceAsRejectedAction}
           correctInvoiceResolutionAction={correctInvoiceResolutionAction}
+          addInvoiceAction={addInvoiceAction}
+          deleteInvoiceAction={deleteInvoiceAction}
+          deleteServiceAction={deleteServiceAndRedirectAction}
+          exportCreatedInvoicesHref={`/services/${id}/export`}
         />
       </div>
     </main>

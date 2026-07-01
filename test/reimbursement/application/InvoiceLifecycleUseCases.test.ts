@@ -21,7 +21,10 @@ import {
   registerInvoiceClaimReferenceUseCase,
 } from "@/modules/reimbursement/application/RegisterInvoiceClaimReferenceUseCase";
 
-import { createInvoiceRepositoryMock } from "../support/RepositoryMocks";
+import {
+  createInvoiceRepositoryMock,
+  createPersonAnnualReimbursementLimitRepositoryMock,
+} from "../support/RepositoryMocks";
 import { buildInvoice } from "../support/InvoiceTestBuilders";
 
 describe("Invoice lifecycle use cases", () => {
@@ -115,12 +118,18 @@ describe("Invoice lifecycle use cases", () => {
 
   it("marks as paid with a positive amount", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
-    invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED" }));
-    invoiceRepository.markAsPaid.mockResolvedValue(buildInvoice({ status: "PAID", paidAmount: 49.5 }));
+    invoiceRepository.getById.mockResolvedValue(
+      buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED", insuranceHolderPersonId: "person-1", insurerId: "insurer-1" }),
+    );
+    invoiceRepository.markAsPaid.mockResolvedValue(
+      buildInvoice({ status: "PAID", paidAmount: 49.5, insuranceHolderPersonId: "person-1", insurerId: "insurer-1", invoiceDate: new Date("2026-04-25T00:00:00.000Z") }),
+    );
 
     await markInvoiceAsPaidUseCase("invoice-1", 49.5, new Date("2026-04-25T00:00:00.000Z"), {
       invoiceRepository,
+      annualLimitRepository,
     });
 
     expect(invoiceRepository.markAsPaid).toHaveBeenCalled();
@@ -128,12 +137,14 @@ describe("Invoice lifecycle use cases", () => {
 
   it("rejects marking as paid when invoice is already paid", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "PAID", paidAmount: 49.5 }));
 
     await expect(
       markInvoiceAsPaidUseCase("invoice-1", 49.5, new Date("2026-04-25T00:00:00.000Z"), {
         invoiceRepository,
+        annualLimitRepository,
       }),
     ).rejects.toBeInstanceOf(MarkInvoiceAsPaidUseCaseError);
 
@@ -142,29 +153,32 @@ describe("Invoice lifecycle use cases", () => {
 
   it("marks as rejected from claim stage", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED" }));
     invoiceRepository.markAsRejected.mockResolvedValue(buildInvoice({ status: "REJECTED" }));
 
-    await markInvoiceAsRejectedUseCase("invoice-1", "Falta documento", { invoiceRepository });
+    await markInvoiceAsRejectedUseCase("invoice-1", "Falta documento", { invoiceRepository, annualLimitRepository });
 
     expect(invoiceRepository.markAsRejected).toHaveBeenCalledWith("invoice-1", "Falta documento");
   });
 
   it("rejects marking as rejected when invoice is already rejected", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "REJECTED", rejectionReason: "Falta documento" }));
 
-    await expect(markInvoiceAsRejectedUseCase("invoice-1", "Falta documento", { invoiceRepository })).rejects.toBeInstanceOf(
-      MarkInvoiceAsRejectedUseCaseError,
-    );
+    await expect(
+      markInvoiceAsRejectedUseCase("invoice-1", "Falta documento", { invoiceRepository, annualLimitRepository }),
+    ).rejects.toBeInstanceOf(MarkInvoiceAsRejectedUseCaseError);
 
     expect(invoiceRepository.markAsRejected).not.toHaveBeenCalled();
   });
 
   it("corrects final status from paid to rejected", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "PAID", paidAmount: 49.5, paidAt: new Date("2026-04-25T00:00:00.000Z") }));
     invoiceRepository.correctResolution.mockResolvedValue(buildInvoice({ status: "REJECTED", paidAmount: null, paidAt: null }));
@@ -177,7 +191,7 @@ describe("Invoice lifecycle use cases", () => {
         correctedByUserId: "user-1",
         rejectionReason: "Solicitud denegada",
       },
-      { invoiceRepository },
+      { invoiceRepository, annualLimitRepository },
     );
 
     expect(invoiceRepository.correctResolution).toHaveBeenCalledWith(
@@ -191,6 +205,7 @@ describe("Invoice lifecycle use cases", () => {
 
   it("corrects final status from rejected to paid", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "REJECTED" }));
     invoiceRepository.correctResolution.mockResolvedValue(buildInvoice({ status: "PAID", paidAmount: 49.5 }));
@@ -204,7 +219,7 @@ describe("Invoice lifecycle use cases", () => {
         paidAmount: 49.5,
         paidAt: new Date("2026-04-27T00:00:00.000Z"),
       },
-      { invoiceRepository },
+      { invoiceRepository, annualLimitRepository },
     );
 
     expect(invoiceRepository.correctResolution).toHaveBeenCalledWith(
@@ -218,6 +233,7 @@ describe("Invoice lifecycle use cases", () => {
 
   it("rejects correction when invoice is not in final status", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "CLAIM_REFERENCE_COMPLETED" }));
 
@@ -231,13 +247,14 @@ describe("Invoice lifecycle use cases", () => {
           paidAmount: 49.5,
           paidAt: new Date("2026-04-27T00:00:00.000Z"),
         },
-        { invoiceRepository },
+        { invoiceRepository, annualLimitRepository },
       ),
     ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
   });
 
   it("rejects correction without correction reason", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     await expect(
       correctInvoiceResolutionUseCase(
@@ -247,13 +264,14 @@ describe("Invoice lifecycle use cases", () => {
           correctionReason: "",
           correctedByUserId: "user-1",
         },
-        { invoiceRepository },
+        { invoiceRepository, annualLimitRepository },
       ),
     ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
   });
 
   it("rejects correction to paid when paid amount is zero", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "REJECTED" }));
 
@@ -267,7 +285,7 @@ describe("Invoice lifecycle use cases", () => {
           paidAmount: 0,
           paidAt: new Date("2026-04-27T00:00:00.000Z"),
         },
-        { invoiceRepository },
+        { invoiceRepository, annualLimitRepository },
       ),
     ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
 
@@ -276,6 +294,7 @@ describe("Invoice lifecycle use cases", () => {
 
   it("rejects correction when target final status equals current status", async () => {
     const invoiceRepository = createInvoiceRepositoryMock();
+    const annualLimitRepository = createPersonAnnualReimbursementLimitRepositoryMock();
 
     invoiceRepository.getById.mockResolvedValue(buildInvoice({ status: "PAID" }));
 
@@ -289,7 +308,7 @@ describe("Invoice lifecycle use cases", () => {
           paidAmount: 49.5,
           paidAt: new Date("2026-04-27T00:00:00.000Z"),
         },
-        { invoiceRepository },
+        { invoiceRepository, annualLimitRepository },
       ),
     ).rejects.toBeInstanceOf(CorrectInvoiceResolutionUseCaseError);
   });
