@@ -85,44 +85,50 @@ function ServiceListRow({
         isRemoving ? "mb-0 max-h-0 scale-[0.99] opacity-0" : "mb-3 max-h-[400px] opacity-100"
       }`}
     >
-      <article className={`rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm ${isDeleting ? "opacity-65" : ""}`}>
-      <div className="flex items-start justify-between gap-3">
+      <article
+        className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm transition-shadow hover:shadow-md ${isDeleting ? "opacity-65" : ""}`}
+      >
         <Link
           href={`/services/${item.service.id}`}
-          className="min-w-0 flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          className="absolute inset-0 z-0 cursor-pointer rounded-2xl transition-colors hover:bg-slate-50 active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
           aria-label={`Ver servicio ${item.service.description}`}
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{formatDate(item.service.serviceDate)}</p>
-          <p className="mt-1 truncate text-base font-semibold text-slate-950">{item.service.description}</p>
+          <span className="sr-only">Ver servicio {item.service.description}</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <span
-            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${toStatusClassName(item.service.status)}`}
-          >
-            {toDisplayStatus(item.service.status)}
-          </span>
-          <form action={deleteFormAction}>
-            <DeleteServiceButton
-              isDisabled={!item.canDelete || isDeleting}
-              disabledReason={item.deleteBlockedReason}
-              isLoading={isDeleting}
-            />
-          </form>
-        </div>
-      </div>
+        <div className="pointer-events-none relative z-10 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{formatDate(item.service.serviceDate)}</p>
+            <p className="mt-1 truncate text-base font-semibold text-slate-950">{item.service.description}</p>
+          </div>
 
-      <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-        <p>
-          <span className="font-medium text-slate-900">Titular del seguro:</span> {item.service.insuranceHolderPersonName}
-        </p>
-        <p>
-          <span className="font-medium text-slate-900">Aseguradora:</span> {item.service.insurerName}
-        </p>
-        <p>
-          <span className="font-medium text-slate-900">Importe:</span> {formatCurrency(item.service.actualAmount, item.service.currency)}
-        </p>
-      </div>
+          <div className="pointer-events-none relative z-20 flex items-center gap-2">
+            <span
+              className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${toStatusClassName(item.service.status)}`}
+            >
+              {toDisplayStatus(item.service.status)}
+            </span>
+            <form action={deleteFormAction} className="pointer-events-auto">
+              <DeleteServiceButton
+                isDisabled={!item.canDelete || isDeleting}
+                disabledReason={item.deleteBlockedReason}
+                isLoading={isDeleting}
+              />
+            </form>
+          </div>
+        </div>
+
+        <div className="pointer-events-none relative z-10 mt-3 grid gap-2 text-sm sm:grid-cols-3">
+          <p>
+            <span className="font-medium text-slate-900">Titular del seguro:</span> {item.service.insuranceHolderPersonName}
+          </p>
+          <p>
+            <span className="font-medium text-slate-900">Aseguradora:</span> {item.service.insurerName}
+          </p>
+          <p>
+            <span className="font-medium text-slate-900">Importe:</span> {formatCurrency(item.service.actualAmount, item.service.currency)}
+          </p>
+        </div>
       </article>
     </div>
   );
