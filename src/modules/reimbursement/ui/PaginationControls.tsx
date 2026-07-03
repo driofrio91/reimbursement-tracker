@@ -1,14 +1,12 @@
 import Link from "next/link";
 
-import { PaginationMetadata } from "@/modules/reimbursement/application/Pagination";
+import { PAGE_SIZE_OPTIONS, PaginationMetadata } from "@/modules/reimbursement/application/Pagination";
 
 interface PaginationControlsProps {
   pagination: PaginationMetadata;
   basePath: string;
   searchParams?: Record<string, string>;
 }
-
-const pageSizeOptions = [10, 25, 50];
 
 export function PaginationControls({ pagination, basePath, searchParams = {} }: PaginationControlsProps) {
   if (pagination.totalItems === 0) {
@@ -29,7 +27,7 @@ export function PaginationControls({ pagination, basePath, searchParams = {} }: 
         <div className="flex items-center gap-2 text-sm text-slate-600" aria-label="Resultados por pagina">
           <span>Por pagina</span>
           <div className="flex overflow-hidden rounded-xl border border-slate-300">
-            {pageSizeOptions.map((pageSize) => {
+            {PAGE_SIZE_OPTIONS.map((pageSize) => {
               const isActive = pageSize === pagination.pageSize;
 
               return (
@@ -72,7 +70,7 @@ export function PaginationControls({ pagination, basePath, searchParams = {} }: 
   );
 }
 
-function buildPageHref(basePath: string, searchParams: Record<string, string>, page: number, pageSize: number): string {
+export function buildPageHref(basePath: string, searchParams: Record<string, string>, page: number, pageSize: number): string {
   const params = new URLSearchParams();
 
   for (const [key, value] of Object.entries(searchParams)) {

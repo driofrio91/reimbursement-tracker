@@ -24,7 +24,7 @@ const invoiceStatuses: InvoiceStatus[] = [
 ];
 
 export function InvoicesSearchView({ invoices, filters, pagination }: InvoicesSearchViewProps) {
-  const exportHref = buildExportHref(filters);
+  const exportHref = buildInvoicesExportHref(filters);
   const hasActiveFilters = Boolean(filters.invoiceNumber || filters.claimReference || filters.status);
 
   return (
@@ -184,7 +184,7 @@ export function InvoicesSearchView({ invoices, filters, pagination }: InvoicesSe
   );
 }
 
-function buildExportHref(filters: InvoicesSearchViewProps["filters"]): string {
+export function buildInvoicesExportHref(filters: InvoicesSearchViewProps["filters"]): string {
   const searchParams = new URLSearchParams();
 
   if (filters.invoiceNumber) {

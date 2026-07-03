@@ -30,12 +30,13 @@ export interface PaginationOptions {
 }
 
 const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_MAX_PAGE_SIZE = 50;
+export const DEFAULT_PAGE_SIZE = 10;
+export const MAX_PAGE_SIZE = 50;
+export const PAGE_SIZE_OPTIONS = [DEFAULT_PAGE_SIZE, 25, MAX_PAGE_SIZE] as const;
 
 export function resolvePagination(input: PaginationInput = {}, options: PaginationOptions = {}): Pagination {
   const defaultPageSize = toPositiveInteger(options.defaultPageSize) ?? DEFAULT_PAGE_SIZE;
-  const maxPageSize = toPositiveInteger(options.maxPageSize) ?? DEFAULT_MAX_PAGE_SIZE;
+  const maxPageSize = toPositiveInteger(options.maxPageSize) ?? MAX_PAGE_SIZE;
   const effectiveDefaultPageSize = Math.min(defaultPageSize, maxPageSize);
   const page = toPositiveInteger(input.page) ?? DEFAULT_PAGE;
   const requestedPageSize = toPositiveInteger(input.pageSize) ?? effectiveDefaultPageSize;
