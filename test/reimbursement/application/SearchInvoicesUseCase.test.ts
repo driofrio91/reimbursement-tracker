@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { searchInvoicesUseCase } from "@/modules/reimbursement/application/SearchInvoicesUseCase";
+import { searchInvoicesUseCase, searchPaginatedInvoicesUseCase } from "@/modules/reimbursement/application/SearchInvoicesUseCase";
 
 import { buildInvoice } from "../support/InvoiceTestBuilders";
 import { createInvoiceRepositoryMock } from "../support/RepositoryMocks";
@@ -65,5 +65,35 @@ describe("SearchInvoicesUseCase", () => {
         },
       ),
     ).rejects.toThrow("db failure");
+  });
+
+  it("searches invoices with normalized pagination", async () => {
+    const repository = createInvoiceRepositoryMock();
+    const invoice = buildInvoice({ id: "invoice-1" });
+    const paginatedResult = {
+      items: [invoice],
+      pagination: {
+        page: 2,
+        pageSize: 25,
+        totalItems: 26,
+        totalPages: 2,
+        hasPreviousPage: true,
+        hasNextPage: false,
+      },
+    };
+
+    repository.searchPaginated.mockResolvedValue(paginatedResult);
+
+    const result = await searchPaginatedInvoicesUseCase(
+      { status: "PAID" },
+      { page: 2, pageSize: 25 },
+      { invoiceRepository: repository },
+    );
+
+    expect(result).toEqual(paginatedResult);
+    expect(repository.searchPaginated).toHaveBeenCalledWith(
+      { status: "PAID" },
+      { page: 2, pageSize: 25, skip: 25, take: 25 },
+    );
   });
 });
