@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { listServicesWithDeleteStateUseCase } from "@/modules/reimbursement/application/ListServicesWithDeleteStateUseCase";
+import {
+  listPaginatedServicesWithDeleteStateUseCase,
+  listServicesWithDeleteStateUseCase,
+} from "@/modules/reimbursement/application/ListServicesWithDeleteStateUseCase";
 
 import { createInvoiceRepositoryMock, createServiceRepositoryMock } from "../support/RepositoryMocks";
 import { buildService } from "../support/ServiceTestBuilders";
@@ -142,5 +145,35 @@ describe("ListServicesWithDeleteStateUseCase", () => {
     await expect(
       listServicesWithDeleteStateUseCase({ serviceRepository, invoiceRepository }),
     ).rejects.toThrow("db failure");
+  });
+
+  it("returns paginated services with delete state metadata", async () => {
+    const serviceRepository = createServiceRepositoryMock();
+    const invoiceRepository = createInvoiceRepositoryMock();
+    const service = buildService({ id: "service-1" });
+    const paginatedServices = {
+      items: [service],
+      pagination: {
+        page: 2,
+        pageSize: 10,
+        totalItems: 11,
+        totalPages: 2,
+        hasPreviousPage: true,
+        hasNextPage: false,
+      },
+    };
+
+    serviceRepository.listPaginated.mockResolvedValue(paginatedServices);
+    invoiceRepository.listStatusesByServiceIds.mockResolvedValue(new Map([["service-1", [{ status: "CREATED" }]]]));
+
+    const result = await listPaginatedServicesWithDeleteStateUseCase(
+      { page: 2, pageSize: 10 },
+      { serviceRepository, invoiceRepository },
+    );
+
+    expect(result.pagination).toEqual(paginatedServices.pagination);
+    expect(result.items[0]).toMatchObject({ service, canDelete: true, deleteBlockedReason: "" });
+    expect(serviceRepository.listPaginated).toHaveBeenCalledWith({ page: 2, pageSize: 10, skip: 10, take: 10 });
+    expect(invoiceRepository.listStatusesByServiceIds).toHaveBeenCalledWith(["service-1"]);
   });
 });

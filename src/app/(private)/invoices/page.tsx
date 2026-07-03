@@ -1,10 +1,10 @@
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
-import { searchInvoicesUseCase } from "@/modules/reimbursement/application/SearchInvoicesUseCase";
+import { searchPaginatedInvoicesUseCase } from "@/modules/reimbursement/application/SearchInvoicesUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { InvoicesSearchView } from "@/modules/reimbursement/ui/InvoicesSearchView";
 import { prisma } from "@/lib/db/prisma";
 
-import { InvoicesPageSearchParams, parseInvoicesSearchFilters } from "./invoiceSearchParams";
+import { InvoicesPageSearchParams, parseInvoicesPagination, parseInvoicesSearchFilters } from "./invoiceSearchParams";
 
 export default async function InvoicesPage({
   searchParams,
@@ -13,9 +13,11 @@ export default async function InvoicesPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const filters = parseInvoicesSearchFilters(resolvedSearchParams);
+  const paginationInput = parseInvoicesPagination(resolvedSearchParams);
 
-  const invoices = await searchInvoicesUseCase(
+  const paginatedInvoices = await searchPaginatedInvoicesUseCase(
     filters,
+    paginationInput,
     {
       invoiceRepository: new PrismaInvoiceRepository(prisma),
     },
@@ -34,12 +36,13 @@ export default async function InvoicesPage({
         </div>
 
         <InvoicesSearchView
-          invoices={invoices}
+          invoices={paginatedInvoices.items}
           filters={{
             invoiceNumber: filters.invoiceNumber ?? "",
             claimReference: filters.claimReference ?? "",
             status: filters.status ?? "",
           }}
+          pagination={paginatedInvoices.pagination}
         />
       </div>
     </main>

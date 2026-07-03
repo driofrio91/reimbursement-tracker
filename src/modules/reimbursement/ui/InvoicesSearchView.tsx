@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { ClearFiltersLink } from "@/modules/reimbursement/ui/ClearFiltersLink";
+import { PaginationControls } from "@/modules/reimbursement/ui/PaginationControls";
+import { PaginationMetadata } from "@/modules/reimbursement/application/Pagination";
 import { Invoice, InvoiceStatus } from "@/modules/reimbursement/domain/Invoice";
 
 interface InvoicesSearchViewProps {
@@ -10,6 +12,7 @@ interface InvoicesSearchViewProps {
     claimReference: string;
     status: "" | InvoiceStatus;
   };
+  pagination: PaginationMetadata;
 }
 
 const invoiceStatuses: InvoiceStatus[] = [
@@ -20,8 +23,8 @@ const invoiceStatuses: InvoiceStatus[] = [
   "REJECTED",
 ];
 
-export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProps) {
-  const exportHref = buildExportHref(filters);
+export function InvoicesSearchView({ invoices, filters, pagination }: InvoicesSearchViewProps) {
+  const exportHref = buildInvoicesExportHref(filters);
   const hasActiveFilters = Boolean(filters.invoiceNumber || filters.claimReference || filters.status);
 
   return (
@@ -32,6 +35,7 @@ export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProp
         className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <input type="hidden" name="pageSize" value={pagination.pageSize} />
           <Field label="Numero de factura" htmlFor="invoiceNumber">
             <input
               id="invoiceNumber"
@@ -83,9 +87,12 @@ export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProp
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>
           <h2 className="text-lg font-semibold text-slate-950">Resultados</h2>
-          <p className="text-sm text-slate-600">{invoices.length} factura{invoices.length === 1 ? "" : "s"} encontrada{invoices.length === 1 ? "" : "s"}</p>
+          <p className="text-sm text-slate-600">
+            {pagination.totalItems} factura{pagination.totalItems === 1 ? "" : "s"} encontrada
+            {pagination.totalItems === 1 ? "" : "s"}
+          </p>
         </div>
-        {invoices.length === 0 ? (
+        {pagination.totalItems === 0 ? (
           <button
             aria-disabled="true"
             className="inline-flex w-full cursor-not-allowed items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-400 sm:w-auto"
@@ -105,10 +112,15 @@ export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProp
         )}
       </div>
 
-      {invoices.length === 0 ? (
+      {pagination.totalItems === 0 ? (
         <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <h2 className="text-lg font-semibold text-slate-950">No hay facturas para esos filtros</h2>
           <p className="mt-2 text-sm text-slate-600">Ajusta numero, referencia o estado para ampliar la busqueda.</p>
+        </section>
+      ) : invoices.length === 0 ? (
+        <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+          <h2 className="text-lg font-semibold text-slate-950">No hay facturas en esta pagina</h2>
+          <p className="mt-2 text-sm text-slate-600">Vuelve a una pagina anterior para ver resultados disponibles.</p>
         </section>
       ) : (
         <div className="space-y-3">
@@ -157,11 +169,22 @@ export function InvoicesSearchView({ invoices, filters }: InvoicesSearchViewProp
           ))}
         </div>
       )}
+
+      <PaginationControls
+        basePath="/invoices"
+        pagination={pagination}
+        searchParams={{
+          invoiceNumber: filters.invoiceNumber,
+          claimReference: filters.claimReference,
+          status: filters.status,
+          pageSize: String(pagination.pageSize),
+        }}
+      />
     </section>
   );
 }
 
-function buildExportHref(filters: InvoicesSearchViewProps["filters"]): string {
+export function buildInvoicesExportHref(filters: InvoicesSearchViewProps["filters"]): string {
   const searchParams = new URLSearchParams();
 
   if (filters.invoiceNumber) {

@@ -124,6 +124,20 @@ Motivo:
 - mantiene bajo el coste inicial de implementacion
 - evita meter una capa de testing mas pesada antes de cerrar el nucleo del dominio
 
+## Decision on operational list responsiveness
+
+For the observed slow-feeling navigation and list data concern, do not add broad caching yet for operational `Service` or `Invoice` data.
+
+Preferred sequence:
+
+1. Improve perceived responsiveness with route-level loading UI.
+2. Reduce data volume with pagination on operational lists.
+3. Reassess caching only after pagination exists and real latency evidence still shows a bottleneck.
+
+Broad caching is deferred because operational data changes affect visible correctness: service status, delete eligibility, invoice resolution results, annual reimbursement limits, and reimbursement state can become stale after mutations.
+
+Caching may be considered later for stable reference or admin catalog data, but only with explicit invalidation after create, update, activate/deactivate, or delete-like mutations.
+
 ### Funcionalidad critica a cubrir
 
 - creacion de servicio reembolsable

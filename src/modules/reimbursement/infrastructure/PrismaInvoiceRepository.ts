@@ -8,6 +8,12 @@ import {
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
 import {
+  buildPaginationMetadata,
+  clampPaginationToTotalItems,
+  PaginatedResult,
+  Pagination,
+} from "@/modules/reimbursement/domain/Pagination";
+import {
   InvoiceRepository,
   PaidAmountByInsuranceHolderInsurer,
   SearchInvoicesFilters,
@@ -24,25 +30,29 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
 
   async search(filters: SearchInvoicesFilters): Promise<Invoice[]> {
     const invoices = await this.prisma.invoice.findMany({
-      where: {
-        invoiceNumber: filters.invoiceNumber
-          ? {
-              contains: filters.invoiceNumber,
-              mode: "insensitive",
-            }
-          : undefined,
-        claimReference: filters.claimReference
-          ? {
-              contains: filters.claimReference,
-              mode: "insensitive",
-            }
-          : undefined,
-        status: filters.status ? this.toPrismaStatus(filters.status) : undefined,
-      },
-      orderBy: { updatedAt: "desc" },
+      where: this.buildSearchWhere(filters),
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     });
 
     return invoices.map((invoice) => this.mapInvoice(invoice));
+  }
+
+  async searchPaginated(filters: SearchInvoicesFilters, pagination: Pagination): Promise<PaginatedResult<Invoice>> {
+    const where = this.buildSearchWhere(filters);
+    const totalItems = await this.prisma.invoice.count({ where });
+    const paginationForQuery = clampPaginationToTotalItems(pagination, totalItems);
+
+    const invoices = await this.prisma.invoice.findMany({
+      where,
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      skip: paginationForQuery.skip,
+      take: paginationForQuery.take,
+    });
+
+    return {
+      items: invoices.map((invoice) => this.mapInvoice(invoice)),
+      pagination: buildPaginationMetadata(paginationForQuery, totalItems),
+    };
   }
 
   async create(invoice: NewInvoice): Promise<Invoice> {
@@ -405,6 +415,24 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       createdManually: invoice.createdManually,
       createdAt: invoice.createdAt,
       updatedAt: invoice.updatedAt,
+    };
+  }
+
+  private buildSearchWhere(filters: SearchInvoicesFilters) {
+    return {
+      invoiceNumber: filters.invoiceNumber
+        ? {
+            contains: filters.invoiceNumber,
+            mode: "insensitive" as const,
+          }
+        : undefined,
+      claimReference: filters.claimReference
+        ? {
+            contains: filters.claimReference,
+            mode: "insensitive" as const,
+          }
+        : undefined,
+      status: filters.status ? this.toPrismaStatus(filters.status) : undefined,
     };
   }
 

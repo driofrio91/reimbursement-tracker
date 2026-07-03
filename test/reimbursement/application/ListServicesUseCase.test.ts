@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { listServicesUseCase } from "@/modules/reimbursement/application/ListServicesUseCase";
+import { listPaginatedServicesUseCase, listServicesUseCase } from "@/modules/reimbursement/application/ListServicesUseCase";
 
 import { createServiceRepositoryMock } from "../support/RepositoryMocks";
 import { buildService } from "../support/ServiceTestBuilders";
@@ -53,5 +53,33 @@ describe("ListServicesUseCase", () => {
         serviceRepository: repository,
       }),
     ).rejects.toThrow("db failure");
+  });
+
+  it("returns paginated services from repository", async () => {
+    const repository = createServiceRepositoryMock();
+    const service = buildService({ id: "service-1" });
+    const paginatedResult = {
+      items: [service],
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        totalItems: 1,
+        totalPages: 1,
+        hasPreviousPage: false,
+        hasNextPage: false,
+      },
+    };
+
+    repository.listPaginated.mockResolvedValue(paginatedResult);
+
+    const result = await listPaginatedServicesUseCase(
+      { page: 1, pageSize: 10 },
+      {
+        serviceRepository: repository,
+      },
+    );
+
+    expect(result).toEqual(paginatedResult);
+    expect(repository.listPaginated).toHaveBeenCalledWith({ page: 1, pageSize: 10, skip: 0, take: 10 });
   });
 });
