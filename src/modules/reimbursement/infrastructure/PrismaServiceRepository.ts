@@ -8,6 +8,7 @@ import {
 } from "@/modules/reimbursement/domain/Pagination";
 import { NewService, Service, ServiceStatus } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
+import { warnIfSlowPaginatedQuery } from "@/modules/reimbursement/infrastructure/DbQueryTiming";
 
 export class PrismaServiceRepository implements ServiceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -62,6 +63,7 @@ export class PrismaServiceRepository implements ServiceRepository {
   }
 
   async listPaginated(pagination: Pagination): Promise<PaginatedResult<Service>> {
+    const startedAtMs = Date.now();
     const totalItems = await this.prisma.reimbursableService.count();
     const paginationForQuery = clampPaginationToTotalItems(pagination, totalItems);
 
@@ -73,6 +75,16 @@ export class PrismaServiceRepository implements ServiceRepository {
       orderBy: [{ serviceDate: "desc" }, { createdAt: "desc" }, { id: "desc" }],
       skip: paginationForQuery.skip,
       take: paginationForQuery.take,
+    });
+
+    warnIfSlowPaginatedQuery({
+      operation: "services.listPaginated",
+      startedAtMs,
+      metadata: {
+        page: paginationForQuery.page,
+        pageSize: paginationForQuery.pageSize,
+        totalItems,
+      },
     });
 
     return {

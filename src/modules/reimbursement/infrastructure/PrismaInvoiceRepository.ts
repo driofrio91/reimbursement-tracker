@@ -18,6 +18,7 @@ import {
   PaidAmountByInsuranceHolderInsurer,
   SearchInvoicesFilters,
 } from "@/modules/reimbursement/domain/InvoiceRepository";
+import { warnIfSlowPaginatedQuery } from "@/modules/reimbursement/infrastructure/DbQueryTiming";
 
 export class PrismaInvoiceRepository implements InvoiceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -38,6 +39,7 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
   }
 
   async searchPaginated(filters: SearchInvoicesFilters, pagination: Pagination): Promise<PaginatedResult<Invoice>> {
+    const startedAtMs = Date.now();
     const where = this.buildSearchWhere(filters);
     const totalItems = await this.prisma.invoice.count({ where });
     const paginationForQuery = clampPaginationToTotalItems(pagination, totalItems);
@@ -47,6 +49,19 @@ export class PrismaInvoiceRepository implements InvoiceRepository {
       orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
       skip: paginationForQuery.skip,
       take: paginationForQuery.take,
+    });
+
+    warnIfSlowPaginatedQuery({
+      operation: "invoices.searchPaginated",
+      startedAtMs,
+      metadata: {
+        page: paginationForQuery.page,
+        pageSize: paginationForQuery.pageSize,
+        totalItems,
+        hasInvoiceNumberFilter: Boolean(filters.invoiceNumber),
+        hasClaimReferenceFilter: Boolean(filters.claimReference),
+        status: filters.status ?? null,
+      },
     });
 
     return {

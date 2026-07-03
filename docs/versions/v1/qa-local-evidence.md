@@ -91,6 +91,8 @@ Interpretation:
 
 ## Automatizacion QA de navegador movil (Playwright)
 
+This QA evidence uses synthetic local seed data only. The `*@local.test` credentials in the local QA script are development fixtures, not production secrets, and screenshots/JSON outputs under `artifacts/qa-mobile/` must remain free of production data.
+
 - Tooling executed:
   - `npm install -D playwright`
   - `npx playwright install chromium`

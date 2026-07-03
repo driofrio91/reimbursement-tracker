@@ -2,7 +2,7 @@
 
 ## Estado implementado
 
-- la version documental activa `v2` corresponde a la release semantica `v0.2.0`; la rama de feedback de release prepara `v0.3.0` sobre `develop` porque incorpora mejoras compatibles de UX y paginacion
+- la version documental activa `v2` se publica como release semantica `v0.3.0` desde `develop` hacia `main`; incluye el tren V2 completo mas mejoras compatibles de feedback de release
 
 - proyecto `Next.js` con `TypeScript` y App Router
 - autenticacion con `Auth.js` credentials
@@ -214,11 +214,16 @@ npm run db:seed:local
 
 - `/login`
 - `/`
+- `/account`
+- `/change-password`
 - `/services`
 - `/services/new`
 - `/services/[id]`
 - `/invoices`
 - `/invoices/[id]`
+- `/admin/users`
+- `/admin/people`
+- `/admin/insurers`
 
 ## Notas de transicion
 

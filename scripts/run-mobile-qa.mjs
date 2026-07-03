@@ -5,6 +5,8 @@ import { chromium, devices } from "playwright";
 const baseUrl = process.env.QA_BASE_URL ?? "http://localhost:4010";
 const outputDir = path.resolve("artifacts", "qa-mobile");
 
+// Synthetic local seed credentials only. Do not replace with production data.
+
 async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
