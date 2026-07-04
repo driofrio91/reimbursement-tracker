@@ -2,17 +2,29 @@ import Link from "next/link";
 
 import { HomeIconLink } from "@/app/(private)/_components/HomeIconLink";
 import { deleteServiceAction } from "@/app/(private)/services/[id]/actions";
-import { listServicesWithDeleteStateUseCase } from "@/modules/reimbursement/application/ListServicesWithDeleteStateUseCase";
+import { listPaginatedServicesWithDeleteStateUseCase } from "@/modules/reimbursement/application/ListServicesWithDeleteStateUseCase";
 import { PrismaInvoiceRepository } from "@/modules/reimbursement/infrastructure/PrismaInvoiceRepository";
 import { PrismaServiceRepository } from "@/modules/reimbursement/infrastructure/PrismaServiceRepository";
+import { PaginationControls } from "@/modules/reimbursement/ui/PaginationControls";
 import { ServicesList } from "@/modules/reimbursement/ui/ServicesList";
 import { prisma } from "@/lib/db/prisma";
 
-export default async function ServicesPage() {
-  const servicesWithDeleteState = await listServicesWithDeleteStateUseCase({
-    serviceRepository: new PrismaServiceRepository(prisma),
-    invoiceRepository: new PrismaInvoiceRepository(prisma),
-  });
+import { parseServicesPagination, ServicesPageSearchParams } from "./serviceSearchParams";
+
+export default async function ServicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<ServicesPageSearchParams>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const paginationInput = parseServicesPagination(resolvedSearchParams);
+  const paginatedServices = await listPaginatedServicesWithDeleteStateUseCase(
+    paginationInput,
+    {
+      serviceRepository: new PrismaServiceRepository(prisma),
+      invoiceRepository: new PrismaInvoiceRepository(prisma),
+    },
+  );
 
   return (
     <main className="flex min-h-screen bg-slate-50 text-slate-950">
@@ -35,7 +47,21 @@ export default async function ServicesPage() {
           </Link>
         </div>
 
-        <ServicesList services={servicesWithDeleteState} deleteServiceAction={deleteServiceAction} />
+        {paginatedServices.pagination.totalItems > 0 && paginatedServices.items.length === 0 ? (
+          <section className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">No hay servicios en esta pagina</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">Vuelve a una pagina anterior para ver servicios disponibles.</p>
+          </section>
+        ) : (
+          <ServicesList services={paginatedServices.items} deleteServiceAction={deleteServiceAction} />
+        )}
+        <PaginationControls
+          basePath="/services"
+          pagination={paginatedServices.pagination}
+          searchParams={{
+            pageSize: String(paginatedServices.pagination.pageSize),
+          }}
+        />
       </div>
     </main>
   );

@@ -1,5 +1,8 @@
 import { InvoiceStatus } from "@/modules/reimbursement/domain/Invoice";
+import { PaginationInput } from "@/modules/reimbursement/application/Pagination";
 import { SearchInvoicesFilters } from "@/modules/reimbursement/domain/InvoiceRepository";
+
+import { getSingleQueryParam, parseNumberQueryParam } from "../_utils/searchParams";
 
 export const invoiceStatuses: InvoiceStatus[] = [
   "CREATED",
@@ -13,6 +16,8 @@ export interface InvoicesPageSearchParams {
   invoiceNumber?: string | string[];
   claimReference?: string | string[];
   status?: string | string[];
+  page?: string | string[];
+  pageSize?: string | string[];
 }
 
 export function parseInvoicesSearchFilters(searchParams: InvoicesPageSearchParams): SearchInvoicesFilters {
@@ -28,10 +33,9 @@ export function parseInvoicesSearchFilters(searchParams: InvoicesPageSearchParam
   };
 }
 
-export function getSingleQueryParam(value: string | string[] | undefined): string {
-  if (Array.isArray(value)) {
-    return value[0] ?? "";
-  }
-
-  return value ?? "";
+export function parseInvoicesPagination(searchParams: InvoicesPageSearchParams): PaginationInput {
+  return {
+    page: parseNumberQueryParam(searchParams.page),
+    pageSize: parseNumberQueryParam(searchParams.pageSize),
+  };
 }

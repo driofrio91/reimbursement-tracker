@@ -11,6 +11,6 @@ export default defineConfig({
   test: {
     allowOnly: false,
     environment: "node",
-    include: ["test/**/*.test.ts"],
+    include: ["test/**/*.test.{ts,tsx}"],
   },
 });

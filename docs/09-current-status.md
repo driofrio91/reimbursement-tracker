@@ -2,7 +2,7 @@
 
 ## Estado implementado
 
-- la version documental activa `v2` corresponde a la release semantica `v0.2.0`
+- la version documental activa `v2` se publica como release semantica `v0.3.0` desde `develop` hacia `main`; incluye el tren V2 completo mas mejoras compatibles de feedback de release
 
 - proyecto `Next.js` con `TypeScript` y App Router
 - autenticacion con `Auth.js` credentials
@@ -24,7 +24,15 @@
   - `status` opcional de seleccion unica
   - filtros combinados con AND
   - orden por `updatedAt` descendente
-  - sin paginacion en esta iteracion
+  - paginacion por query params `page` y `pageSize` con defaults seguros y tope maximo
+  - la exportacion CSV filtrada conserva filtros activos y exporta el resultado completo, sin paginar
+- paginacion operativa tambien disponible en `/services`:
+  - controles `Anterior`/`Siguiente`
+  - selector compartido de tamanos de pagina `10`, `25`, `50`
+  - clamping de paginas fuera de rango hacia la ultima pagina disponible
+- mejoras de UX de feedback de release `v0.3.0`:
+  - loading UI acotado para rutas privadas principales
+  - cards de servicios clicables hacia detalle sin bloquear acciones internas como eliminar
 - detalle de servicio estabilizado para facturas:
   - posicion fija en listado por orden de creacion (sin movimiento por cambio de estado)
   - etiquetas de pago ajustadas: facturas `REJECTED` muestran `Pagado: Rechazada`
@@ -206,11 +214,16 @@ npm run db:seed:local
 
 - `/login`
 - `/`
+- `/account`
+- `/change-password`
 - `/services`
 - `/services/new`
 - `/services/[id]`
 - `/invoices`
 - `/invoices/[id]`
+- `/admin/users`
+- `/admin/people`
+- `/admin/insurers`
 
 ## Notas de transicion
 

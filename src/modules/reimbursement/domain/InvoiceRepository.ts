@@ -5,6 +5,7 @@ import {
   InvoiceStatus,
   NewInvoice,
 } from "@/modules/reimbursement/domain/Invoice";
+import { PaginatedResult, Pagination } from "@/modules/reimbursement/domain/Pagination";
 
 export interface SearchInvoicesFilters {
   invoiceNumber?: string;
@@ -21,6 +22,7 @@ export interface PaidAmountByInsuranceHolderInsurer {
 export interface InvoiceRepository {
   getById(invoiceId: string): Promise<Invoice | null>;
   search(filters: SearchInvoicesFilters): Promise<Invoice[]>;
+  searchPaginated(filters: SearchInvoicesFilters, pagination: Pagination): Promise<PaginatedResult<Invoice>>;
   create(invoice: NewInvoice): Promise<Invoice>;
   createMany(invoices: NewInvoice[]): Promise<Invoice[]>;
   deleteDraftOrInformationCompleted(invoiceId: string): Promise<boolean>;

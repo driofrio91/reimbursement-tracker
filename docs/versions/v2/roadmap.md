@@ -7,7 +7,7 @@ Evolucionar la operativa de facturas desde correccion final unica hacia trazabil
 ## Estado
 
 - version activa: `v2`
-- la version funcional/documental `v2` se publica como release semantica `v0.2.0`
+- la version funcional/documental `v2` se publica como release semantica `v0.3.0` desde `develop` hacia `main`
 - baseline funcional previa: `docs/versions/v1/`
 
 ## Cierre V2

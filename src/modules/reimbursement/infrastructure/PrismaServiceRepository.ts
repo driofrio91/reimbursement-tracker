@@ -1,7 +1,14 @@
 import { InvoiceStatus as PrismaInvoiceStatus, PrismaClient, ReimbursableServiceStatus } from "@prisma/client";
 
+import {
+  buildPaginationMetadata,
+  clampPaginationToTotalItems,
+  PaginatedResult,
+  Pagination,
+} from "@/modules/reimbursement/domain/Pagination";
 import { NewService, Service, ServiceStatus } from "@/modules/reimbursement/domain/Service";
 import { ServiceRepository } from "@/modules/reimbursement/domain/ServiceRepository";
+import { warnIfSlowPaginatedQuery } from "@/modules/reimbursement/infrastructure/DbQueryTiming";
 
 export class PrismaServiceRepository implements ServiceRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -49,10 +56,41 @@ export class PrismaServiceRepository implements ServiceRepository {
         insurer: true,
         insuranceHolder: true,
       },
-      orderBy: [{ serviceDate: "desc" }, { createdAt: "desc" }],
+      orderBy: [{ serviceDate: "desc" }, { createdAt: "desc" }, { id: "desc" }],
     });
 
     return services.map((service) => this.mapService(service));
+  }
+
+  async listPaginated(pagination: Pagination): Promise<PaginatedResult<Service>> {
+    const startedAtMs = Date.now();
+    const totalItems = await this.prisma.reimbursableService.count();
+    const paginationForQuery = clampPaginationToTotalItems(pagination, totalItems);
+
+    const services = await this.prisma.reimbursableService.findMany({
+      include: {
+        insurer: true,
+        insuranceHolder: true,
+      },
+      orderBy: [{ serviceDate: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+      skip: paginationForQuery.skip,
+      take: paginationForQuery.take,
+    });
+
+    warnIfSlowPaginatedQuery({
+      operation: "services.listPaginated",
+      startedAtMs,
+      metadata: {
+        page: paginationForQuery.page,
+        pageSize: paginationForQuery.pageSize,
+        totalItems,
+      },
+    });
+
+    return {
+      items: services.map((service) => this.mapService(service)),
+      pagination: buildPaginationMetadata(paginationForQuery, totalItems),
+    };
   }
 
   async updateStatus(serviceId: string, status: ServiceStatus): Promise<Service | null> {
