@@ -1,9 +1,15 @@
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { prisma } from "@/lib/db/prisma";
 import { isUserRole, USER_ROLES } from "@/lib/auth/roles";
+import {
+  isLockedOut,
+  recordFailedLogin,
+  clearFailedLogins,
+} from "@/lib/auth/login-rate-limit";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
@@ -26,19 +32,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        // Get IP for rate limiting
+        const headersList = await headers();
+        const ip = headersList.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+
+        // Check if IP is locked out
+        const lockoutSeconds = await isLockedOut(ip);
+        if (lockoutSeconds !== null) {
+          return null;
+        }
+
         const user = await prisma.user.findUnique({
           where: { email },
         });
 
         if (!user || !user.isActive) {
+          await recordFailedLogin(ip);
           return null;
         }
 
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
 
         if (!isValidPassword) {
+          await recordFailedLogin(ip);
           return null;
         }
+
+        // Clear failed attempts on successful login
+        await clearFailedLogins(ip);
 
         return {
           id: user.id,
