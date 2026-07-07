@@ -57,18 +57,25 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setError(null);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      // Check if we got locked out
-      await checkLockoutStatus();
-      if (lockoutSeconds === 0) {
-        setError("Credenciales invalidas. Revisa el email y la contrasena.");
+      if (result?.error) {
+        // Check if we got locked out
+        await checkLockoutStatus();
+        if (lockoutSeconds === 0) {
+          setError("Credenciales invalidas. Revisa el email y la contrasena.");
+        }
+        setIsSubmitting(false);
+        return;
       }
+    } catch {
+      // Rate limited by proxy (429)
+      await checkLockoutStatus();
       setIsSubmitting(false);
       return;
     }
