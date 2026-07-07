@@ -14,7 +14,7 @@ const ratelimit = new Ratelimit({
   analytics: true,
 });
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Only rate limit auth endpoints
   if (request.nextUrl.pathname.startsWith("/api/auth")) {
     const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
