@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -13,6 +13,41 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
+
+  const checkLockoutStatus = useCallback(async () => {
+    const res = await fetch("/api/auth/lockout-status");
+    const data = await res.json();
+    if (data.lockedOut) {
+      setLockoutSeconds(data.remainingSeconds);
+    }
+  }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    if (lockoutSeconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setLockoutSeconds((prev) => {
+        if (prev <= 1) {
+          setError(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [lockoutSeconds]);
+
+  function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) {
+      return `${mins}:${secs.toString().padStart(2, "0")}`;
+    }
+    return `${secs}s`;
+  }
   const showDevelopmentCredentials = process.env.NODE_ENV !== "production";
   const passwordChanged =
     typeof window !== "undefined" && new URLSearchParams(window.location.search).get("passwordChanged") === "1";
@@ -22,14 +57,25 @@ export default function LoginPage() {
     setIsSubmitting(true);
     setError(null);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      setError("Credenciales invalidas. Revisa el email y la contrasena.");
+      if (result?.error) {
+        // Check if we got locked out
+        await checkLockoutStatus();
+        if (lockoutSeconds === 0) {
+          setError("Credenciales invalidas. Revisa el email y la contrasena.");
+        }
+        setIsSubmitting(false);
+        return;
+      }
+    } catch {
+      // Rate limited by proxy (429)
+      await checkLockoutStatus();
       setIsSubmitting(false);
       return;
     }
@@ -70,12 +116,18 @@ export default function LoginPage() {
 
           <PasswordInput name="password" label="Contrasena" value={password} onChange={setPassword} required />
 
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {lockoutSeconds > 0 ? (
+            <p className="text-sm text-red-600">
+              Demasiados intentos. Prueba otra vez en {formatTime(lockoutSeconds)}
+            </p>
+          ) : error ? (
+            <p className="text-sm text-red-600">{error}</p>
+          ) : null}
 
           <button
             className="inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || lockoutSeconds > 0}
           >
             {isSubmitting ? "Entrando..." : "Entrar"}
           </button>
