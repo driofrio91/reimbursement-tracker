@@ -1,65 +1,76 @@
-# reimbursement-tracker
+# Reimbursement Tracker
 
-Aplicacion interna para sustituir el Excel operativo de seguimiento de servicios y facturas de reembolso.
+Aplicación interna para gestionar servicios médicos y facturas de reembolso. Sustituye el Excel operativo con una solución web moderna.
+
+## Stack
+
+- **Frontend:** Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Backend:** Next.js Server Actions, Prisma ORM
+- **Base de datos:** PostgreSQL (Neon)
+- **Autenticación:** Auth.js con credenciales
+- **Arquitectura:** Clean Architecture (dominio, aplicación, infraestructura, UI)
+
+## Funcionalidades
+
+- Autenticación con roles (admin, operador)
+- Gestión de servicios médicos y facturas
+- Seguimiento del ciclo de vida de facturas
+- Límites anuales de reembolso por persona
+- Rate limiting y bloqueo progresivo por intentos fallidos
+- Exportación a CSV
+- Interfaz mobile-first
+
+## Seguridad
+
+- Rate limiting en endpoints de autenticación (Upstash Redis)
+- Bloqueo progresivo: 3 intentos fallidos → 1min → 5min → 10min → 20min → 60min
+- Headers de seguridad (HSTS, X-Frame-Options, CSP)
 
 ## Requisitos
 
-- `Node.js` 20+
-- `npm`
-- base de datos PostgreSQL accesible (Neon recomendado para desarrollo)
+- Node.js 20+
+- npm
+- PostgreSQL (Neon recomendado)
 
-## Instalacion
+## Instalación
 
 ```bash
 npm install
 ```
 
-## Configuracion local
+## Configuración local
 
-1. Copia `.env.example` a `.env`.
-2. Completa como minimo:
-   - `DATABASE_URL`
-   - `AUTH_SECRET`
-   - `ALLOW_LOCAL_SEED=true`
-   - `LOCAL_ADMIN_PASSWORD`
-   - `LOCAL_OPERATOR_PASSWORD`
+1. Copia `.env.example` a `.env`
+2. Completa las variables:
+   - `DATABASE_URL` — conexión a PostgreSQL
+   - `AUTH_SECRET` — clave para sesiones
+   - `UPSTASH_REDIS_REST_URL` — URL de Upstash Redis
+   - `UPSTASH_REDIS_REST_TOKEN` — token de Upstash Redis
+   - `ALLOW_LOCAL_SEED=true` — habilita seed local
+   - `LOCAL_ADMIN_PASSWORD` — contraseña del admin de prueba
+   - `LOCAL_OPERATOR_PASSWORD` — contraseña del operador de prueba
 
-## Preparar base de datos local
+## Preparar base de datos
 
 ```bash
 npm run prisma:migrate
-npm run db:seed:local
+npm run db:seed
 ```
 
-Usuarios creados por seed:
-
+Usuarios de desarrollo:
 - `admin@local.test`
 - `operator@local.test`
 
-Las contrasenas son las definidas en:
+## Comandos
 
-- `LOCAL_ADMIN_PASSWORD`
-- `LOCAL_OPERATOR_PASSWORD`
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run lint` | Linter |
+| `npm run typecheck` | Verificación de tipos |
+| `npm run test` | Tests |
 
-## Comandos principales
+## Documentación
 
-```bash
-npm run dev
-npm run lint
-npm run test
-npm run typecheck
-npm run build
-```
-
-## Resolucion de problemas
-
-Si `npm run prisma:migrate` solicita reset por historial de migraciones, estas reutilizando una base con estado previo.
-
-Opciones:
-
-1. recomendado: usar una base nueva para desarrollo
-2. si puedes perder datos locales: `npx prisma migrate reset` y despues `npm run db:seed:local`
-
-## Documentacion
-
-Para contexto funcional, decisiones y roadmap por version, consulta `docs/PROJECT-HUB.md`.
+Ver `docs/PROJECT-HUB.md` para contexto funcional, decisiones técnicas y roadmap.
