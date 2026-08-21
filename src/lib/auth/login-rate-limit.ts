@@ -1,9 +1,30 @@
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+let redis: Redis | null = null;
+
+function getRedis(): Redis {
+  if (redis) {
+    return redis;
+  }
+
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!url?.startsWith("https://")) {
+    throw new Error(
+      "Invalid Upstash Redis configuration: UPSTASH_REDIS_REST_URL must start with https://."
+    );
+  }
+
+  if (!token) {
+    throw new Error(
+      "Invalid Upstash Redis configuration: UPSTASH_REDIS_REST_TOKEN is required."
+    );
+  }
+
+  redis = new Redis({ url, token });
+  return redis;
+}
 
 const MAX_FAILED_ATTEMPTS = 3;
 const LOCKOUT_DURATIONS_MINUTES = [1, 5, 10, 20, 60]; // Progressive lockout
@@ -21,12 +42,13 @@ function getLockoutLevelKey(identifier: string): string {
 }
 
 export async function isLockedOut(identifier: string): Promise<number | null> {
-  const ttl = await redis.ttl(getLockoutKey(identifier));
+  const ttl = await getRedis().ttl(getLockoutKey(identifier));
   return ttl > 0 ? ttl : null;
 }
 
 export async function recordFailedLogin(identifier: string): Promise<void> {
   const key = getFailedLoginKey(identifier);
+  const redis = getRedis();
   const attempts = await redis.incr(key);
 
   // Set expiry on first attempt (1 hour window)
@@ -51,6 +73,7 @@ export async function recordFailedLogin(identifier: string): Promise<void> {
 }
 
 export async function clearFailedLogins(identifier: string): Promise<void> {
+  const redis = getRedis();
   await redis.del(getFailedLoginKey(identifier));
   await redis.del(getLockoutLevelKey(identifier));
 }
