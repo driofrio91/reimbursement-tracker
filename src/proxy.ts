@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { getUpstashRedisConfig } from "@/lib/upstash-config";
 
 let ratelimit: Ratelimit | null = null;
 
@@ -10,20 +11,7 @@ function getRatelimit(): Ratelimit {
     return ratelimit;
   }
 
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  if (!url?.startsWith("https://")) {
-    throw new Error(
-      "Invalid Upstash Redis configuration: UPSTASH_REDIS_REST_URL must start with https://."
-    );
-  }
-
-  if (!token) {
-    throw new Error(
-      "Invalid Upstash Redis configuration: UPSTASH_REDIS_REST_TOKEN is required."
-    );
-  }
+  const { url, token } = getUpstashRedisConfig();
 
   ratelimit = new Ratelimit({
     redis: new Redis({ url, token }),
