@@ -1,0 +1,57 @@
+name: Release Readiness
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-readiness
+  cancel-in-progress: false
+
+jobs:
+  validate-production-readiness:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Pull Vercel production environment
+        run: npx vercel@59.3.0 pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Validate production environment
+        run: node scripts/validate-production-env.mjs
+
+      - name: Build Vercel production artifact
+        run: npx vercel@59.3.0 build --prod --token "$VERCEL_TOKEN"
