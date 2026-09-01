@@ -1,4 +1,7 @@
 import { readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
+
+import dotenv from "dotenv";
 
 const ENV_FILE = ".vercel/.env.production.local";
 
@@ -9,7 +12,7 @@ const REQUIRED_ENV_NAMES = [
   "UPSTASH_REDIS_REST_TOKEN",
 ];
 
-function normalizeEnvValue(value) {
+export function normalizeEnvValue(value) {
   let normalized = value.trim();
   const first = normalized[0];
   const last = normalized[normalized.length - 1];
@@ -24,36 +27,12 @@ function normalizeEnvValue(value) {
   return normalized;
 }
 
-function parseDotenv(content) {
-  const values = new Map();
-
-  for (const rawLine of content.split(/\r?\n/)) {
-    const line = rawLine.trim();
-
-    if (!line || line.startsWith("#")) {
-      continue;
-    }
-
-    const normalizedLine = line.startsWith("export ") ? line.slice(7).trim() : line;
-    const separatorIndex = normalizedLine.indexOf("=");
-
-    if (separatorIndex === -1) {
-      continue;
-    }
-
-    const name = normalizedLine.slice(0, separatorIndex).trim();
-    const value = normalizedLine.slice(separatorIndex + 1);
-
-    if (name) {
-      values.set(name, value);
-    }
-  }
-
-  return values;
+export function parseDotenv(content) {
+  return dotenv.parse(content);
 }
 
 function validateRequiredValue(values, name) {
-  const rawValue = values.get(name);
+  const rawValue = values[name];
   const value = rawValue === undefined ? undefined : normalizeEnvValue(rawValue);
 
   if (!value) {
@@ -65,12 +44,27 @@ function validateRequiredValue(values, name) {
   return true;
 }
 
-function validateUpstashUrl(values) {
-  const rawValue = values.get("UPSTASH_REDIS_REST_URL");
+function reportInvalidUpstashUrl(reason) {
+  console.error(`UPSTASH_REDIS_REST_URL: ${reason}`);
+}
+
+export function validateUpstashUrl(values) {
+  const rawValue = values.UPSTASH_REDIS_REST_URL;
+
+  if (rawValue === undefined) {
+    reportInvalidUpstashUrl("missing");
+    return false;
+  }
+
   const value = rawValue === undefined ? undefined : normalizeEnvValue(rawValue);
 
   if (!value) {
-    console.error("UPSTASH_REDIS_REST_URL: missing");
+    reportInvalidUpstashUrl("empty after normalization");
+    return false;
+  }
+
+  if (/[\u0000-\u001F\u007F]/u.test(value)) {
+    reportInvalidUpstashUrl("contains control characters");
     return false;
   }
 
@@ -79,12 +73,17 @@ function validateUpstashUrl(values) {
   try {
     parsedUrl = new URL(value);
   } catch {
-    console.error("UPSTASH_REDIS_REST_URL: invalid");
+    reportInvalidUpstashUrl("invalid URL format");
     return false;
   }
 
-  if (parsedUrl.protocol !== "https:" || !parsedUrl.hostname) {
-    console.error("UPSTASH_REDIS_REST_URL: invalid");
+  if (parsedUrl.protocol !== "https:") {
+    reportInvalidUpstashUrl("protocol must be HTTPS");
+    return false;
+  }
+
+  if (!parsedUrl.hostname) {
+    reportInvalidUpstashUrl("hostname missing");
     return false;
   }
 
@@ -93,7 +92,7 @@ function validateUpstashUrl(values) {
 }
 
 function validateUpstashToken(values) {
-  const rawValue = values.get("UPSTASH_REDIS_REST_TOKEN");
+  const rawValue = values.UPSTASH_REDIS_REST_TOKEN;
   const value = rawValue === undefined ? undefined : normalizeEnvValue(rawValue);
 
   if (!value) {
@@ -105,7 +104,7 @@ function validateUpstashToken(values) {
   return true;
 }
 
-async function main() {
+export async function main() {
   let content;
 
   try {
@@ -134,4 +133,6 @@ async function main() {
   console.log("Production environment readiness: valid");
 }
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main();
+}
