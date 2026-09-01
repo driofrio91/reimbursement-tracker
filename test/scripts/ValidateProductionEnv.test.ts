@@ -30,6 +30,18 @@ UPSTASH_REDIS_REST_TOKEN=token
     );
   });
 
+  it("normalizes escaped surrounding quotes after dotenv parsing", () => {
+    const values = parseDotenv(`
+UPSTASH_REDIS_REST_URL=\\"https://example.upstash.io\\"
+UPSTASH_REDIS_REST_TOKEN=\\'token-value\\'
+`);
+
+    expect(normalizeEnvValue(values.UPSTASH_REDIS_REST_URL)).toBe(
+      "https://example.upstash.io"
+    );
+    expect(normalizeEnvValue(values.UPSTASH_REDIS_REST_TOKEN)).toBe("token-value");
+  });
+
   it("accepts HTTPS Upstash REST URLs without printing the value", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
@@ -56,6 +68,21 @@ UPSTASH_REDIS_REST_TOKEN=token
     expect(error).toHaveBeenCalledWith(
       "UPSTASH_REDIS_REST_URL: protocol must be HTTPS"
     );
+  });
+
+  it("accepts escaped quoted HTTPS Upstash REST URLs without printing the value", () => {
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    expect(
+      validateUpstashUrl({
+        UPSTASH_REDIS_REST_URL: '\\"https://example.upstash.io\\"',
+      })
+    ).toBe(true);
+
+    expect(error).not.toHaveBeenCalled();
+    expect(log).toHaveBeenCalledWith("UPSTASH_REDIS_REST_URL: valid");
+    expect(log).not.toHaveBeenCalledWith(expect.stringContaining("example.upstash.io"));
   });
 
   it("rejects Upstash URLs that contain control characters", () => {

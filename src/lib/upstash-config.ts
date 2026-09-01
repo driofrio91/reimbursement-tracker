@@ -14,6 +14,14 @@ export function normalizeUpstashEnvValue(value: string | undefined): string | un
     normalized = normalized.slice(1, -1).trim();
   }
 
+  if (
+    normalized.length >= 4 &&
+    ((normalized.startsWith('\\"') && normalized.endsWith('\\"')) ||
+      (normalized.startsWith("\\'") && normalized.endsWith("\\'")))
+  ) {
+    normalized = normalized.slice(2, -2).trim();
+  }
+
   return normalized;
 }
 
