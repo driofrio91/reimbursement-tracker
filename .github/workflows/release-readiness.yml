@@ -51,8 +51,6 @@ jobs:
         run: npx vercel@59.3.0 pull --yes --environment=production --token "$VERCEL_TOKEN"
 
       - name: Validate production environment
-        env:
-          DEBUG_UPSTASH_URL: "1"
         run: node scripts/validate-production-env.mjs
 
       - name: Build Vercel production artifact
