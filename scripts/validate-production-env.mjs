@@ -59,6 +59,11 @@ function reportInvalidUpstashUrl(reason) {
 export function validateUpstashUrl(values) {
   const rawValue = values.UPSTASH_REDIS_REST_URL;
 
+  // TEMPORARY DIAGNOSTIC: remove after investigating the Vercel-pulled value.
+  console.error(
+    `UPSTASH_REDIS_REST_URL raw diagnostic: ${JSON.stringify(rawValue)}`
+  );
+
   if (rawValue === undefined) {
     reportInvalidUpstashUrl("missing");
     return false;
